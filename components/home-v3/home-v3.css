@@ -68,7 +68,7 @@
   backdrop-filter: blur(14px);
   box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
-@keyframes hx-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes hx-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 @keyframes hx-flow { to { stroke-dashoffset: -40; } }
 @keyframes hx-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 .hx-float { animation: hx-float 7s ease-in-out infinite; }

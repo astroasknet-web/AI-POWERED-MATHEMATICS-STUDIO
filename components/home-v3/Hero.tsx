@@ -87,19 +87,24 @@ function Module({ k, className = "" }: { k: VerticalKey; className?: string }) {
     : <Link href={v.href} className={cls} aria-label={`${v.name}: ${v.cta}`}>{inner}</Link>;
 }
 
-const POS: Record<VerticalKey, string> = {
-  resume: "left-0 top-0",
-  internships: "right-0 top-0",
-  courses: "left-0 top-[160px]",
-  abroad: "right-0 top-[160px]",
-  math: "left-0 top-[320px]",
-  writing: "right-0 top-[320px]",
-  classes: "left-0 bottom-0",
-  ebooks: "right-0 bottom-0",
+/**
+ * The ecosystem map is a fixed 3-column grid (module | workspace | module) with four equal rows, so every module sits the same distance
+ * from the centre as its mirror image on the other side, and the gaps between modules and the workspace are all equal.
+ * `nudge` can pull the two outer rows in a little for an oval look; it is 0 so every gap to the workspace is identical.
+ * Line ends below are the module centres in this box; keep them in step with these numbers.
+ */
+const MAP = { w: 622, h: 616, tile: 180, ws: 190, gap: 36, row: 154, nudge: 0 } as const;
+const COL_X = { left: MAP.tile / 2, right: MAP.w - MAP.tile / 2 }; // module centres across the box
+const ROW_Y = [0, 1, 2, 3].map((r) => MAP.row * r + MAP.row / 2);
+/** Module -> [side, row] */
+const CELL: Record<VerticalKey, ["left" | "right", number]> = {
+  resume: ["left", 0], internships: ["right", 0], courses: ["left", 1], abroad: ["right", 1],
+  math: ["left", 2], writing: ["right", 2], classes: ["left", 3], ebooks: ["right", 3],
 };
-/** Line ends (module centres) in the 600 x 620 ecosystem box. */
-const LINE_END: Record<VerticalKey, [number, number]> = {
-  resume: [95, 52], internships: [505, 52], courses: [95, 205], abroad: [505, 205], math: [95, 372], writing: [505, 372], classes: [95, 558], ebooks: [505, 558],
+const inset = (row: number): number => (row === 0 || row === 3 ? MAP.nudge : 0);
+const lineEnd = (k: VerticalKey): [number, number] => {
+  const [side, row] = CELL[k];
+  return [COL_X[side] + (side === "left" ? inset(row) : -inset(row)), ROW_Y[row]];
 };
 
 function Workspace() {
@@ -122,7 +127,7 @@ function Workspace() {
 export default function Hero() {
   return (
     <header className="hx-hero relative isolate overflow-hidden text-white">
-      <div className="relative z-10 mx-auto grid max-w-[1320px] items-center gap-14 px-6 pb-24 pt-36 md:px-14 md:pt-44 xl:grid-cols-[1fr,600px]">
+      <div className="relative z-10 mx-auto grid max-w-[1320px] items-center gap-14 px-6 pb-24 pt-36 md:px-14 md:pt-44 xl:grid-cols-[1fr,622px]">
         <div>
           <p data-rv className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-1.5 text-[0.78rem] font-medium text-white/80 backdrop-blur">
             <Sparkles className="h-3.5 w-3.5 text-[var(--hx-cyan)]" aria-hidden /> Learn, Build, and Go Global
@@ -149,19 +154,21 @@ export default function Hero() {
             <div className="col-span-2"><Workspace /></div>
             {VERTICALS.map((v) => <Module key={v.key} k={v.key} />)}
           </div>
-          <div className="relative hidden h-[620px] w-[600px] xl:block">
-            <svg viewBox="0 0 600 620" className="absolute inset-0" aria-hidden>
-              {(Object.keys(LINE_END) as VerticalKey[]).map((k) => (
-                <line key={k} x1="300" y1="310" x2={LINE_END[k][0]} y2={LINE_END[k][1]} stroke="url(#hxl)" strokeWidth="1.5" className="hx-flow" />
-              ))}
+          <div className="relative hidden xl:block" style={{ width: MAP.w, height: MAP.h }}>
+            <svg viewBox={`0 0 ${MAP.w} ${MAP.h}`} className="absolute inset-0" aria-hidden>
+              {VERTICALS.map((v) => { const [x, y] = lineEnd(v.key); return <line key={v.key} x1={MAP.w / 2} y1={MAP.h / 2} x2={x} y2={y} stroke="url(#hxl)" strokeWidth="1.5" className="hx-flow" />; })}
               <defs><linearGradient id="hxl" x1="0" x2="1"><stop stopColor="#7857ff" stopOpacity=".9" /><stop offset="1" stopColor="#35d9ff" stopOpacity=".9" /></linearGradient></defs>
             </svg>
-            <div className="absolute left-1/2 top-1/2 w-[200px] -translate-x-1/2 -translate-y-1/2"><Workspace /></div>
-            {VERTICALS.map((v, i) => (
-              <div key={v.key} className={`absolute w-[190px] hx-float ${POS[v.key]}`} style={{ animationDelay: `${i * -1.1}s` }}>
-                <Module k={v.key} />
-              </div>
-            ))}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ width: MAP.ws }}><Workspace /></div>
+            {VERTICALS.map((v, i) => {
+              const [side, row] = CELL[v.key];
+              const [cx, cy] = lineEnd(v.key);
+              return (
+                <div key={v.key} className="absolute flex items-center justify-center" style={{ width: MAP.tile, height: MAP.row - 14, left: cx - MAP.tile / 2, top: cy - (MAP.row - 14) / 2 }}>
+                  <div className="hx-float w-full" style={{ animationDelay: `${(side === "left" ? row : row + 4) * -0.9}s` }}><Module k={v.key} /></div>
+                </div>
+              );
+            })}
           </div>
           <p className="mt-3 text-center text-[0.72rem] text-white/45">Illustrative previews. Open any module to see the real thing.</p>
         </div>
