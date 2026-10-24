@@ -14,8 +14,9 @@ export async function currentUser(): Promise<PortalUser | null> {
 }
 
 export async function requireUser(...roles: Role[]): Promise<PortalUser> {
-  const user = await currentUser();
-  if (!user) redirect("/login");
+  const s = await getSession();
+  const user = s?.user ?? null;
+  if (!user) redirect(s?.demoBlocked ? "/demo-readonly" : "/login");
   if (roles.length && !roles.includes(user.role)) redirect(homeFor(user.role));
   return user;
 }

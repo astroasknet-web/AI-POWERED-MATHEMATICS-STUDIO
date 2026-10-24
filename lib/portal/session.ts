@@ -1,7 +1,8 @@
 import "server-only";
 import * as React from "react";
 import { createHash, randomBytes } from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { BLOCK_DEMO_HEADER } from "./demo";
 import { one, run, tx } from "./db";
 import { clientIp, sha256 } from "./security";
 
@@ -26,6 +27,8 @@ export interface PortalUser {
   name: string;
   email_verified_at: string | null;
   mfa_enabled_at: string | null;
+  /** A read-only demo account: it can look, but is treated as signed out on any request that changes or downloads data. */
+  is_demo?: boolean;
 }
 
 export interface PortalSession {
@@ -33,6 +36,8 @@ export interface PortalSession {
   csrf: string;
   data: Record<string, unknown>;
   user: PortalUser | null;
+  /** Set when a demo account tried something that is switched off for it (the user above is then null). */
+  demoBlocked?: boolean;
 }
 
 const memo = ((React as unknown as { cache?: <T extends (...a: never[]) => unknown>(f: T) => T }).cache ?? (<T,>(f: T) => f)) as <T extends (...a: never[]) => unknown>(f: T) => T;
@@ -48,7 +53,13 @@ export const getSession = memo(async (): Promise<PortalSession | null> => {
     return null;
   }
   if (!token || !/^[a-f0-9]{64}$/.test(token)) return null;
-  return loadSession(tokenId(token));
+  const s = await loadSession(tokenId(token));
+  if (s?.user?.is_demo) {
+    let blocked = true; // a missing header counts as blocked: never fail open for a demo account
+    try { blocked = (await headers()).get(BLOCK_DEMO_HEADER) !== "0"; } catch { /* outside a request */ }
+    if (blocked) return { ...s, user: null, demoBlocked: true };
+  }
+  return s;
 });
 
 function parseData(v: unknown): Record<string, unknown> {
@@ -59,10 +70,10 @@ function parseData(v: unknown): Record<string, unknown> {
 export async function loadSession(id: string): Promise<PortalSession | null> {
   const row = await one<{
     id: string; csrf: string; data: Record<string, unknown>; last_seen_stale: boolean;
-    uid: number | null; role: Role | null; email: string | null; name: string | null; email_verified_at: string | null; mfa_enabled_at: string | null;
+    uid: number | null; role: Role | null; email: string | null; name: string | null; email_verified_at: string | null; mfa_enabled_at: string | null; is_demo: number | null;
   }>(
     `SELECT s.id, s.csrf, s.data, (s.last_seen_at < NOW() - INTERVAL '5 minutes') AS last_seen_stale,
-            u.id AS uid, u.role, u.email, u.name, u.email_verified_at, u.mfa_enabled_at
+            u.id AS uid, u.role, u.email, u.name, u.email_verified_at, u.mfa_enabled_at, u.is_demo
        FROM portal_sessions s LEFT JOIN users u ON u.id = s.user_id
       WHERE s.id = $1 AND s.expires_at > NOW() AND s.last_seen_at > NOW() - make_interval(days => $2::int)`,
     [id, IDLE_DAYS],
@@ -70,7 +81,7 @@ export async function loadSession(id: string): Promise<PortalSession | null> {
   if (!row) return null;
   if (row.last_seen_stale) await run("UPDATE portal_sessions SET last_seen_at = NOW() WHERE id = $1", [id]).catch(() => undefined);
   const user: PortalUser | null = row.uid
-    ? { id: row.uid, role: row.role as Role, email: row.email as string, name: row.name as string, email_verified_at: row.email_verified_at, mfa_enabled_at: row.mfa_enabled_at }
+    ? { id: row.uid, role: row.role as Role, email: row.email as string, name: row.name as string, email_verified_at: row.email_verified_at, mfa_enabled_at: row.mfa_enabled_at, is_demo: Number(row.is_demo) === 1 }
     : null;
   return { id: row.id, csrf: row.csrf, data: parseData(row.data), user };
 }

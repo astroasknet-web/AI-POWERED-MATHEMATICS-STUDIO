@@ -21,6 +21,7 @@ export async function ConsolePage({ me, tab, title, subtitle, children, plain = 
   if (f) await dropSessionData("console_flash");
   return (
     <PortalPage user={me} active={plain ? tab : "console"} title={title} subtitle={subtitle} wide="full">
+      {me.is_demo ? <p role="note" className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3 text-[14px] text-amber-900">Read-only demo: you can open every screen, but changes, downloads and exports are switched off.</p> : null}
       {actions ? <div className="mb-5">{actions}</div> : null}
       {plain ? null : <nav aria-label="Admin sections" className="flex flex-wrap gap-2 mb-5">
         {TABS.map(([k, href, label]) => <Link key={k} href={href} aria-current={k === tab ? "page" : undefined} className={`min-h-[44px] inline-flex items-center px-4 rounded-full border text-[14px] font-medium ${k === tab ? "bg-ink text-white border-ink" : "bg-white border-black/[0.15] hover:bg-cream-2"}`}>{label}</Link>)}

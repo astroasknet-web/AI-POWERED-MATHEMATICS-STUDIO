@@ -9,6 +9,7 @@
     "lint": "next lint",
     "test": "vitest run",
     "portal:migrate": "tsx scripts/portal-migrate.ts",
+    "demo:admin": "tsx scripts/create-demo-admin.ts",
     "crm:smoke": "tsx scripts/crm-smoke.ts",
     "reminders:smoke": "tsx scripts/reminders-smoke.ts",
     "reminders:run": "tsx scripts/reminders-run.ts",
