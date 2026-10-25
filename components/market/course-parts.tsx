@@ -1,6 +1,7 @@
 import { formatMoney } from "@/lib/pay/money";
 import Link from "next/link";
 import type { Course } from "@/lib/market/courses";
+import { hasThumb, thumbSmall } from "@/lib/market/thumbs";
 import { checkpoints, type Enrolment } from "@/lib/market/learning";
 import { courseAction } from "@/app/courses/actions";
 import { nativeCourse, isNative } from "@/lib/market/lessons";
@@ -13,7 +14,17 @@ export function TierPill({ tier }: { tier: Enrolment["tier"] }) {
 }
 
 /** A gradient cover in the category's two colours (the PHP app drew an SVG per course; this keeps the same colour identity). */
-export function Cover({ c, children }: { c: Pick<Course, "c1" | "c2" | "cat_name" | "hours">; children?: React.ReactNode }) {
+export function Cover({ c, slug, children }: { c: Pick<Course, "c1" | "c2" | "cat_name" | "hours">; slug?: string; children?: React.ReactNode }) {
+  if (slug && hasThumb(slug)) {
+    return (
+      <div className="relative h-28 overflow-hidden rounded-xl bg-cream-3" aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={thumbSmall(slug)} width={640} height={360} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+        <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-2.5 py-1 text-[12px] font-semibold text-white">{c.hours}</span>
+        {children}
+      </div>
+    );
+  }
   return (
     <div className="relative h-28 rounded-xl overflow-hidden text-white" style={{ background: `linear-gradient(135deg, ${c.c1}, ${c.c2})` }} aria-hidden="true">
       <span className="absolute left-3 top-3 text-[12px] font-semibold bg-black/25 rounded-full px-2.5 py-1">{c.cat_name}</span>

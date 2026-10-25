@@ -45,7 +45,7 @@ export default async function MyCoursesPage({ searchParams }: { searchParams: Pr
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
               {list.map((e) => (
                 <article key={e.id} className="bg-white rounded-2xl border border-black/[0.08] shadow-card p-4">
-                  <Cover c={e} />
+                  <Cover c={e} slug={e.slug} />
                   <h3 className="text-[16px] font-semibold text-ink mt-3"><Link href={`/courses/${e.slug}`} className="hover:underline">{e.title}</Link></h3>
                   {lessons.isNative(e.slug) && !open.has(e.slug) ? (
                     <>

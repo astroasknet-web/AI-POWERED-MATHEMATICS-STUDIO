@@ -3,6 +3,7 @@ import AddToCart from "@/components/pay/AddToCart";
 import { formatMoney } from "@/lib/pay/money";
 import { cardAction, type CardCourse, type CourseProgress } from "@/lib/market/catalog-card";
 import { CourseThumb } from "./CourseThumb";
+import CourseImage from "./CourseImage";
 
 const ring = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-deep";
 
@@ -17,8 +18,8 @@ export default function CourseCard({ course, progress, onOpen }: { course: CardC
   return (
     <li className="group relative flex flex-col overflow-hidden rounded-2xl border border-black/[0.09] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-shadow duration-200 focus-within:shadow-[0_8px_24px_rgba(16,24,40,0.12)] hover:shadow-[0_8px_24px_rgba(16,24,40,0.12)] motion-safe:transition-transform motion-safe:hover:-translate-y-0.5">
       <div className="relative aspect-[16/9] overflow-hidden">
-        <CourseThumb course={course} className="motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-[1.03]" />
-        <span className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold leading-none text-white backdrop-blur-sm">{course.cat_name}</span>
+        {course.thumb ? <CourseImage course={course} className="motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-[1.03]" /> : <CourseThumb course={course} className="motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-[1.03]" />}
+        {course.thumb ? null : <span className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold leading-none text-white backdrop-blur-sm">{course.cat_name}</span>}
         {progress?.status === "completed" ? <span className="absolute right-3 top-3 rounded-full bg-emerald-700 px-2.5 py-1 text-[11px] font-semibold leading-none text-white">Completed</span> : null}
       </div>
       <div className="flex flex-1 flex-col p-4">

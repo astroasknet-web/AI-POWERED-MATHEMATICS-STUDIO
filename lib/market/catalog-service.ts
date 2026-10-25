@@ -1,7 +1,8 @@
 import * as courses from "./courses";
 import { isNative } from "./lessons";
 import { searchCatalog } from "./catalog-search";
-import { toCard, type CatalogResult } from "./catalog-card";
+import type { CatalogResult } from "./catalog-card";
+import { toCard } from "./catalog-card-server";
 import type { CatalogQuery } from "./catalog-query";
 
 /** One catalogue query as card data: the matching page, how many matched, and how many courses exist in all (the two are shown separately). */
