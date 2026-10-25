@@ -17,7 +17,7 @@ export function TierPill({ tier }: { tier: Enrolment["tier"] }) {
 export function Cover({ c, slug, children }: { c: Pick<Course, "c1" | "c2" | "cat_name" | "hours">; slug?: string; children?: React.ReactNode }) {
   if (slug && hasThumb(slug)) {
     return (
-      <div className="relative h-28 overflow-hidden rounded-xl bg-cream-3" aria-hidden="true">
+      <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-cream-3" aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={thumbSmall(slug)} width={640} height={360} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
         <span className="absolute bottom-2 right-2 rounded-full bg-black/45 px-2.5 py-1 text-[12px] font-semibold text-white">{c.hours}</span>
@@ -37,7 +37,7 @@ export function Cover({ c, slug, children }: { c: Pick<Course, "c1" | "c2" | "ca
 export function CourseCard({ course }: { course: Course }) {
   return (
     <li className="bg-white rounded-2xl border border-black/[0.08] shadow-card p-4 flex flex-col">
-      <Cover c={course} />
+      <Cover c={course} slug={course.slug} />
       <h3 className="text-[16px] font-semibold text-ink leading-snug mt-3"><Link href={`/courses/${course.slug}`} className="hover:underline underline-offset-2">{course.title}</Link></h3>
       <p className="text-[13px] text-ink-3 mt-1 line-clamp-3">{course.brief}</p>
       <p className="text-[12px] text-ink-4 mt-auto pt-3">{course.level_label} &middot; {course.modules} modules &middot; {course.badge || "Certificate"}</p>
