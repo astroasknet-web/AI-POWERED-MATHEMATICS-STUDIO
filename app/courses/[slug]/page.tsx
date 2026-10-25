@@ -101,7 +101,7 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={thumbFull(course.slug)} srcSet={`${thumbSmall(course.slug)} 640w, ${thumbFull(course.slug)} 1920w`} sizes="(min-width: 960px) 880px, 100vw" width={1920} height={1080} alt={`${course.title} course thumbnail`} fetchPriority="high" decoding="async" className="block h-auto w-full" />
         </div>
-      ) : <Cover c={course} />}
+      ) : <Cover c={course} slug={course.slug} />}
       <h1 className="text-[26px] sm:text-[32px] font-bold text-ink tracking-tight leading-tight mt-4">{course.title}</h1>
       <p className="text-[16px] text-ink-3 mt-1 max-w-3xl">{course.brief}</p>
       <ul className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-5">
