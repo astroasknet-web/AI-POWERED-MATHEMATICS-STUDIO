@@ -1,7 +1,7 @@
 import { PLANS } from "@/lib/market/plans";
 import { isNative } from "@/lib/market/lessons";
 import catalogue from "@/lib/market/data/courses.json";
-import { COURSE_FEE_RUPEES, EXAM_PRODUCTS, RESUME_STUDIO_PRO_RUPEES, STUDIO_COURSES } from "./course-fees";
+import { COURSE_FEE_RUPEES, EXAM_PRODUCTS, RESUME_STUDIO_PRO_RUPEES, SERVICE_PRODUCTS, STUDIO_COURSES } from "./course-fees";
 import { first, pool, rows, exec, insertId, type Db, type Row } from "./db";
 
 /**
@@ -61,6 +61,7 @@ function seedList(): SeedProduct[] {
     out.push({ sku: `course-${c.slug}`, kind: "course", title: c.title, description: c.brief ?? "", fulfilRef: c.slug, accessDays: null, inrMinor: rupees * 100, active: isNative(c.slug) });
   }
   for (const c of STUDIO_COURSES) out.push({ sku: `course-${c.slug}`, kind: "course", title: c.title, description: c.description, fulfilRef: c.slug, accessDays: null, inrMinor: c.rupees * 100, active: c.onSale });
+  for (const v of SERVICE_PRODUCTS) out.push({ sku: `service-${v.key}`, kind: "consulting", title: v.title, description: v.description, fulfilRef: v.key, accessDays: null, inrMinor: v.rupees * 100 });
   for (const e of EXAM_PRODUCTS) out.push({ sku: e.sku, kind: "other", title: e.title, description: e.description, fulfilRef: e.sku, accessDays: null, inrMinor: e.rupees * 100, active: false });
   return out;
 }

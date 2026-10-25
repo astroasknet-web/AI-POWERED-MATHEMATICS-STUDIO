@@ -1,7 +1,8 @@
 import catalogue from "@/lib/market/data/courses.json";
 import { nativeSlugs } from "@/lib/market/lessons";
 import { buildStacks, type PaidPlanKey, type PlanStack, type ValuePrices } from "@/lib/market/plan-value";
-import { COURSE_FEE_RUPEES, RESUME_STUDIO_PRO_RUPEES, STUDIO_COURSES } from "./course-fees";
+import { COURSE_FEE_RUPEES, RESUME_STUDIO_PRO_RUPEES, SERVICE_PRODUCTS, STUDIO_COURSES } from "./course-fees";
+import type { ServiceKey } from "@/lib/market/plan-services";
 
 /**
  * The standalone prices behind the value stack, read from the same lists that seed the product catalogue (lib/pay/course-fees.ts), so the
@@ -37,6 +38,8 @@ export function valuePrices(): ValuePrices {
     resumeStudioPro: RESUME_STUDIO_PRO_RUPEES,
     mathsSpeedStudio: studioRupees("mathematics-speed-enhancement"),
     englishWritingStudio: studioRupees("english-writing-studio"),
+    ieltsPracticeTests: studioRupees("ielts-practice-tests"),
+    services: Object.fromEntries(SERVICE_PRODUCTS.map((v) => [v.key, v.rupees])) as Record<ServiceKey, number>,
   };
 }
 

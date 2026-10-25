@@ -1,7 +1,7 @@
 /**
  * Student packages. One place for the names, prices and what each includes, so the pricing page, emails and (later) checkout read the
  * same numbers. Prices are in rupees. The yearly price of every paid plan is about eight months' worth (about a third off).
- * Monthly prices are Pro ₹499, Silver ₹899 and Gold ₹1,299, and every plan can also be paid yearly. `annualOnly` marks a plan sold only yearly; none is at the moment.
+ * Monthly prices are Pro ₹599, Silver ₹999 and Gold ₹1,699, and every plan can also be paid yearly. `annualOnly` marks a plan sold only yearly; none is at the moment.
  * `soon` is an optional flag that shows a "Soon" tag next to a feature that is not live yet. No feature uses it at the moment.
  */
 export interface PlanFeature { text: string; soon?: boolean }
@@ -31,7 +31,7 @@ export const PLANS: Plan[] = [
     ],
   },
   {
-    key: "pro", name: "Pro", tagline: "Everything you need to prepare and apply.", monthly: 499, yearly: 3992, accent: "#4f46e5", cta: "Get Pro", inherits: "Everything in Free, plus",
+    key: "pro", name: "Pro", tagline: "Everything you need to prepare and apply.", monthly: 599, yearly: 4792, accent: "#4f46e5", cta: "Get Pro", inherits: "Everything in Free, plus",
     features: [
       { text: "Complete Vedic Mathematics course, worth ₹799" },
       { text: "Resume Studio: 10 templates, 3 resumes, no waiting between saves" },
@@ -42,11 +42,11 @@ export const PLANS: Plan[] = [
     ],
   },
   {
-    key: "silver", name: "Silver", tagline: "For students aiming for jobs and internships.", monthly: 899, yearly: 7192, badge: "Best value", accent: "#64748b", cta: "Get Silver", inherits: "Everything in Pro, plus",
+    key: "silver", name: "Silver", tagline: "For students aiming for jobs and internships.", monthly: 999, yearly: 7992, badge: "Best value", accent: "#64748b", cta: "Get Silver", inherits: "Everything in Pro, plus",
     features: [
       { text: "Resume Studio: 25 templates, 10 resumes" },
       { text: "5 AI resume score checks a month, with ATS feedback" },
-      { text: "10 IELTS Reading and Writing tests" },
+      { text: "IELTS Reading and Listening: the first 10 tests of each" },
       { text: "Verified, shareable Skill Passport with QR credential" },
       { text: "2 AI interview practice sessions with feedback" },
       { text: "Writing Clinic: 25 essay checks a month" },
@@ -56,15 +56,16 @@ export const PLANS: Plan[] = [
     ],
   },
   {
-    key: "gold", name: "Gold", tagline: "Hands-on help for study abroad and careers.", monthly: 1299, yearly: 10392, badge: "Most complete", accent: "#d97706", cta: "Get Gold", inherits: "Everything in Silver, plus",
+    key: "gold", name: "Gold", tagline: "Hands-on help for study abroad and careers.", monthly: 1699, yearly: 13592, badge: "Most complete", accent: "#d97706", cta: "Get Gold", inherits: "Everything in Silver, plus",
     features: [
       { text: "All 45 Resume Studio templates, unlimited resumes" },
       { text: "8 courses of your choice, from the courses taught in full on GrowQR" },
       { text: "QR Score Booster: a plan to raise your score, with your recommended courses" },
-      { text: "30 IELTS Reading and Writing tests" },
+      { text: "IELTS Reading and Listening: all 30 tests of each" },
       { text: "Writing Clinic: unlimited essay checks" },
       { text: "Live English speaking classes, for IELTS, TOEFL and professional growth" },
-      { text: "Study abroad registration portal, with a university shortlist matched to your documents" },
+      { text: "Study abroad registration portal" },
+      { text: "Overseas universities shortlist by experts, matched to your documents and qualifications" },
       { text: "One 1:1 overseas education counselling session a year" },
       { text: "One expert review of your resume a year" },
       { text: "2 mock visa interviews a year" },
@@ -80,7 +81,7 @@ export const COMPARE: Array<{ group: string; rows: Row[] }> = [
     { label: "Courses", v: ["Explore all", "Explore all", "Explore all", "Explore all"] },
     { label: "Vedic Mathematics", v: ["Module 1", "Complete course", "Complete course", "Complete course"] },
     { label: "Courses of your choice included", v: ["–", "2", "4", "8"] },
-    { label: "IELTS Reading and Writing tests", v: ["–", "–", "10", "30"] },
+    { label: "IELTS Reading and Listening tests (of 30 each)", v: ["First 3 free", "First 3 free", "First 10", "All 30"] },
     { label: "Maths calculation speed studio", v: ["–", "–", "Yes", "Yes"] },
   ] },
   { group: "Resume Studio", rows: [
@@ -101,7 +102,8 @@ export const COMPARE: Array<{ group: string; rows: Row[] }> = [
     { label: "QR Score Booster plan", v: ["–", "–", "–", "Yes"] },
   ] },
   { group: "Study abroad and expert help", rows: [
-    { label: "Study abroad portal with university shortlist", v: ["–", "–", "–", "Yes"] },
+    { label: "Study abroad registration portal", v: ["–", "–", "–", "Yes"] },
+    { label: "Overseas universities shortlist by experts", v: ["–", "–", "–", "1 a year"] },
     { label: "1:1 overseas counselling session", v: ["–", "–", "–", "1 a year"] },
     { label: "Expert resume review", v: ["–", "–", "–", "1 a year"] },
     { label: "Mock visa interviews", v: ["–", "–", "–", "2 a year"] },

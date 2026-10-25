@@ -12,6 +12,8 @@ import { serializeJsonLd } from "@/lib/json-ld";
 import { GreTest } from "@/components/tests/GreTest";
 import { submitIelts } from "../../actions";
 import { SITE_URL } from "@/lib/seo";
+import { ieltsLimit, ieltsOffer } from "@/lib/tests/access";
+import LockedTest from "@/components/tests/LockedTest";
 
 export const dynamic = "force-dynamic";
 const LABEL = { reading: "IELTS Academic Reading", listening: "IELTS Listening" } as const;
@@ -51,6 +53,17 @@ export default async function TestPage({ params, searchParams }: { params: Promi
   if (!kind || !test) notFound();
   const me = await currentViewer();
   const base = `/practice-tests/ielts-${kind}`;
+
+  // ---- locked: only the first tests are free (see lib/tests/access.ts) ----
+  if (n > (await ieltsLimit(me?.role === "student" ? me.id : null))) {
+    return (
+      <MarketShell user={me} active="courses">
+        <nav aria-label="Breadcrumb" className="text-[13px] text-ink-3 mb-4"><Link href="/practice-tests" className="underline">Practice tests</Link> / <Link href={base} className="underline">{LABEL[kind]}</Link> / Test {n}</nav>
+        <h1 className="text-[26px] sm:text-[32px] font-bold text-ink tracking-tight">{test.title}</h1>
+        <LockedTest label={LABEL[kind]} n={n} offer={await ieltsOffer(me?.role === "student" ? me.id : null)} signedIn={!!me} />
+      </MarketShell>
+    );
+  }
 
   // ---- result ----
   if (sp.a !== undefined) {

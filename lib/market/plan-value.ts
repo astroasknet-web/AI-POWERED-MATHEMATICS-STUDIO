@@ -12,6 +12,7 @@
  * Everything else a plan includes (tests, counselling, reviews, classes) has no standalone price, so it is listed unpriced and left out of every total.
  */
 import { PLAN_COURSE_QUOTA } from "@/lib/market/plan-quota";
+import { ALL_IELTS_TESTS, PLAN_SERVICES, SERVICE_LABEL, SILVER_IELTS_TESTS, type Allowance, type ServiceKey } from "@/lib/market/plan-services";
 
 export type PaidPlanKey = "pro" | "silver" | "gold";
 
@@ -23,6 +24,10 @@ export interface ValuePrices {
   resumeStudioPro: number;
   mathsSpeedStudio: number;
   englishWritingStudio: number;
+  /** The full IELTS Reading and Listening set, sold on its own. */
+  ieltsPracticeTests: number;
+  /** One of each staff-delivered service on its own. */
+  services: Record<ServiceKey, number>;
 }
 
 export interface StackLine { label: string; detail?: string; rupees: number }
@@ -49,24 +54,17 @@ const EXTRAS: Record<PaidPlanKey, string[]> = {
   ],
   silver: [
     "5 AI resume score checks a month, with ATS feedback",
-    "10 IELTS Reading and Writing tests",
     "Verified, shareable Skill Passport with QR credential",
     "2 AI interview practice sessions with feedback",
     "Writing Clinic: 25 essay checks a month",
-    "One career counselling and doubt-solving session with experts every month",
   ],
   gold: [
     "5 AI resume score checks a month, with ATS feedback",
-    "30 IELTS Reading and Writing tests",
     "Verified, shareable Skill Passport with QR credential",
     "2 AI interview practice sessions with feedback",
-    "One career counselling and doubt-solving session with experts every month",
     "QR Score Booster plan for your recommended courses",
     "Live English speaking classes, for IELTS, TOEFL and professional growth",
-    "Study abroad registration portal, with a university shortlist matched to your documents",
-    "One 1:1 overseas education counselling session a year",
-    "One expert review of your resume a year",
-    "2 mock visa interviews a year",
+    "Study abroad registration portal",
     "Priority email support",
   ],
 };
@@ -75,21 +73,31 @@ const rs = (n: number): string => `₹${n.toLocaleString("en-IN")}`;
 const plural = (n: number, one: string, many: string): string => (n === 1 ? `1 ${one}` : `${n} ${many}`);
 
 export function buildStacks(p: ValuePrices): Record<PaidPlanKey, PlanStack> {
-  const make = (key: PaidPlanKey, studios: StackLine[]): PlanStack => {
+  const make = (key: PaidPlanKey): PlanStack => {
     const picks = PLAN_COURSE_QUOTA[key];
     const pickLine: StackLine = {
       label: `${plural(picks, "course", "courses")} of your choice`,
       detail: p.pickMax > p.pickMin ? `Courses cost ${rs(p.pickMin)} to ${rs(p.pickMax)} each. Counted at ${rs(p.pickMin)}.` : `${rs(p.pickMin)} each`,
       rupees: picks * p.pickMin,
     };
-    const vedic: StackLine = { label: "Vedic Mathematics, complete course", detail: "30 modules in English and Hindi", rupees: p.vedicMathematics };
-    const lines = [pickLine, vedic, { label: "Resume Studio Pro", detail: "All templates, no waiting between saves", rupees: p.resumeStudioPro }, ...studios];
+    const lines: StackLine[] = [pickLine, { label: "Vedic Mathematics, complete course", detail: "30 modules in English and Hindi", rupees: p.vedicMathematics }, { label: "Resume Studio Pro", detail: "All templates, no waiting between saves", rupees: p.resumeStudioPro }];
+    let studios = 1; // Vedic
+    if (key !== "pro") { lines.push({ label: "Mathematics Speed Enhancement Studio", detail: "15 levels of mental-maths speed training", rupees: p.mathsSpeedStudio }); studios++; }
+    if (key === "silver") { lines.push({ label: `IELTS Reading and Listening: first ${SILVER_IELTS_TESTS} tests of each`, detail: `${SILVER_IELTS_TESTS} of the ${ALL_IELTS_TESTS} tests: a share of the ${rs(p.ieltsPracticeTests)} full set`, rupees: Math.round((p.ieltsPracticeTests * SILVER_IELTS_TESTS) / ALL_IELTS_TESTS) }); studios++; }
+    if (key === "gold") {
+      lines.push({ label: `IELTS Reading and Listening: all ${ALL_IELTS_TESTS} tests of each`, detail: "The full practice set, timed and marked", rupees: p.ieltsPracticeTests });
+      lines.push({ label: "Writing Clinic: unlimited essay checks", detail: "What the English Writing Studio sells", rupees: p.englishWritingStudio });
+      studios += 2;
+    }
+    let serviceCount = 0;
+    for (const [k, a] of Object.entries(PLAN_SERVICES[key]) as Array<[ServiceKey, Allowance]>) {
+      lines.push({ label: `${SERVICE_LABEL[k].name}${a.count > 1 ? ` × ${a.count}` : ""}`, detail: `${a.per === "month" ? "Every month" : "Every year"}. ${SERVICE_LABEL[k].what}`, rupees: a.count * p.services[k] });
+      serviceCount += a.count;
+    }
     const value = lines.reduce((t, l) => t + l.rupees, 0);
-    return { key, lines, extras: EXTRAS[key], value, valueMax: value + picks * (p.pickMax - p.pickMin), units: picks + 1 + studios.length, items: picks + 2 + studios.length + EXTRAS[key].length };
+    return { key, lines, extras: EXTRAS[key], value, valueMax: value + picks * (p.pickMax - p.pickMin), units: picks + studios, items: picks + studios + 1 + serviceCount + EXTRAS[key].length };
   };
-  const maths: StackLine = { label: "Mathematics Speed Enhancement Studio", detail: "15 levels of mental-maths speed training", rupees: p.mathsSpeedStudio };
-  const writing: StackLine = { label: "Writing Clinic: unlimited essay checks", detail: "What the English Writing Studio sells", rupees: p.englishWritingStudio };
-  return { pro: make("pro", []), silver: make("silver", [maths]), gold: make("gold", [maths, writing]) };
+  return { pro: make("pro"), silver: make("silver"), gold: make("gold") };
 }
 
 export interface Saving { amount: number; percent: number }

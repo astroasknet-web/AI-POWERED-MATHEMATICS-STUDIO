@@ -18,7 +18,7 @@ export const PLAN_COURSE_QUOTA: Record<PlanKey, number> = QUOTA;
 export const PLAN_NAME: Record<PlanKey, string> = { pro: "Pro", silver: "Silver", gold: "Gold" };
 
 /** Studio courses a plan opens outright, by studio slug and the lowest plan that includes it (the pricing page promises the Maths speed studio to Silver and Gold). */
-export const PLAN_STUDIOS: Record<string, PlanKey> = { "mathematics-speed-enhancement": "silver" };
+export const PLAN_STUDIOS: Record<string, PlanKey> = { "mathematics-speed-enhancement": "silver", "ielts-practice-tests": "gold" };
 
 export interface PlanInfo { key: PlanKey; name: string; expiresAt: string | null; courseQuota: number }
 

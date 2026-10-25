@@ -6,6 +6,7 @@ import { databaseConfigured } from "@/lib/portal/db";
 import * as attempts from "@/lib/tests/attempts";
 import * as gre from "@/lib/tests/gre";
 import * as ielts from "@/lib/tests/ielts";
+import { ieltsLimit } from "@/lib/tests/access";
 
 /** Grade a submitted IELTS test on the server, keep the attempt for a logged-in student, and send everyone to the same stateless result URL. */
 export async function submitIelts(fd: FormData): Promise<void> {
@@ -15,6 +16,8 @@ export async function submitIelts(fd: FormData): Promise<void> {
   if (!exam.startsWith("ielts-") || !ielts.isKind(kind) || !ielts.validNumber(n)) redirect("/practice-tests");
   const test = ielts.load(kind, n);
   if (!test) redirect("/practice-tests");
+  const who = databaseConfigured() ? await currentUser().catch(() => null) : null;
+  if (n > (await ieltsLimit(who?.id ?? null))) redirect(`/practice-tests/${exam}/${n}`); // a locked test is not marked
   const answers: Record<string, string> = {};
   for (let q = 1; q <= ielts.QUESTIONS; q++) {
     const v = fd.get(`q${q}`);
