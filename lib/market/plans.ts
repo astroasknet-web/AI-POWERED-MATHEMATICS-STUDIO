@@ -38,7 +38,7 @@ export const PLANS: Plan[] = [
       { text: "Resume scan and score check" },
       { text: "1 AI resume score check a month" },
       { text: "Writing Clinic: 15 essay checks a month" },
-      { text: "2 courses of your choice, from the courses taught in full on GrowQR" },
+      { text: "1 course of your choice from the courses recommended after your resume scan" },
     ],
   },
   {
@@ -51,7 +51,7 @@ export const PLANS: Plan[] = [
       { text: "2 AI interview practice sessions with feedback" },
       { text: "Writing Clinic: 25 essay checks a month" },
       { text: "One career counselling and doubt-solving session with experts every month" },
-      { text: "4 courses of your choice, from the courses taught in full on GrowQR" },
+      { text: "2 courses of your choice from the courses recommended after your resume scan" },
       { text: "Maths calculation speed studio, for competitive exams" },
     ],
   },
@@ -59,7 +59,7 @@ export const PLANS: Plan[] = [
     key: "gold", name: "Gold", tagline: "Hands-on help for study abroad and careers.", monthly: 1699, yearly: 13592, badge: "Most complete", accent: "#d97706", cta: "Get Gold", inherits: "Everything in Silver, plus",
     features: [
       { text: "All 45 Resume Studio templates, unlimited resumes" },
-      { text: "8 courses of your choice, from the courses taught in full on GrowQR" },
+      { text: "3 courses of your choice from the courses recommended after your resume scan" },
       { text: "QR Score Booster: a plan to raise your score, with your recommended courses" },
       { text: "IELTS Reading and Listening: all 30 tests of each" },
       { text: "Writing Clinic: unlimited essay checks" },
@@ -80,7 +80,7 @@ export const COMPARE: Array<{ group: string; rows: Row[] }> = [
   { group: "Learn", rows: [
     { label: "Courses", v: ["Explore all", "Explore all", "Explore all", "Explore all"] },
     { label: "Vedic Mathematics", v: ["Module 1", "Complete course", "Complete course", "Complete course"] },
-    { label: "Courses of your choice included", v: ["–", "2", "4", "8"] },
+    { label: "Courses from your resume-scan recommendations", v: ["–", "1", "2", "3"] },
     { label: "IELTS Reading and Listening tests (of 30 each)", v: ["First 3 free", "First 3 free", "First 10", "All 30"] },
     { label: "Maths calculation speed studio", v: ["–", "–", "Yes", "Yes"] },
   ] },

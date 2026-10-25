@@ -20,7 +20,7 @@ export default function UpgradePlans({ stacks }: { stacks: Record<PaidPlanKey, P
         <p className="text-[0.74rem] font-semibold uppercase tracking-[0.16em] text-orange-dark">You are on the Free plan</p>
         <h2 id="upgrade-h" className="mx-auto mt-2 max-w-[22em] text-[1.6rem] font-semibold leading-tight tracking-tight text-ink sm:text-[2rem]">Unlock more courses, studios and expert help</h2>
         <p className="mx-auto mt-3 max-w-[40em] text-[0.98rem] leading-relaxed text-ink-3">
-          Every package below includes courses of your choice, the complete Vedic Mathematics course and Resume Studio Pro.
+          Every package below includes courses chosen from your resume-scan recommendations, the complete Vedic Mathematics course and Resume Studio Pro.
           {biggest ? <> {biggest.name} saves you <b className="text-emerald-700">{inr(biggest.amount)}</b> against buying the same things one by one.</> : null}
         </p>
         <div className="mt-6"><BillingToggle yearly={yearly} onChange={setYearly} /></div>

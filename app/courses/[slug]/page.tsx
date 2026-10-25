@@ -9,6 +9,7 @@ import * as learning from "@/lib/market/learning";
 import AddToCart from "@/components/pay/AddToCart";
 import { planCourses } from "@/lib/pay/plans";
 import { buyHref, canStudy, courseFee, courseSku } from "@/lib/pay/course-access";
+import { planRecommended } from "@/lib/pay/plan-recommend";
 import { formatMoney } from "@/lib/pay/money";
 import * as lessons from "@/lib/market/lessons";
 import { JobCard } from "@/components/market/job-card";
@@ -59,6 +60,8 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
   const start = `${self}/learn`; // only used when the course is taught here
   const fee = native || course.slug === "vedic-mathematics" ? await courseFee(course.slug) : null;
   const plan = me && isStudent ? await planCourses(me.id) : null;
+  const recs = plan?.plan ? await planRecommended(me!.id).catch(() => ({ scanned: false, list: [] })) : null;
+  const recommended = !!recs?.list.some((x) => x.slug === course.slug); // a plan course can be chosen only from the courses recommended after the resume scan
   const owned = await canStudy(me?.id ?? null, course.id, course.slug); // false only for a priced course the visitor has not paid for
 
   // Internships whose required skills this course teaches.
@@ -128,7 +131,12 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
                 <>
                   {plan?.plan ? (
                     <div className="rounded-xl border border-emerald-600/30 bg-emerald-50 p-3.5">
-                      {plan.left > 0 ? (
+                      {plan.left > 0 && !recommended && !plan.picked.includes(course.slug) ? (
+                        <>
+                          <p className="text-[14px] font-semibold text-emerald-900">Your {plan.plan.name} plan includes {plan.plan.courseQuota} {plan.plan.courseQuota === 1 ? "course" : "courses"} from your resume-scan recommendations</p>
+                          <p className="mt-0.5 text-[13px] text-emerald-900/80">{recs?.scanned ? "This course is not one of your recommendations. You can buy it below, or see the ones you can choose." : "Scan your resume to see the courses recommended for you, then choose from them."} <Link href={recs?.scanned ? "/account#plan-courses" : "/passport"} className="font-semibold underline">{recs?.scanned ? "My recommended courses" : "Scan my resume"}</Link></p>
+                        </>
+                      ) : plan.left > 0 ? (
                         <>
                           <p className="text-[14px] font-semibold text-emerald-900">Included in your {plan.plan.name} plan</p>
                           <p className="mt-0.5 text-[13px] text-emerald-900/80">You have {plan.left} of {plan.plan.courseQuota} course {plan.plan.courseQuota === 1 ? "pick" : "picks"} left. Use one here and start right away, at no extra cost.</p>

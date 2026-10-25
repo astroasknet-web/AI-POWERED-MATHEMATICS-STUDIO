@@ -5,6 +5,7 @@ import { currentUser } from "@/lib/portal/guard";
 import { safeNext } from "@/lib/portal/security";
 import { PayError } from "@/lib/pay/orders";
 import { pickCourse } from "@/lib/pay/plans";
+import { planRecommended } from "@/lib/pay/plan-recommend";
 import { buyHref, canStudy } from "@/lib/pay/course-access";
 import * as courses from "@/lib/market/courses";
 import * as learning from "@/lib/market/learning";
@@ -33,7 +34,7 @@ export async function courseAction(fd: FormData): Promise<void> {
     case "pick": {
       if (!lessons.isNative(course.slug)) redirect(back); // only courses with lessons on GrowQR can be picked
       try {
-        await pickCourse(me.id, { id: course.id, slug: course.slug });
+        await pickCourse(me.id, { id: course.id, slug: course.slug }, (await planRecommended(me.id)).list.map((x) => x.slug));
         msg = "picked";
       } catch (e) {
         if (!(e instanceof PayError)) throw e;

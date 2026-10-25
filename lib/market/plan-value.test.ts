@@ -15,18 +15,18 @@ const price = (k: "pro" | "silver" | "gold", yearly: boolean) => chargedRupees(p
 describe("value stack arithmetic", () => {
   const s = buildStacks(P);
   it("totals are the sum of the priced lines, with picks at the cheapest course", () => {
-    expect(s.pro.value).toBe(2 * 300 + 800 + 200);
-    expect(s.silver.value).toBe(4 * 300 + 800 + 200 + 700 + 500 + 800); // picks, Vedic, Resume Pro, Maths, 10 of 30 IELTS tests (a third of 1,500), one counselling session
-    expect(s.gold.value).toBe(8 * 300 + 800 + 200 + 700 + 1500 + 500 + (800 + 1500 + 1000 + 2 * 800 + 2500));
+    expect(s.pro.value).toBe(1 * 300 + 800 + 200);
+    expect(s.silver.value).toBe(2 * 300 + 800 + 200 + 700 + 500 + 800); // picks, Vedic, Resume Pro, Maths, 10 of 30 IELTS tests (a third of 1,500), one counselling session
+    expect(s.gold.value).toBe(3 * 300 + 800 + 200 + 700 + 1500 + 500 + (800 + 1500 + 1000 + 2 * 800 + 2500));
     for (const k of ["pro", "silver", "gold"] as const) expect(s[k].lines.reduce((t, l) => t + l.rupees, 0)).toBe(s[k].value);
   });
   it("the 'up to' total swaps only the picks to the dearest course", () => {
-    expect(s.silver.valueMax).toBe(s.silver.value + 4 * 500);
+    expect(s.silver.valueMax).toBe(s.silver.value + 2 * 500);
     expect(buildStacks({ ...P, pickMax: 300 }).silver.valueMax).toBe(buildStacks({ ...P, pickMax: 300 }).silver.value);
   });
   it("counts courses and studios, and every item the plan includes", () => {
-    expect([s.pro.units, s.silver.units, s.gold.units]).toEqual([3, 7, 12]);
-    expect([s.pro.items, s.silver.items, s.gold.items]).toEqual([6, 13, 26]);
+    expect([s.pro.units, s.silver.units, s.gold.units]).toEqual([2, 5, 7]);
+    expect([s.pro.items, s.silver.items, s.gold.items]).toEqual([5, 11, 21]);
   });
   it("unpriced extras never enter the totals", () => {
     expect(s.gold.extras.length).toBeGreaterThan(0);
@@ -45,7 +45,7 @@ describe("saving", () => {
   });
   it("per-course price only appears alongside a real saving", () => {
     const s = buildStacks(P);
-    expect(perUnit(1400, s.silver)).toBe(200);
+    expect(perUnit(1400, s.silver)).toBe(280);
     expect(perUnit(99999, s.gold)).toBeNull(); // costs more than its priced contents
   });
   it("best value is the biggest saving percentage, or none", () => {
@@ -87,12 +87,12 @@ describe("the real catalogue behind the numbers", () => {
   });
   it("course picks in the stack match the plans' real quotas, and the maths studio matches what the plan opens", () => {
     const s = planStacks();
-    expect(PLAN_COURSE_QUOTA).toEqual({ pro: 2, silver: 4, gold: 8 });
+    expect(PLAN_COURSE_QUOTA).toEqual({ pro: 1, silver: 2, gold: 3 });
     expect(PLAN_STUDIOS["mathematics-speed-enhancement"]).toBe("silver");
     expect(s.pro.lines.some((l) => /Mathematics Speed/.test(l.label))).toBe(false);
     expect(s.silver.lines.some((l) => /Mathematics Speed/.test(l.label))).toBe(true);
     expect(s.gold.lines.some((l) => /Mathematics Speed/.test(l.label))).toBe(true);
-    expect(s.silver.lines[0].label).toBe("4 courses of your choice");
+    expect(s.silver.lines[0].label).toBe("2 courses from your recommendations");
     expect(PLAN_SERVICES.gold["expert-shortlist"]).toEqual({ count: 1, per: "year" });
     expect(PLAN_SERVICES.silver["career-counselling"]).toEqual({ count: 1, per: "month" });
     expect(PLAN_SERVICES.pro).toEqual({});
