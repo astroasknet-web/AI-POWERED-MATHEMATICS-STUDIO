@@ -1,7 +1,7 @@
 import { PLANS } from "@/lib/market/plans";
 import { isNative } from "@/lib/market/lessons";
 import catalogue from "@/lib/market/data/courses.json";
-import { COURSE_FEE_RUPEES, EXAM_PRODUCTS, STUDIO_COURSES } from "./course-fees";
+import { COURSE_FEE_RUPEES, EXAM_PRODUCTS, RESUME_STUDIO_PRO_RUPEES, SERVICE_PRODUCTS, STUDIO_COURSES } from "./course-fees";
 import { first, pool, rows, exec, insertId, type Db, type Row } from "./db";
 
 /**
@@ -51,16 +51,17 @@ function seedList(): SeedProduct[] {
     if (!p.annualOnly) out.push({ sku: `plan-${p.key}-monthly`, kind: "plan", title: `${p.name} plan, 1 month`, description: p.tagline, fulfilRef: p.key, accessDays: 30, inrMinor: p.monthly * 100 });
     out.push({ sku: `plan-${p.key}-yearly`, kind: "plan", title: `${p.name} plan, 1 year`, description: p.tagline, fulfilRef: p.key, accessDays: 365, inrMinor: p.yearly * 100 });
   }
-  out.push({ sku: "resume-studio-pro", kind: "resume", title: "Resume Studio Pro", description: "All templates and no waiting between saves.", fulfilRef: "studio_pro", accessDays: null, inrMinor: 19900 });
+  out.push({ sku: "resume-studio-pro", kind: "resume", title: "Resume Studio Pro", description: "All templates and no waiting between saves.", fulfilRef: "studio_pro", accessDays: null, inrMinor: RESUME_STUDIO_PRO_RUPEES * 100 });
   // One product per catalogue course, priced by its category. A course is on sale only when its lessons exist on GrowQR (the others stay
   // off sale, with their price saved, until the lessons are added and someone turns them on in the console).
   const cats = (catalogue as unknown as { categories: Record<string, { name: string }> }).categories;
   for (const c of (catalogue as unknown as { courses: Array<{ slug: string; title: string; cat: string; brief: string }> }).courses) {
     const rupees = COURSE_FEE_RUPEES[cats[c.cat]?.name ?? ""];
-    if (!rupees) continue;
+    if (!rupees || STUDIO_COURSES.some((x) => x.slug === c.slug)) continue; // a course with its own fee in STUDIO_COURSES is added below
     out.push({ sku: `course-${c.slug}`, kind: "course", title: c.title, description: c.brief ?? "", fulfilRef: c.slug, accessDays: null, inrMinor: rupees * 100, active: isNative(c.slug) });
   }
   for (const c of STUDIO_COURSES) out.push({ sku: `course-${c.slug}`, kind: "course", title: c.title, description: c.description, fulfilRef: c.slug, accessDays: null, inrMinor: c.rupees * 100, active: c.onSale });
+  for (const v of SERVICE_PRODUCTS) out.push({ sku: `service-${v.key}`, kind: "consulting", title: v.title, description: v.description, fulfilRef: v.key, accessDays: null, inrMinor: v.rupees * 100 });
   for (const e of EXAM_PRODUCTS) out.push({ sku: e.sku, kind: "other", title: e.title, description: e.description, fulfilRef: e.sku, accessDays: null, inrMinor: e.rupees * 100, active: false });
   return out;
 }

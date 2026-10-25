@@ -14,7 +14,7 @@ export default async function PlanCard({ userId }: { userId: number }) {
   if (!s.plan) {
     return (
       <Card title="Your plan">
-        <p className="text-[15px] text-ink-2"><b>Free</b>. You can read what is in every course. A paid plan includes courses and more: Pro {PLAN_COURSE_QUOTA.pro} course, Silver {PLAN_COURSE_QUOTA.silver}, Gold {PLAN_COURSE_QUOTA.gold}, plus the full Vedic Mathematics course.</p>
+        <p className="text-[15px] text-ink-2"><b>Free</b>. You can read what is in every course. A paid plan includes courses and more: Pro {PLAN_COURSE_QUOTA.pro} courses, Silver {PLAN_COURSE_QUOTA.silver}, Gold {PLAN_COURSE_QUOTA.gold}, plus the full Vedic Mathematics course.</p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link href="/pricing" className="inline-flex min-h-[48px] items-center rounded-lg bg-orange px-5 text-[15px] font-semibold text-white hover:bg-orange-dark">See plans</Link>
           <Link href="/courses" className="inline-flex min-h-[48px] items-center rounded-lg border border-black/[0.15] px-5 text-[15px] font-semibold text-ink hover:bg-cream-2">Browse courses</Link>

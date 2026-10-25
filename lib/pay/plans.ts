@@ -1,20 +1,24 @@
 import { first, pool, rows, exec, txRetry, type Db } from "./db";
 import { PayError } from "./orders";
 import { hasEntitlement } from "./entitlements";
+import { PLAN_COURSE_QUOTA as QUOTA } from "../market/plan-quota";
 
 /**
  * What a student's plan gives them. A plan is an entitlement (Pro, Silver or Gold) bought through checkout; everything below is decided from the
  * plan the student holds right now, so it follows renewals and lapses by itself.
  *
- *   Courses from the plan   Pro 1, Silver 2, Gold 4 (the "recommended courses" of the package). The student picks which; a pick is permanent.
+ *   Courses from the plan   Pro 2, Silver 4, Gold 8 (see lib/market/plan-quota.ts). The student picks which; a pick is permanent.
  *                           If a lower plan is held later, only the earliest picks (up to that plan's number) stay open.
  *   Vedic Mathematics       module 1 is free; the other modules need Pro or higher.
  *   Resume Studio           Pro or higher unlocks the Studio Pro features (see lib/studio/access.ts).
  */
 export type PlanKey = "pro" | "silver" | "gold";
 const RANK: PlanKey[] = ["pro", "silver", "gold"];
-export const PLAN_COURSE_QUOTA: Record<PlanKey, number> = { pro: 1, silver: 2, gold: 4 };
+export const PLAN_COURSE_QUOTA: Record<PlanKey, number> = QUOTA;
 export const PLAN_NAME: Record<PlanKey, string> = { pro: "Pro", silver: "Silver", gold: "Gold" };
+
+/** Studio courses a plan opens outright, by studio slug and the lowest plan that includes it (the pricing page promises the Maths speed studio to Silver and Gold). */
+export const PLAN_STUDIOS: Record<string, PlanKey> = { "mathematics-speed-enhancement": "silver", "ielts-practice-tests": "gold" };
 
 export interface PlanInfo { key: PlanKey; name: string; expiresAt: string | null; courseQuota: number }
 
@@ -32,6 +36,12 @@ export async function planInfo(userId: number, db: Db = pool): Promise<PlanInfo 
 }
 
 export const atLeast = (have: PlanKey | null, need: PlanKey): boolean => have !== null && RANK.indexOf(have) >= RANK.indexOf(need);
+
+/** Whether the plan the student holds right now includes this studio course. */
+export async function studioFromPlan(userId: number, slug: string, db: Db = pool): Promise<boolean> {
+  const need = Object.prototype.hasOwnProperty.call(PLAN_STUDIOS, slug) ? PLAN_STUDIOS[slug] : null;
+  return need !== null && atLeast((await planInfo(userId, db))?.key ?? null, need);
+}
 
 /** Every course the student has picked, in the order picked. */
 export async function pickedSlugs(userId: number, db: Db = pool): Promise<string[]> {

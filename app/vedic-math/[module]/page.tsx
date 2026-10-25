@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { currentUser } from "@/lib/portal/guard";
-import { planInfo } from "@/lib/pay/plans";
+import { hasPurchasedCourse, planInfo } from "@/lib/pay/plans";
+import { buyHref, courseFee } from "@/lib/pay/course-access";
+import { formatMoney } from "@/lib/pay/money";
 import { MarketShell } from "@/components/market/shell";
 import { adjacent, curriculum, moduleHtml, vmodule } from "@/lib/lms/vedic";
 
 type P = { params: Promise<{ module: string }>; searchParams: Promise<{ lang?: string }> };
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]/g, "");
 
-// Module 1 is free; the rest open with a Pro, Silver or Gold plan, so the page is rendered per visitor.
+// Module 1 is free; the rest open with a Pro, Silver or Gold plan, or after buying the course, so the page is rendered per visitor.
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: P): Promise<Metadata> {
@@ -23,7 +25,9 @@ export default async function VedicModule({ params, searchParams }: P) {
   if (!m) notFound();
   const me = await currentUser();
   const plan = me ? await planInfo(me.id) : null;
-  const open = m.num === 1 || plan !== null;
+  const bought = me ? await hasPurchasedCourse(me.id, "vedic-mathematics") : false;
+  const fee = await courseFee("vedic-mathematics").catch(() => null);
+  const open = m.num === 1 || plan !== null || bought;
   const wantHindi = (await searchParams).lang === "hi" && m.hasHindi;
   const lang = wantHindi ? "hi" : "en";
   const body = open ? (moduleHtml(m.slug, lang) ?? moduleHtml(m.slug, "en")) : { html: "", toc: [] as Array<{ id: string; text: string; level: number }> };
@@ -49,9 +53,10 @@ export default async function VedicModule({ params, searchParams }: P) {
           <p className="mt-2 text-ink-3">{m.topics.join(" · ")}</p>
           <p className="mt-1 text-[14px] text-ink-3">Sutra: {m.sutra}</p>
           <div className="mt-6 rounded-xl bg-cream-2 p-5">
-            <p className="font-semibold text-ink">Module 1 is free. The full Vedic Mathematics course (all 30 modules) comes with Pro, Silver and Gold.</p>
+            <p className="font-semibold text-ink">Module 1 is free. The full Vedic Mathematics course (all 30 modules) comes with Pro, Silver and Gold{fee ? `, or you can buy it on its own for ${formatMoney(fee.amountMinor, "INR").replace(/.00$/, "")}` : ""}.</p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <Link href="/pricing" className="inline-flex min-h-[48px] items-center rounded-lg bg-orange-deep px-6 font-semibold text-white hover:bg-ink">See plans</Link>
+              {fee ? <Link href={me ? buyHref("vedic-mathematics") : `/login?next=${encodeURIComponent(buyHref("vedic-mathematics"))}`} className="inline-flex min-h-[48px] items-center rounded-lg bg-orange-deep px-6 font-semibold text-white hover:bg-ink">Buy the course · {formatMoney(fee.amountMinor, "INR").replace(/.00$/, "")}</Link> : null}
+              <Link href="/pricing" className="inline-flex min-h-[48px] items-center rounded-lg border border-black/[0.15] px-6 font-semibold text-ink hover:bg-cream-2">See plans</Link>
               <Link href="/vedic-math/module-1" className="inline-flex min-h-[48px] items-center rounded-lg border border-black/[0.15] px-6 font-semibold text-ink hover:bg-cream-2">Start the free module 1</Link>
               {!me ? <Link href={`/login?next=${encodeURIComponent(`/vedic-math/${m.slug}`)}`} className="inline-flex min-h-[48px] items-center rounded-lg border border-black/[0.15] px-6 font-semibold text-ink hover:bg-cream-2">Log in</Link> : null}
             </div>

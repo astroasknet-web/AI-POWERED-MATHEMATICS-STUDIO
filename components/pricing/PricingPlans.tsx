@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { COMPARE, FAQ, PLANS } from "@/lib/market/plans";
 import { BillingToggle, inr, PlanGrid } from "./PlanCards";
+import type { PaidPlanKey, PlanStack } from "@/lib/market/plan-value";
 
-export default function PricingPlans() {
+export default function PricingPlans({ stacks }: { stacks: Record<PaidPlanKey, PlanStack> }) {
   const [yearly, setYearly] = useState(false);
 
   return (
@@ -22,10 +23,10 @@ export default function PricingPlans() {
         <div className="mt-8"><BillingToggle yearly={yearly} onChange={setYearly} /></div>
       </section>
 
-      <PlanGrid yearly={yearly} />
+      <PlanGrid yearly={yearly} stacks={stacks} />
 
       <p className="mx-auto max-w-[44em] px-5 pb-10 text-center text-[0.85rem] text-ink-4">
-        Early-access prices for students, in Indian rupees. Gold is billed yearly.
+        Early-access prices for students, in Indian rupees. Each price in a package is what that item costs on its own today; items without a price of their own are listed but never counted.
       </p>
 
 
