@@ -33,6 +33,7 @@ export function valuePrices(): ValuePrices {
   return {
     pickMin: Math.min(...fees),
     pickMax: Math.max(...fees),
+    vedicMathematics: studioRupees("vedic-mathematics"),
     resumeStudioPro: RESUME_STUDIO_PRO_RUPEES,
     mathsSpeedStudio: studioRupees("mathematics-speed-enhancement"),
     englishWritingStudio: studioRupees("english-writing-studio"),

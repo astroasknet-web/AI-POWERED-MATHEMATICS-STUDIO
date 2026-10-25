@@ -7,7 +7,7 @@ import { PLAN_COURSE_QUOTA as QUOTA } from "../market/plan-quota";
  * What a student's plan gives them. A plan is an entitlement (Pro, Silver or Gold) bought through checkout; everything below is decided from the
  * plan the student holds right now, so it follows renewals and lapses by itself.
  *
- *   Courses from the plan   Pro 1, Silver 2, Gold 4 (the "recommended courses" of the package). The student picks which; a pick is permanent.
+ *   Courses from the plan   Pro 2, Silver 4, Gold 8 (see lib/market/plan-quota.ts). The student picks which; a pick is permanent.
  *                           If a lower plan is held later, only the earliest picks (up to that plan's number) stay open.
  *   Vedic Mathematics       module 1 is free; the other modules need Pro or higher.
  *   Resume Studio           Pro or higher unlocks the Studio Pro features (see lib/studio/access.ts).

@@ -1,21 +1,30 @@
 import { Check } from "lucide-react";
-import { perUnit, savingFor, type PlanStack } from "@/lib/market/plan-value";
+import { perUnit, savingFor, type PlanStack, type Saving } from "@/lib/market/plan-value";
 
 const rs = (n: number): string => `₹${n.toLocaleString("en-IN")}`;
 
-/** The saving line under a plan's price: shown only when the plan costs less than its priced contents bought one by one. */
-export function SavingBadge({ stack, price }: { stack: PlanStack; price: number }) {
-  const s = savingFor(price, stack.value);
-  if (!s) return null;
+/**
+ * The saving banner under a plan's price. Monthly view: what the plan's priced contents cost one by one against the plan price. Yearly view: what a year
+ * saves against twelve months of paying monthly (a one-time purchase and a year of access are not compared). Shows nothing it cannot back with arithmetic.
+ */
+export function SavingBadge({ stack, price, yearlyBy }: { stack: PlanStack; price: number; yearlyBy?: Saving | null }) {
+  const s = yearlyBy === undefined ? savingFor(price, stack.value) : null;
+  const shown = s ?? yearlyBy ?? null;
   return (
-    <p className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-[0.85rem] leading-snug text-emerald-900">
-      Worth <strong>{rs(stack.value)}</strong> bought one by one. <strong>You save {rs(s.amount)} ({s.percent}%)</strong>
-    </p>
+    <div className="mt-3 rounded-2xl bg-emerald-50 p-3 ring-1 ring-emerald-200">
+      <p className="text-[0.7rem] font-semibold uppercase tracking-wider text-emerald-800">{stack.items} items included{s ? ` · worth ${rs(stack.value)}` : ""}</p>
+      {shown ? (
+        <>
+          <p className="mt-1 text-[1.2rem] font-bold leading-tight text-emerald-900">Save {rs(shown.amount)} <span className="text-[0.95rem]">({shown.percent}%)</span></p>
+          <p className="text-[0.78rem] leading-snug text-emerald-900/80">{s ? "compared with buying each one separately" : "compared with paying monthly for 12 months"}</p>
+        </>
+      ) : null}
+    </div>
   );
 }
 
 /** What the plan includes with each item's own price, the total, and what is included but not priced. */
-export function ValueStack({ stack, price, period, accent }: { stack: PlanStack; price: number; period: string; accent: string }) {
+export function ValueStack({ stack, price, period, accent, compact = false }: { stack: PlanStack; price: number; period: string; accent: string; compact?: boolean }) {
   const s = savingFor(price, stack.value);
   const each = perUnit(price, stack);
   return (
@@ -49,15 +58,33 @@ export function ValueStack({ stack, price, period, accent }: { stack: PlanStack;
       {each ? <p className="mt-2 text-[0.8rem] text-ink-3">Works out to about {rs(each)} per course or studio.</p> : null}
       {s && stack.valueMax > stack.value ? <p className="mt-1 text-[0.8rem] text-ink-3">Worth up to {rs(stack.valueMax)} if you pick the higher-priced courses.</p> : null}
 
-      <p className="mb-2 mt-5 text-[0.82rem] font-semibold text-ink">Also included <span className="font-normal text-ink-4">(not priced, not counted above)</span></p>
-      <ul className="space-y-2">
-        {stack.extras.map((t) => (
-          <li key={t} className="flex gap-2.5 text-[0.85rem] leading-snug text-ink-3">
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-ink-4" aria-hidden />
-            <span>{t}</span>
-          </li>
-        ))}
-      </ul>
+      {compact ? (
+        <details className="mt-5 text-[0.85rem]">
+          <summary className="cursor-pointer font-semibold text-ink">Also included: {stack.extras.length} more items <span className="font-normal text-ink-4">(not priced)</span></summary>
+        <ul className="space-y-2">
+          {stack.extras.map((t) => (
+            <li key={t} className="flex gap-2.5 text-[0.85rem] leading-snug text-ink-3">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-ink-4" aria-hidden />
+              <span>{t}</span>
+            </li>
+          ))}
+        </ul>
+
+        </details>
+      ) : (
+        <>
+          <p className="mb-2 mt-5 text-[0.82rem] font-semibold text-ink">Also included <span className="font-normal text-ink-4">(not priced, not counted above)</span></p>
+        <ul className="space-y-2">
+          {stack.extras.map((t) => (
+            <li key={t} className="flex gap-2.5 text-[0.85rem] leading-snug text-ink-3">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-ink-4" aria-hidden />
+              <span>{t}</span>
+            </li>
+          ))}
+        </ul>
+  
+        </>
+      )}
     </div>
   );
 }

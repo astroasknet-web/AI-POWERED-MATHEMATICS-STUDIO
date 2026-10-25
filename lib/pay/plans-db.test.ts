@@ -8,7 +8,7 @@ describe.skipIf(!DB)("plans: included courses and access", () => {
   let ACC: typeof import("./course-access");
   let STUDIO: typeof import("../studio/access");
   let rzp: InstanceType<typeof import("./test-support").FakeRazorpay>;
-  const slugs = [1, 2, 3, 4, 5].map((n) => `t-plan-course-${n}-${tag}`);
+  const slugs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => `t-plan-course-${n}-${tag}`);
   const ids: number[] = [];
   const proSku = `t-plan-pro-${tag}`;
   const silverSku = `t-plan-silver-${tag}`;
@@ -43,31 +43,32 @@ describe.skipIf(!DB)("plans: included courses and access", () => {
     expect(await STUDIO.isPro(u.id)).toBe(false);
   });
 
-  it("Pro includes one course; using the pick opens that course, adds it to My courses, and a second pick is refused", async () => {
+  it("Pro includes two courses; using a pick opens that course, adds it to My courses, and a third pick is refused", async () => {
     const u = await user("pro1");
     await buy(rzp, u.id, u.email, proSku);
     const info = await PL.planInfo(u.id);
-    expect(info).toMatchObject({ key: "pro", courseQuota: 1 });
+    expect(info).toMatchObject({ key: "pro", courseQuota: 2 });
     expect(await STUDIO.isPro(u.id)).toBe(true); // Studio Pro features come with the plan
     expect(await ACC.accessFor(u.id, slugs[0])).toBeNull();
     expect(await pick(u.id, 0)).toBe("picked");
     expect(await ACC.accessFor(u.id, slugs[0])).toBe("plan");
     expect(await B.db.one("SELECT 1 AS x FROM course_enrolments WHERE user_id = $1 AND course_id = $2", [u.id, ids[0]])).not.toBeNull();
-    await expect(pick(u.id, 1)).rejects.toMatchObject({ code: "no_picks_left" });
-    expect(await ACC.accessFor(u.id, slugs[1])).toBeNull();
+    expect(await pick(u.id, 1)).toBe("picked");
+    await expect(pick(u.id, 2)).rejects.toMatchObject({ code: "no_picks_left" });
+    expect(await ACC.accessFor(u.id, slugs[2])).toBeNull();
     expect(await pick(u.id, 0)).toBe("already"); // repeating is harmless
   });
 
-  it("Silver includes two and Gold four; picks are never more than the plan gives, even when clicked together", async () => {
+  it("Silver includes four and Gold eight; picks are never more than the plan gives, even when clicked together", async () => {
     const s = await user("silver1");
     await buy(rzp, s.id, s.email, silverSku);
-    expect(await Promise.allSettled([pick(s.id, 0), pick(s.id, 1), pick(s.id, 2)]).then((r) => r.filter((x) => x.status === "fulfilled").length)).toBe(2);
-    expect((await PL.planCourses(s.id)).picked.length).toBe(2);
+    expect(await Promise.allSettled([pick(s.id, 0), pick(s.id, 1), pick(s.id, 2), pick(s.id, 3), pick(s.id, 4), pick(s.id, 5)]).then((r) => r.filter((x) => x.status === "fulfilled").length)).toBe(4);
+    expect((await PL.planCourses(s.id)).picked.length).toBe(4);
     const g = await user("gold1");
     await buy(rzp, g.id, g.email, goldSku);
-    for (let i = 0; i < 4; i++) await pick(g.id, i);
-    await expect(pick(g.id, 4)).rejects.toMatchObject({ code: "no_picks_left" });
-    expect((await PL.openPickSlugs(g.id)).length).toBe(4);
+    for (let i = 0; i < 8; i++) await pick(g.id, i);
+    await expect(pick(g.id, 8)).rejects.toMatchObject({ code: "no_picks_left" });
+    expect((await PL.openPickSlugs(g.id)).length).toBe(8);
   });
 
   it("when the plan ends the picked courses lock again but the choice and the progress are kept, and renewing opens them", async () => {
@@ -86,11 +87,11 @@ describe.skipIf(!DB)("plans: included courses and access", () => {
   it("a lower plan keeps only the earliest picks open", async () => {
     const u = await user("down1");
     await buy(rzp, u.id, u.email, goldSku);
-    await pick(u.id, 0); await pick(u.id, 1); await pick(u.id, 2);
+    for (let i = 0; i < 3; i++) await pick(u.id, i);
     await B.db.run("UPDATE pay_entitlements SET expires_at = DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY) WHERE user_id = $1 AND kind = 'plan'", [u.id]);
     await buy(rzp, u.id, u.email, proSku);
-    expect(await PL.openPickSlugs(u.id)).toEqual([slugs[0]]);
-    expect(await ACC.canStudy(u.id, ids[1], slugs[1])).toBe(false);
+    expect(await PL.openPickSlugs(u.id)).toEqual([slugs[0], slugs[1]]); // Pro keeps the first two of the three picked
+    expect(await ACC.canStudy(u.id, ids[2], slugs[2])).toBe(false);
   });
 
   it("a course that was bought stays open without the plan, and needs no pick", async () => {
@@ -99,7 +100,7 @@ describe.skipIf(!DB)("plans: included courses and access", () => {
     expect(await ACC.accessFor(u.id, slugs[3])).toBe("purchase");
     await buy(rzp, u.id, u.email, proSku);
     expect(await pick(u.id, 3)).toBe("already");
-    expect((await PL.planCourses(u.id)).left).toBe(1);
+    expect((await PL.planCourses(u.id)).left).toBe(2);
   });
 
   it("only the highest plan counts when several are held", async () => {

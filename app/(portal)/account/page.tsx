@@ -3,6 +3,9 @@ import Link from "next/link";
 import { isVerified, mfaRequiredFor } from "@/lib/portal/auth";
 import { requireUser } from "@/lib/portal/guard";
 import PlanCard from "@/components/pay/PlanCard";
+import UpgradePlans from "@/components/pay/UpgradePlans";
+import { planInfo } from "@/lib/pay/plans";
+import { planStacks } from "@/lib/pay/plan-value-prices";
 import { Alert } from "@/components/portal/ui";
 import { Card, PortalPage } from "@/components/portal/shell";
 import { ResendVerification } from "@/components/portal/forms";
@@ -40,6 +43,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       ) : null}
 
       {me.role === "student" ? <PlanCard userId={me.id} /> : null}
+      {me.role === "student" && !me.is_demo && (await planInfo(me.id).catch(() => null)) === null ? <UpgradePlans stacks={planStacks()} /> : null}
 
       <Card title="Support">
         {tickets.length ? (

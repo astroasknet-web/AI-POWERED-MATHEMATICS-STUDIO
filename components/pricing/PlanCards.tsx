@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import AddToCart from "@/components/pay/AddToCart";
 import { Check } from "lucide-react";
 import { PLANS, savingPercent } from "@/lib/market/plans";
-import { bestValue, chargedRupees, type PaidPlanKey, type PlanStack } from "@/lib/market/plan-value";
+import { bestValue, chargedRupees, yearlySaving, type PaidPlanKey, type PlanStack } from "@/lib/market/plan-value";
 import { SavingBadge, ValueStack } from "./ValueStack";
 
 export const inr = (n: number): string => (n === 0 ? "₹0" : `₹${n.toLocaleString("en-IN")}`);
@@ -23,7 +23,7 @@ export function BillingToggle({ yearly, onChange }: { yearly: boolean; onChange:
 }
 
 /** The four package cards. Used on the pricing page and the home page. */
-export function PlanGrid({ yearly, headingLevel = 2, stacks }: { yearly: boolean; headingLevel?: 2 | 3; stacks?: Record<PaidPlanKey, PlanStack> }) {
+export function PlanGrid({ yearly, headingLevel = 2, stacks, hideFree = false }: { yearly: boolean; headingLevel?: 2 | 3; stacks?: Record<PaidPlanKey, PlanStack>; hideFree?: boolean }) {
   const H = headingLevel === 2 ? "h2" : "h3";
   // Buy buttons go to checkout only when the server says online payment is switched on; otherwise they keep going to sign-up.
   const [payOn, setPayOn] = useState(false);
@@ -37,8 +37,8 @@ export function PlanGrid({ yearly, headingLevel = 2, stacks }: { yearly: boolean
   const charged = (p: (typeof PLANS)[number]): number => chargedRupees(p, yearly);
   const best = stacks ? bestValue({ pro: charged(PLANS[1]), silver: charged(PLANS[2]), gold: charged(PLANS[3]) }, stacks) : null;
   return (
-    <div className="mx-auto grid max-w-[1180px] gap-5 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4" role="list" aria-label="Packages">
-      {PLANS.map((p) => {
+    <div className={`mx-auto grid max-w-[1180px] gap-5 px-5 py-10 ${hideFree ? "lg:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-4"}`} role="list" aria-label="Packages">
+      {PLANS.filter((p) => !(hideFree && p.key === "free")).map((p) => {
         const showYear = yearly && !p.annualOnly;
         const price = showYear ? p.yearly : p.monthly;
         const per = p.monthly === 0 ? "forever" : showYear ? "per year" : "per month";
@@ -62,7 +62,7 @@ export function PlanGrid({ yearly, headingLevel = 2, stacks }: { yearly: boolean
               {p.annualOnly ? `Billed yearly: ${inr(p.yearly)} · annual plan only` : perMonth ? `Just ${inr(perMonth)} a month · save ${savingPercent(p)}%` : p.monthly === 0 ? "No card needed" : ""}
             </p>
 
-            {stack ? <SavingBadge stack={stack} price={charged(p)} /> : null}
+            {stack ? <SavingBadge stack={stack} price={charged(p)} yearlyBy={yearly ? yearlySaving(p) : undefined} /> : null}
 
             <Link
               href={p.key === "free" ? "/signup" : payOn ? `/checkout?sku=plan-${p.key}-${showYear || p.annualOnly ? "yearly" : "monthly"}` : `/signup?plan=${p.key}`}
@@ -72,7 +72,7 @@ export function PlanGrid({ yearly, headingLevel = 2, stacks }: { yearly: boolean
             </Link>
             {p.key !== "free" ? <AddToCart sku={`plan-${p.key}-${showYear || p.annualOnly ? "yearly" : "monthly"}`} compact className="mt-2 w-full" /> : null}
 
-            {stack ? <ValueStack stack={stack} price={charged(p)} period={showYear || p.annualOnly ? "1 year" : "1 month"} accent={p.accent} /> : (
+            {stack ? <ValueStack stack={stack} price={charged(p)} period={showYear || p.annualOnly ? "1 year" : "1 month"} accent={p.accent} compact={hideFree} /> : (
             <div className="mt-6 border-t border-black/[0.07] pt-5">
               <p className="mb-3 text-[0.82rem] font-semibold text-ink">{p.inherits ?? "Includes"}</p>
               <ul className="space-y-2.5">
