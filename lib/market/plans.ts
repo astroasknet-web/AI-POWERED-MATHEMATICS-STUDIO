@@ -33,7 +33,7 @@ export const PLANS: Plan[] = [
   {
     key: "pro", name: "Pro", tagline: "Everything you need to prepare and apply.", monthly: 399, yearly: 3199, accent: "#4f46e5", cta: "Get Pro", inherits: "Everything in Free, plus",
     features: [
-      { text: "Complete Vedic Mathematics course, worth ₹999" },
+      { text: "Complete Vedic Mathematics course, worth ₹799" },
       { text: "Resume Studio: 10 templates, 3 resumes, no waiting between saves" },
       { text: "Resume scan and score check" },
       { text: "1 AI resume score check a month" },
