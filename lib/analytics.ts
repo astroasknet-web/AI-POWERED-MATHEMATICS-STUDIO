@@ -269,3 +269,14 @@ export function trackCatalog(name: CatalogEvent, params: Record<string, string |
   for (const [k, v] of Object.entries(params)) clean[k] = typeof v === "string" ? v.slice(0, 80) : v;
   trackEvent(name, clean);
 }
+
+// ── Navigation ─────────────────────────────────────────────
+
+export type NavEvent = "nav_menu_open" | "nav_link_click" | "nav_search_open" | "nav_search_select" | "nav_cta_click" | "nav_mobile_open";
+
+/** Header and menu interactions, through the same GA4 gate as every other event: only the menu and link the visitor chose, never who they are. */
+export function trackNav(name: NavEvent, params: Record<string, string> = {}): void {
+  const clean: Record<string, string> = {};
+  for (const [k, v] of Object.entries(params)) clean[k] = v.slice(0, 80);
+  trackEvent(name, clean);
+}
