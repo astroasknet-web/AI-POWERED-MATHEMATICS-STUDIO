@@ -30,9 +30,13 @@ export interface Course {
   cat_name: string; c1: string; c2: string; learn: string[]; tag_list: string[];
   /** The course fee in paise (rupees x 100), from the payment catalogue; null when no fee is set. Shown on cards and pages whether or not the course can be bought yet. */
   fee_minor: number | null;
+  /** What a student can pay today, in paise: null unless the course is on sale. Cards show this, never the price of a course that cannot be bought yet. */
+  price_minor: number | null;
 }
 
-const SELECT = "SELECT c.*, cc.name AS cat_name, cc.c1, cc.c2, (SELECT pr.amount_minor FROM pay_products pp JOIN pay_prices pr ON pr.product_id = pp.id AND pr.currency = 'INR' AND pr.active = 1 WHERE pp.sku = CONCAT('course-', c.slug) LIMIT 1) AS fee_minor FROM courses c JOIN course_categories cc ON cc.key_name = c.category";
+/** The price someone can pay right now (product on sale, active INR price), in paise; null when the course is not for sale. */
+export const SALE_MINOR = "(SELECT pr.amount_minor FROM pay_products pp JOIN pay_prices pr ON pr.product_id = pp.id AND pr.currency = 'INR' AND pr.active = 1 WHERE pp.sku = CONCAT('course-', c.slug) AND pp.active = 1 LIMIT 1)";
+export const SELECT = "SELECT c.*, cc.name AS cat_name, cc.c1, cc.c2, " + SALE_MINOR + " AS sale_minor, (SELECT pr.amount_minor FROM pay_products pp JOIN pay_prices pr ON pr.product_id = pp.id AND pr.currency = 'INR' AND pr.active = 1 WHERE pp.sku = CONCAT('course-', c.slug) LIMIT 1) AS fee_minor FROM courses c JOIN course_categories cc ON cc.key_name = c.category";
 
 /**
  * Courses taught outside the lesson player (Vedic Mathematics lives at /vedic-math: 30 modules, module 1 free, the rest with a plan). Their catalogue
@@ -42,7 +46,7 @@ const PLAN_TAUGHT: Record<string, Partial<Course>> = {
   "vedic-mathematics": { modules: 30, hours: "About 150 to 180 hrs", hours_num: 150, weeks: "", pace: "Self-paced" },
 };
 
-function map(r: Record<string, unknown>): Course {
+export function map(r: Record<string, unknown>): Course {
   let learn: string[] = [];
   try {
     const v = JSON.parse(String(r.learn_json ?? "[]"));
@@ -52,7 +56,7 @@ function map(r: Record<string, unknown>): Course {
   }
   const tags = String(r.tags ?? "");
   const { learn_json: _l, ...rest } = r;
-  const course = { ...(rest as object), learn, tag_list: tags === "" ? [] : tags.split(","), hours_num: Number(r.hours_num), modules: Number(r.modules), fee_minor: r.fee_minor === null || r.fee_minor === undefined ? null : Number(r.fee_minor) } as Course;
+  const course = { ...(rest as object), learn, tag_list: tags === "" ? [] : tags.split(","), hours_num: Number(r.hours_num), modules: Number(r.modules), fee_minor: r.fee_minor === null || r.fee_minor === undefined ? null : Number(r.fee_minor), price_minor: r.sale_minor === null || r.sale_minor === undefined ? null : Number(r.sale_minor) } as Course;
   return Object.prototype.hasOwnProperty.call(PLAN_TAUGHT, course.slug) ? { ...course, ...PLAN_TAUGHT[course.slug] } : course;
 }
 
