@@ -15,6 +15,7 @@ import { trackNav } from "@/lib/analytics";
 import { ACCOUNT_LINKS, MENUS, type NavLink, type NavMenu } from "./nav-data";
 import { Group, Row, focusRing, isCurrent, useFocusTrap, useOutside, ICONS } from "./NavParts";
 import NavSearch from "./NavSearch";
+import NavSearchBar from "./NavSearchBar";
 
 /** Panel widths: wide enough for their columns, never wider than the screen. */
 const PANEL_W: Record<NavMenu["id"], string> = { learn: "min(1120px, calc(100vw - 32px))", careers: "min(1060px, calc(100vw - 32px))", abroad: "min(1000px, calc(100vw - 32px))", resources: "min(700px, calc(100vw - 32px))", solutions: "min(1000px, calc(100vw - 32px))" };
@@ -116,7 +117,7 @@ export default function HomeNav() {
   useEffect(() => { setOpen(null); setDrawer(false); }, [pathname]);
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setSearch((p) => { if (!p) trackNav("nav_search_open", { via: "keyboard" }); return !p; }); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); const bar = document.getElementById("nav-search-input"); if (bar && bar.offsetParent !== null) { bar.focus(); return; } setSearch((p) => { if (!p) trackNav("nav_search_open", { via: "keyboard" }); return !p; }); }
       if (e.key === "Escape") { setDrawer(false); setOpen((o) => { if (o) triggers.current[o]?.focus(); return null; }); }
     };
     window.addEventListener("keydown", k);
@@ -140,7 +141,7 @@ export default function HomeNav() {
         <div className={`mx-auto px-3 transition-[padding] duration-200 md:px-6 ${scrolled ? "pt-2" : "pt-3"}`}>
           <nav ref={navRef} aria-label="Primary" onKeyDown={(e) => { if (e.key === "Escape" && open) { const id = open; setOpen(null); triggers.current[id]?.focus(); } }}
             onBlur={(e) => { if (open && !navRef.current?.contains(e.relatedTarget as Node)) setOpen(null); }}
-            className={`relative mx-auto flex h-[60px] max-w-[1320px] items-center gap-2 rounded-[22px] border px-3 transition-[background-color,box-shadow,border-color] duration-200 md:h-[64px] md:px-4 ${scrolled || open || drawer ? "border-black/[0.08] bg-white/95 shadow-[0_10px_40px_-18px_rgba(26,26,26,0.35)] backdrop-blur-xl" : "border-transparent bg-white/70 backdrop-blur-md"}`}>
+            className={`relative mx-auto flex h-[60px] max-w-[1440px] items-center gap-2 2xl:max-w-[1560px] rounded-[22px] border px-3 transition-[background-color,box-shadow,border-color] duration-200 md:h-[64px] md:px-4 ${scrolled || open || drawer ? "border-black/[0.08] bg-white/95 shadow-[0_10px_40px_-18px_rgba(26,26,26,0.35)] backdrop-blur-xl" : "border-transparent bg-white/70 backdrop-blur-md"}`}>
             <Link href="/" aria-label="GrowQR home" className={`mr-1 flex shrink-0 items-center rounded-lg md:mr-4 ${focusRing}`}><Image src="/growqr-logo.png" alt="GrowQR" width={400} height={200} priority className="h-[32px] w-auto select-none md:h-[36px]" /></Link>
 
             <ul className="hidden items-center gap-0.5 lg:flex">
@@ -164,8 +165,10 @@ export default function HomeNav() {
               })}
             </ul>
 
+            <NavSearchBar />
+
             <div className="ml-auto flex items-center gap-1.5 md:gap-2">
-              <button type="button" onClick={() => openSearch("button")} aria-label="Search the site" className={`hidden min-h-[44px] items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 text-[0.84rem] text-ink-3 transition hover:bg-white md:inline-flex ${focusRing}`}>
+              <button type="button" onClick={() => openSearch("button")} aria-label="Search the site" className={`hidden min-h-[44px] items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 text-[0.84rem] text-ink-3 transition hover:bg-white md:inline-flex min-[1360px]:hidden ${focusRing}`}>
                 <Search className="h-4 w-4" aria-hidden /><span className="hidden xl:inline">Search</span><kbd className="ml-1 hidden items-center rounded-md border border-black/10 bg-white px-1.5 py-0.5 text-[0.66rem] font-semibold xl:inline-flex">Ctrl K</kbd>
               </button>
               <button type="button" onClick={() => openSearch("icon")} aria-label="Search the site" className={`grid h-11 w-11 place-items-center rounded-full border border-black/10 bg-white/70 md:hidden ${focusRing}`}><Search className="h-[18px] w-[18px]" aria-hidden /></button>

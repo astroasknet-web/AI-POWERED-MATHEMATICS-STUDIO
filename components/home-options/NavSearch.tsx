@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, BookOpen, Search } from "lucide-react";
-import { INDEX, type Hit } from "./nav-data";
+import type { Hit } from "./nav-data";
 import { ICONS, focusRing, useFocusTrap, useUid } from "./NavParts";
 import { trackNav } from "@/lib/analytics";
+import { matchPages, popularHits, relatedTerms, useCourseHits } from "./nav-suggest";
 
 interface CourseHit { slug: string; title: string; cat_name: string }
 
@@ -18,38 +19,19 @@ export default function NavSearch({ open, onClose }: { open: boolean; onClose: (
   const id = useUid("nsearch");
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
-  const [courses, setCourses] = useState<CourseHit[]>([]);
-  const [busy, setBusy] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const list = useRef<HTMLUListElement>(null);
-  const seq = useRef(0);
   useFocusTrap(box, open);
 
-  useEffect(() => { if (open) { setQ(""); setSel(0); setCourses([]); } }, [open]);
-  useEffect(() => {
-    const phrase = q.trim();
-    if (!open || phrase.length < 2) { setCourses([]); setBusy(false); return; }
-    const mine = ++seq.current;
-    const ctl = new AbortController();
-    setBusy(true);
-    const t = setTimeout(async () => {
-      try {
-        const r = await fetch(`/api/courses/suggest?q=${encodeURIComponent(phrase)}`, { signal: ctl.signal });
-        const j = (await r.json()) as Array<{ slug: string; title: string; cat_name: string }>;
-        if (mine === seq.current) setCourses(Array.isArray(j) ? j.slice(0, 5) : []);
-      } catch { /* aborted or offline */ }
-      if (mine === seq.current) setBusy(false);
-    }, 180);
-    return () => { clearTimeout(t); ctl.abort(); };
-  }, [q, open]);
+  useEffect(() => { if (open) { setQ(""); setSel(0); } }, [open]);
+  const { courses, busy } = useCourseHits(q, open);
 
   const hits: Hit[] & { matched?: number } = useMemo(() => {
     const s = q.trim().toLowerCase();
-    const pages = s
-      ? INDEX.filter((h) => `${h.label} ${h.sub} ${h.group}`.toLowerCase().includes(s)).slice(0, 6)
-      : INDEX.filter((h) => ["Courses", "All courses", "QR Score", "Internships", "Find universities", "Practice tests", "Pricing"].includes(h.label));
+    const pages = s ? matchPages(q, 6) : popularHits();
     const cs: Hit[] = courses.map((c) => ({ label: c.title, sub: c.cat_name, href: `/courses/${c.slug}`, group: "Course", icon: "book" }));
-    const all: Hit[] = s ? [...cs, ...pages] : pages;
+    const terms: Hit[] = s ? relatedTerms(q, 3).map((w) => ({ label: w, sub: "Related search", href: `/courses?q=${encodeURIComponent(w)}`, group: "Search", icon: "spark" })) : [];
+    const all: Hit[] = s ? [...cs, ...pages, ...terms] : pages;
     const matched = all.length;
     if (s.length >= 2) all.push({ label: `Search all courses for “${q.trim()}”`, sub: "Open the catalogue with filters", href: `/courses?q=${encodeURIComponent(q.trim())}`, group: "Course", icon: "book" });
     return Object.assign(all, { matched });
