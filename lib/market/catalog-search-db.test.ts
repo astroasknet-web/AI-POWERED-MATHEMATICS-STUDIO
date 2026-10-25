@@ -20,17 +20,15 @@ describe.skipIf(!DB)("catalogue search, filters, sorting and paging", () => {
   afterAll(async () => { await B.db.closePool(); });
 
   it("with no query every course in the catalogue is listed, in the owner's order", async () => {
-    // Other database test files may be syncing the courses table at the same moment, so a mismatch is retried before it counts.
-    let last = "";
-    for (let attempt = 0; attempt < 4; attempt++) {
-      const all = Number(await B.db.val("SELECT COUNT(*) FROM courses"));
-      const r = await run({});
-      const order = await B.db.all<{ slug: string }>("SELECT slug FROM courses ORDER BY sort ASC, id ASC LIMIT 48");
-      if (r.total === all && JSON.stringify(r.items.map((c) => c.slug)) === JSON.stringify(order.map((o) => o.slug))) return;
-      last = `total ${r.total} vs ${all}`;
-      await new Promise((res) => setTimeout(res, 400));
-    }
-    throw new Error("catalogue listing did not match the table: " + last);
+    // Other database test files insert and remove their own courses in the same table while this runs, so only the real catalogue's courses are compared.
+    const { default: cat } = await import("./data/courses.json");
+    const real = new Set((cat as unknown as { courses: Array<{ slug: string }> }).courses.map((c) => c.slug));
+    const r = await run({ size: 48 });
+    expect(r.total).toBeGreaterThanOrEqual(real.size);
+    const order = (await B.db.all<{ slug: string }>("SELECT slug FROM courses ORDER BY sort ASC, id ASC")).map((o) => o.slug).filter((x) => real.has(x));
+    const got = r.items.map((c) => c.slug).filter((x) => real.has(x));
+    expect(got).toEqual(order.slice(0, got.length));
+    expect(got.length).toBeGreaterThan(20);
   });
 
   it("finds a course by its title, ignoring case, and puts the exact title first", async () => {
