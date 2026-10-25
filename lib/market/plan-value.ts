@@ -76,8 +76,8 @@ export function buildStacks(p: ValuePrices): Record<PaidPlanKey, PlanStack> {
   const make = (key: PaidPlanKey): PlanStack => {
     const picks = PLAN_COURSE_QUOTA[key];
     const pickLine: StackLine = {
-      label: `${plural(picks, "course", "courses")} of your choice`,
-      detail: p.pickMax > p.pickMin ? `Courses cost ${rs(p.pickMin)} to ${rs(p.pickMax)} each. Counted at ${rs(p.pickMin)}.` : `${rs(p.pickMin)} each`,
+      label: `${plural(picks, "course", "courses")} from your recommendations`,
+      detail: `Chosen from the courses recommended after your resume scan. ${p.pickMax > p.pickMin ? `Courses cost ${rs(p.pickMin)} to ${rs(p.pickMax)} each. Counted at ${rs(p.pickMin)}.` : `${rs(p.pickMin)} each.`}`,
       rupees: picks * p.pickMin,
     };
     const lines: StackLine[] = [pickLine, { label: "Vedic Mathematics, complete course", detail: "30 modules in English and Hindi", rupees: p.vedicMathematics }, { label: "Resume Studio Pro", detail: "All templates, no waiting between saves", rupees: p.resumeStudioPro }];
