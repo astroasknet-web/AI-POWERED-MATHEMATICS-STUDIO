@@ -29,6 +29,7 @@ export const CAREERS_OPPS: NavLink[] = [
 export const CAREERS_LEARN: NavLink[] = [
   { label: "Courses", desc: "121 courses across 19 fields", href: "/courses", icon: "book", },
   { label: "Maths Speed Studio", desc: "15 levels of faster, more accurate calculation", href: "/math-speed", icon: "spark", badge: "₹699" },
+  { label: "Vedic Mathematics", desc: "30 modules of mental-maths shortcuts, in English and Hindi", href: "/vedic-math", icon: "book", badge: "Module 1 free" },
   { label: "English Writing Studio", desc: "IELTS, SAT, GRE and GMAT writing, scored instantly", href: "/writing-clinic", icon: "studio", badge: "₹499" },
   { label: "Practice tests", desc: "IELTS and GRE, marked instantly", href: "/practice-tests", icon: "tracker", },
   { label: "Exam prep", desc: "JEE, NEET, UPSC, SSC, CAT, SAT, GRE, IELTS", href: "/exam-prep", icon: "path" },
