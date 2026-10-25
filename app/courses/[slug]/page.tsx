@@ -10,6 +10,7 @@ import AddToCart from "@/components/pay/AddToCart";
 import { planCourses } from "@/lib/pay/plans";
 import { buyHref, canStudy, courseFee, courseSku } from "@/lib/pay/course-access";
 import { planRecommended } from "@/lib/pay/plan-recommend";
+import { hasThumb, thumbFull, thumbSmall } from "@/lib/market/thumbs";
 import { formatMoney } from "@/lib/pay/money";
 import * as lessons from "@/lib/market/lessons";
 import { JobCard } from "@/components/market/job-card";
@@ -33,11 +34,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const rich = lessons.nativeCourse(c.slug);
   const landing = rich ? landingMetadata(rich, c.slug) : null;
   if (landing) return landing; // university programme courses carry their own SEO block
+  const image = hasThumb(c.slug) ? [{ url: `${SITE_URL}${thumbFull(c.slug)}`, width: 1920, height: 1080, alt: `${c.title} course` }] : undefined;
   return {
     title: `${c.title} Course | GrowQR`,
     description: Array.from(`${c.brief} ${c.hours}, ${c.modules} modules, certificate and badge.`).slice(0, 155).join(""),
     alternates: { canonical: `${SITE_URL}/courses/${c.slug}` },
     robots: { index: true, follow: true },
+    ...(image ? { openGraph: { title: `${c.title} Course | GrowQR`, url: `${SITE_URL}/courses/${c.slug}`, type: "website" as const, images: image }, twitter: { card: "summary_large_image" as const, images: [image[0].url] } } : {}),
   };
 }
 
@@ -78,7 +81,7 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
   const jsonld = rich?.landing ? landingJsonLd(rich, course.slug, course) : {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "Course", name: course.title, description: course.brief, url: `${SITE_URL}${self}`, educationalLevel: course.level_label, timeRequired: course.hours, inLanguage: "en", provider: { "@type": "Organization", name: "GrowQR", sameAs: SITE_URL } },
+      { "@type": "Course", ...(hasThumb(course.slug) ? { image: `${SITE_URL}${thumbFull(course.slug)}` } : {}), name: course.title, description: course.brief, url: `${SITE_URL}${self}`, educationalLevel: course.level_label, timeRequired: course.hours, inLanguage: "en", provider: { "@type": "Organization", name: "GrowQR", sameAs: SITE_URL } },
       { "@type": "BreadcrumbList", itemListElement: [
         { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
         { "@type": "ListItem", position: 2, name: "Courses", item: `${SITE_URL}/courses` },
@@ -93,7 +96,12 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
     <MarketShell user={me} active="courses">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonld) }} />
       <nav aria-label="Breadcrumb" className="text-[13px] text-ink-3 mb-4"><Link href="/" className="underline">Home</Link> / <Link href="/courses" className="underline">Courses</Link> / <Link href={`/courses?cat=${course.category}`} className="underline">{course.cat_name}</Link></nav>
-      <Cover c={course} />
+      {hasThumb(course.slug) ? (
+        <div className="mx-auto w-full max-w-[880px] overflow-hidden rounded-2xl bg-cream-3 ring-1 ring-black/10">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={thumbFull(course.slug)} srcSet={`${thumbSmall(course.slug)} 640w, ${thumbFull(course.slug)} 1920w`} sizes="(min-width: 960px) 880px, 100vw" width={1920} height={1080} alt={`${course.title} course thumbnail`} fetchPriority="high" decoding="async" className="block h-auto w-full" />
+        </div>
+      ) : <Cover c={course} />}
       <h1 className="text-[26px] sm:text-[32px] font-bold text-ink tracking-tight leading-tight mt-4">{course.title}</h1>
       <p className="text-[16px] text-ink-3 mt-1 max-w-3xl">{course.brief}</p>
       <ul className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-5">

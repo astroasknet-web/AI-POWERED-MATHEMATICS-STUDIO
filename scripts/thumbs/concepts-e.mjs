@@ -1,0 +1,21 @@
+/** Creative plan, part E: the 18 Blockchain & Web3 courses. */
+export const CE = {
+  "intro-blockchain-web3": { pal: "midnight", layout: "C", bg: "grid", scale: 1.35, concept: "Three numbered blocks chained together under a globe, with link and community chips: the web becomes a shared ledger." },
+  "blockchain-blocks-hashing-consensus": { pal: "teal", layout: "L", bg: "dots", concept: "Two linked blocks with a hash string, a hexagon SHA badge and a consensus vote panel." },
+  "cryptocurrency-digital-assets-fundamentals": { pal: "plum", layout: "L", bg: "orbs", concept: "Bitcoin and Ether coins, a price chart and a wallet card." },
+  "blockchain-architecture-networks": { pal: "indigocy", layout: "R", bg: "grid", concept: "A peer-to-peer mesh of nodes around a central block." },
+  "ethereum-smart-contracts": { pal: "royal", layout: "L", bg: "rings", concept: "A large Ethereum diamond beside a contract code window and a contract tag." },
+  "solidity-programming-beginners": { pal: "graphite", layout: "R", bg: "grid", concept: "A Token.sol editor with a short Hello contract and a stacked Solidity gem." },
+  "build-first-blockchain-dapp": { pal: "sunsetmg", layout: "L", bg: "dots", concept: "A phone dApp with a Connect button between a wallet card and a transaction block." },
+  "advanced-solidity-development": { pal: "inkviolet", layout: "R", bg: "diagonal", concept: "A Vault.sol editor beside a vault panel with an Ethereum mark and a gas, storage and proxy tag." },
+  "smart-contract-security-auditing": { pal: "crimson", layout: "L", bg: "grid", concept: "Code with a flagged line, a verified shield and a magnifier: finding bugs before attackers do." },
+  "token-development-erc-standards": { pal: "navylime", layout: "L", bg: "stripes", concept: "A fungible coin, an NFT card and the ERC-20, ERC-721 and ERC-1155 labels." },
+  "nfts-decentralized-applications": { pal: "berry", layout: "L", bg: "orbs", concept: "Three tilted collectible artworks above a wallet and Mint bar." },
+  "web3-development-javascript-nodejs": { pal: "slatesky", layout: "R", bg: "dots", concept: "A JS tile, a Node hexagon and an Ethereum tile above an app.js editor." },
+  "blockchain-php-nodejs": { pal: "paperblue", layout: "L", bg: "grid", concept: "PHP and Node marks feeding a server and database around a block of the chain." },
+  "production-ready-web3-apps": { pal: "ocean", layout: "L", bg: "rings", concept: "A launching rocket in the middle of four panels for monitoring, security, tests and chain." },
+  "blockchain-5-real-world-projects": { pal: "ember", layout: "L", bg: "diagonal", concept: "Five numbered project discs orbiting a central five badge: supply, certificates, charity, payments and community." },
+  "blockchain-enterprise-architecture": { pal: "steel", layout: "R", bg: "grid", concept: "Three organisations around a shared permissioned ledger, with access, identity and layer chips." },
+  "blockchain-defi": { pal: "forest", layout: "L", bg: "orbs", concept: "A bank facade with pillars, coin flows and an APY donut: lend, swap and stake." },
+  "blockchain-capstone-project": { pal: "onyxgreen", layout: "L", bg: "stripes", concept: "A three-block capstone dashboard with a SHIPPED banner, a rocket and a graduation chip." },
+};

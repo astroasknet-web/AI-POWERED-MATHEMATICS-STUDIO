@@ -1,6 +1,4 @@
-import type { Course } from "./courses";
-
-/** What a catalogue card needs, as plain data: it goes through the search API and into the browser, so it carries nothing private. */
+/** What a catalogue card needs (this file is safe to import in the browser; the server-only toCard is in catalog-card-server.ts), as plain data: it goes through the search API and into the browser, so it carries nothing private. */
 export interface CardCourse {
   slug: string;
   title: string;
@@ -17,12 +15,9 @@ export interface CardCourse {
   price_minor: number | null;
   /** Lessons are on GrowQR now. */
   here: boolean;
+  /** A drawn thumbnail exists for this course (public/course-thumbs). */
+  thumb: boolean;
 }
-
-export const toCard = (c: Course, here: boolean): CardCourse => ({
-  slug: c.slug, title: c.title, brief: c.brief ?? "", cat_name: c.cat_name, c1: c.c1, c2: c.c2, icon: c.icon, level_label: c.level_label,
-  badge: c.badge, hours: c.hours, modules: c.modules, price_minor: here ? c.price_minor : null, here,
-});
 
 export interface CourseProgress { status: "enrolled" | "in_progress" | "completed"; progress: number }
 
