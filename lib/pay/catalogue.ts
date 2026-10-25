@@ -1,7 +1,7 @@
 import { PLANS } from "@/lib/market/plans";
 import { isNative } from "@/lib/market/lessons";
 import catalogue from "@/lib/market/data/courses.json";
-import { COURSE_FEE_RUPEES, EXAM_PRODUCTS, STUDIO_COURSES } from "./course-fees";
+import { COURSE_FEE_RUPEES, EXAM_PRODUCTS, RESUME_STUDIO_PRO_RUPEES, STUDIO_COURSES } from "./course-fees";
 import { first, pool, rows, exec, insertId, type Db, type Row } from "./db";
 
 /**
@@ -51,7 +51,7 @@ function seedList(): SeedProduct[] {
     if (!p.annualOnly) out.push({ sku: `plan-${p.key}-monthly`, kind: "plan", title: `${p.name} plan, 1 month`, description: p.tagline, fulfilRef: p.key, accessDays: 30, inrMinor: p.monthly * 100 });
     out.push({ sku: `plan-${p.key}-yearly`, kind: "plan", title: `${p.name} plan, 1 year`, description: p.tagline, fulfilRef: p.key, accessDays: 365, inrMinor: p.yearly * 100 });
   }
-  out.push({ sku: "resume-studio-pro", kind: "resume", title: "Resume Studio Pro", description: "All templates and no waiting between saves.", fulfilRef: "studio_pro", accessDays: null, inrMinor: 19900 });
+  out.push({ sku: "resume-studio-pro", kind: "resume", title: "Resume Studio Pro", description: "All templates and no waiting between saves.", fulfilRef: "studio_pro", accessDays: null, inrMinor: RESUME_STUDIO_PRO_RUPEES * 100 });
   // One product per catalogue course, priced by its category. A course is on sale only when its lessons exist on GrowQR (the others stay
   // off sale, with their price saved, until the lessons are added and someone turns them on in the console).
   const cats = (catalogue as unknown as { categories: Record<string, { name: string }> }).categories;

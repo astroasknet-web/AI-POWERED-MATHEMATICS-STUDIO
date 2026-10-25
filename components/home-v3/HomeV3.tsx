@@ -4,6 +4,7 @@ import HomePlans from "@/components/home/HomePlans";
 import PartnerStrip from "@/components/home/PartnerStrip";
 import FAQ from "@/components/home/FAQ";
 import { EnterpriseContactProvider } from "@/components/enterprise/EnterpriseContactModal";
+import { planStacks } from "@/lib/pay/plan-value-prices";
 import { all as allTemplates } from "@/lib/studio/templates";
 import Reveal from "./Reveal";
 import Hero from "./Hero";
@@ -27,7 +28,7 @@ export default function HomeV3() {
           <Reveal className="overflow-x-clip">
             <Hero />
             <Pillars />
-            <HomePlans />
+            <HomePlans stacks={planStacks()} />
             <Discovery />
             <ResumeShowcase templateCount={templateCount} />
             <Abroad />

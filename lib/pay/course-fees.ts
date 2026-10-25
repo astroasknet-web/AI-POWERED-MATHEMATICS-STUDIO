@@ -57,3 +57,6 @@ export const STUDIO_COURSES: Array<{ slug: string; title: string; description: s
     onSale: true,
   },
 ];
+
+/** Resume Studio Pro, sold on its own once (sku `resume-studio-pro`) and opened by any paid plan while it is active. */
+export const RESUME_STUDIO_PRO_RUPEES = 199;

@@ -108,4 +108,19 @@ describe.skipIf(!DB)("plans: included courses and access", () => {
     await buy(rzp, u.id, u.email, goldSku);
     expect((await PL.planInfo(u.id))?.key).toBe("gold");
   });
+
+  it("the Maths Speed Enhancement Studio is open to Silver and Gold, not to Free or Pro, and a lapsed plan closes it again", async () => {
+    const slug = "mathematics-speed-enhancement";
+    if (!(await B.db.one("SELECT 1 AS x FROM pay_products WHERE sku = $1", [`course-${slug}`]))) await mkProduct(B.db, `course-${slug}`, "course", slug, 69900, null, { days: null });
+    const free = await user("ms-free"); const pro = await user("ms-pro"); const silver = await user("ms-silver"); const gold = await user("ms-gold");
+    await buy(rzp, pro.id, pro.email, proSku); await buy(rzp, silver.id, silver.email, silverSku); await buy(rzp, gold.id, gold.email, goldSku);
+    expect(await ACC.accessFor(free.id, slug)).toBeNull();
+    expect(await ACC.accessFor(pro.id, slug)).toBeNull();
+    expect(await ACC.accessFor(silver.id, slug)).toBe("plan");
+    expect(await ACC.accessFor(gold.id, slug)).toBe("plan");
+    expect(await ACC.accessFor(null, slug)).toBeNull();
+    await B.db.run("UPDATE pay_entitlements SET expires_at = DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY) WHERE user_id = $1 AND kind = 'plan'", [silver.id]);
+    expect(await ACC.accessFor(silver.id, slug)).toBeNull();
+    expect(await ACC.accessFor(silver.id, "some-other-studio-slug")).toBe("free"); // no product, so not gated: the plan rule does not touch other courses
+  });
 });

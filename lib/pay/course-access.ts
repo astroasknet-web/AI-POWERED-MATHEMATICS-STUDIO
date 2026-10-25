@@ -1,6 +1,6 @@
 import { first, pool, type Db } from "./db";
 import { hasEntitlement } from "./entitlements";
-import { openPickSlugs } from "./plans";
+import { openPickSlugs, studioFromPlan } from "./plans";
 
 /**
  * Who may study a course. Every course with a fee is paid: the lessons open only for a student who bought the course, or who has used one of
@@ -31,6 +31,7 @@ export async function accessFor(userId: number | null, slug: string, db: Db = po
   if (userId === null) return null;
   if (await hasEntitlement(userId, "course", slug, db)) return "purchase";
   if ((await openPickSlugs(userId, db)).includes(slug)) return "plan";
+  if (await studioFromPlan(userId, slug, db)) return "plan"; // a studio the plan includes (Maths speed studio: Silver and Gold)
   return null;
 }
 

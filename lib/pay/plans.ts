@@ -1,6 +1,7 @@
 import { first, pool, rows, exec, txRetry, type Db } from "./db";
 import { PayError } from "./orders";
 import { hasEntitlement } from "./entitlements";
+import { PLAN_COURSE_QUOTA as QUOTA } from "../market/plan-quota";
 
 /**
  * What a student's plan gives them. A plan is an entitlement (Pro, Silver or Gold) bought through checkout; everything below is decided from the
@@ -13,8 +14,11 @@ import { hasEntitlement } from "./entitlements";
  */
 export type PlanKey = "pro" | "silver" | "gold";
 const RANK: PlanKey[] = ["pro", "silver", "gold"];
-export const PLAN_COURSE_QUOTA: Record<PlanKey, number> = { pro: 1, silver: 2, gold: 4 };
+export const PLAN_COURSE_QUOTA: Record<PlanKey, number> = QUOTA;
 export const PLAN_NAME: Record<PlanKey, string> = { pro: "Pro", silver: "Silver", gold: "Gold" };
+
+/** Studio courses a plan opens outright, by studio slug and the lowest plan that includes it (the pricing page promises the Maths speed studio to Silver and Gold). */
+export const PLAN_STUDIOS: Record<string, PlanKey> = { "mathematics-speed-enhancement": "silver" };
 
 export interface PlanInfo { key: PlanKey; name: string; expiresAt: string | null; courseQuota: number }
 
@@ -32,6 +36,12 @@ export async function planInfo(userId: number, db: Db = pool): Promise<PlanInfo 
 }
 
 export const atLeast = (have: PlanKey | null, need: PlanKey): boolean => have !== null && RANK.indexOf(have) >= RANK.indexOf(need);
+
+/** Whether the plan the student holds right now includes this studio course. */
+export async function studioFromPlan(userId: number, slug: string, db: Db = pool): Promise<boolean> {
+  const need = Object.prototype.hasOwnProperty.call(PLAN_STUDIOS, slug) ? PLAN_STUDIOS[slug] : null;
+  return need !== null && atLeast((await planInfo(userId, db))?.key ?? null, need);
+}
 
 /** Every course the student has picked, in the order picked. */
 export async function pickedSlugs(userId: number, db: Db = pool): Promise<string[]> {

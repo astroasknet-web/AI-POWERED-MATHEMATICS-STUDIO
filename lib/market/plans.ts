@@ -42,7 +42,7 @@ export const PLANS: Plan[] = [
     ],
   },
   {
-    key: "silver", name: "Silver", tagline: "For students aiming for jobs and internships.", monthly: 699, yearly: 5599, badge: "Most popular", accent: "#64748b", cta: "Get Silver", inherits: "Everything in Pro, plus",
+    key: "silver", name: "Silver", tagline: "For students aiming for jobs and internships.", monthly: 699, yearly: 5599, badge: "Best value", accent: "#64748b", cta: "Get Silver", inherits: "Everything in Pro, plus",
     features: [
       { text: "Resume Studio: 25 templates, 10 resumes" },
       { text: "5 AI resume score checks a month, with ATS feedback" },
@@ -56,7 +56,7 @@ export const PLANS: Plan[] = [
     ],
   },
   {
-    key: "gold", name: "Gold", tagline: "Hands-on help for study abroad and careers.", monthly: 999, yearly: 11988, annualOnly: true, badge: "Best value", accent: "#d97706", cta: "Get Gold", inherits: "Everything in Silver, plus",
+    key: "gold", name: "Gold", tagline: "Hands-on help for study abroad and careers.", monthly: 999, yearly: 11988, annualOnly: true, badge: "Most complete", accent: "#d97706", cta: "Get Gold", inherits: "Everything in Silver, plus",
     features: [
       { text: "All 45 Resume Studio templates, unlimited resumes" },
       { text: "QR Score Booster: start all your recommended courses (3 to 4) with a plan to raise your score" },
