@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketShell } from "@/components/market/shell";
 import { curriculum } from "@/lib/lms/vedic";
+import { courseFee } from "@/lib/pay/course-access";
+import { formatMoney } from "@/lib/pay/money";
+
+export const dynamic = "force-dynamic"; // the price comes from the shop
 
 export const metadata: Metadata = {
   title: "Vedic Mathematics Course: 30 Modules, Module 1 Free | GrowQR",
@@ -9,12 +13,13 @@ export const metadata: Metadata = {
   alternates: { canonical: "/vedic-math" },
 };
 
-export default function VedicHome() {
+export default async function VedicHome() {
   const c = curriculum();
+  const fee = await courseFee("vedic-mathematics").catch(() => null);
   return (
     <MarketShell user={null} active="courses">
       <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] font-semibold text-ink">Vedic Mathematics</h1>
-      <p className="mt-2 max-w-[46em] rounded-lg bg-cream-2 px-3 py-2 text-[14px] text-ink-2">Module 1 is free. The complete course comes with the <Link href="/pricing" className="font-semibold underline">Pro, Silver and Gold plans</Link>.</p>
+      <p className="mt-2 max-w-[46em] rounded-lg bg-cream-2 px-3 py-2 text-[14px] text-ink-2">Module 1 is free. The complete course comes with the <Link href="/pricing" className="font-semibold underline">Pro, Silver and Gold plans</Link>{fee ? <>, or you can <Link href="/checkout?sku=course-vedic-mathematics" className="font-semibold underline">buy it on its own for {formatMoney(fee.amountMinor, "INR").replace(/.00$/, "")}</Link></> : null}.</p>
       <p className="mt-2 max-w-[46em] text-ink-3">A course in {c.modules.length} modules across three levels: mental arithmetic, multiplication and division shortcuts, squares and roots, algebra, geometry, calculus and more. Every module has theory, worked examples, practice and a test bank, in English and Hindi.</p>
 
       {c.levels.map((l) => (

@@ -56,4 +56,11 @@ export const STUDIO_COURSES: Array<{ slug: string; title: string; description: s
     rupees: 499,
     onSale: true,
   },
+  {
+    slug: "vedic-mathematics",
+    title: "Vedic Mathematics & Speed Calculation",
+    description: "30 modules in three levels: mental arithmetic, the 16 Sutras and 13 Sub-Sutras, with worked examples, practice and test banks, in English and Hindi. Module 1 is free. Pro, Silver and Gold plans open the whole course too.",
+    rupees: 799,
+    onSale: true,
+  },
 ];

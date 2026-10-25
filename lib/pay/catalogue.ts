@@ -57,7 +57,7 @@ function seedList(): SeedProduct[] {
   const cats = (catalogue as unknown as { categories: Record<string, { name: string }> }).categories;
   for (const c of (catalogue as unknown as { courses: Array<{ slug: string; title: string; cat: string; brief: string }> }).courses) {
     const rupees = COURSE_FEE_RUPEES[cats[c.cat]?.name ?? ""];
-    if (!rupees) continue;
+    if (!rupees || STUDIO_COURSES.some((x) => x.slug === c.slug)) continue; // a course with its own fee in STUDIO_COURSES is added below
     out.push({ sku: `course-${c.slug}`, kind: "course", title: c.title, description: c.brief ?? "", fulfilRef: c.slug, accessDays: null, inrMinor: rupees * 100, active: isNative(c.slug) });
   }
   for (const c of STUDIO_COURSES) out.push({ sku: `course-${c.slug}`, kind: "course", title: c.title, description: c.description, fulfilRef: c.slug, accessDays: null, inrMinor: c.rupees * 100, active: c.onSale });

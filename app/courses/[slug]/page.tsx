@@ -57,7 +57,7 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
   const self = `/courses/${course.slug}`;
   const native = lessons.isNative(course.slug);
   const start = `${self}/learn`; // only used when the course is taught here
-  const fee = native ? await courseFee(course.slug) : null;
+  const fee = native || course.slug === "vedic-mathematics" ? await courseFee(course.slug) : null;
   const plan = me && isStudent ? await planCourses(me.id) : null;
   const owned = await canStudy(me?.id ?? null, course.id, course.slug); // false only for a priced course the visitor has not paid for
 
@@ -169,7 +169,9 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
           ) : course.slug === "vedic-mathematics" ? (
             <>
               <h2 className="text-[18px] font-bold text-ink">Taught here on GrowQR</h2>
-              <p className="text-[14px] text-ink-2">30 modules in three levels, in English and Hindi. Module 1 is free. The rest open with a Pro, Silver or Gold plan.</p>
+              <p className="text-[14px] text-ink-2">30 modules in three levels, in English and Hindi. Module 1 is free. The rest open with a Pro, Silver or Gold plan{fee ? ", or by buying the course" : ""}.</p>
+              {fee ? <p className="text-[28px] font-bold text-ink">{formatMoney(fee.amountMinor, "INR")}</p> : null}
+              {fee ? <Link className={`${btn} border border-black/[0.15] hover:bg-cream-2`} href={me ? buyHref(course.slug) : `/login?next=${encodeURIComponent(buyHref(course.slug))}`}>Buy the course</Link> : null}
               <Link className={`${btn} bg-orange-deep hover:bg-ink text-white`} href="/vedic-math">Open the Vedic Mathematics course</Link>
               <Link className={`${btn} border border-black/[0.15] hover:bg-cream-2`} href="/pricing">See plans</Link>
             </>

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import catalogue from "../market/data/courses.json";
 import { boot, DB, emailOf, mkUser, tag, type Boot } from "./test-setup";
-import { COURSE_FEE_RUPEES, EXAM_PRODUCTS } from "./course-fees";
+import { COURSE_FEE_RUPEES, EXAM_PRODUCTS, STUDIO_COURSES } from "./course-fees";
 
 /** The owner's course fees: seeding, which courses are on sale, and who may study a priced course. */
 const cats = (catalogue as unknown as { categories: Record<string, { name: string }> }).categories;
@@ -48,13 +48,28 @@ describe.skipIf(!DB)("course fees on a real database", () => {
     const rows = await B.db.all<{ sku: string; active: number; amount_minor: number }>("SELECT p.sku, p.active, pr.amount_minor FROM pay_products p JOIN pay_prices pr ON pr.product_id = p.id AND pr.currency = 'INR' WHERE p.sku LIKE 'course-%' AND p.kind = 'course' AND p.sku NOT LIKE 'course-t-%'");
     const mine = rows.filter((r) => list.some((c) => `course-${c.slug}` === r.sku));
     expect(mine.length).toBe(list.length);
-    const first = list[0];
+    const first = list.find((c) => !STUDIO_COURSES.some((x) => x.slug === c.slug))!;
     expect(mine.find((r) => r.sku === `course-${first.slug}`)?.amount_minor).toBe(COURSE_FEE_RUPEES[cats[first.cat].name] * 100);
     const { nativeSlugs } = await import("../market/lessons");
-    for (const r of mine) expect(Boolean(r.active), r.sku).toBe(nativeSlugs().includes(r.sku.slice(7)));
+    for (const r of mine) expect(Boolean(r.active), r.sku).toBe(nativeSlugs().includes(r.sku.slice(7)) || STUDIO_COURSES.some((x) => `course-${x.slug}` === r.sku && x.onSale));
+    const vedic = mine.find((r) => r.sku === "course-vedic-mathematics")!;
+    expect([vedic.amount_minor, Boolean(vedic.active)]).toEqual([79900, true]); // sold on its own at Rs 799 as well as opened by plans
     const exams = await B.db.all<{ sku: string; active: number }>("SELECT sku, active FROM pay_products WHERE sku IN ('imo-all-classes','exam-jee','exam-neet','ielts-prep','writing-studio')");
     expect(exams).toHaveLength(5);
     expect(exams.every((e) => !e.active)).toBe(true);
+  });
+
+  it("the Vedic price migration moves only the untouched seeded Rs 399 product to Rs 799 on sale", async () => {
+    const sql = (await import("node:fs")).readFileSync("db/migrations/20261218000001_vedic_course_price_799.sql", "utf8").split(";").map((x) => x.replace(/^s*--.*$/gm, "").trim()).filter(Boolean);
+    const sku = "course-vedic-mathematics";
+    const set = (amount: number, active: number) => B.db.run("UPDATE pay_prices SET amount_minor = $1 WHERE product_id = (SELECT id FROM pay_products WHERE sku = $2) AND currency = 'INR'", [amount, sku]).then(() => B.db.run("UPDATE pay_products SET active = $1 WHERE sku = $2", [active, sku]));
+    const state = async () => B.db.one<{ a: number; amount_minor: number }>("SELECT p.active AS a, pr.amount_minor FROM pay_products p JOIN pay_prices pr ON pr.product_id = p.id AND pr.currency = 'INR' WHERE p.sku = $1", [sku]);
+    const run = async () => { for (const q of sql) await B.db.run(q, []); };
+    await set(39900, 0); await run();
+    expect(await state()).toMatchObject({ a: 1, amount_minor: 79900 });
+    await set(45000, 0); await run(); // changed in the console: left alone
+    expect(await state()).toMatchObject({ a: 0, amount_minor: 45000 });
+    await set(79900, 1);
   });
 
   it("does not overwrite a price that was changed in the console when seeding runs again", async () => {

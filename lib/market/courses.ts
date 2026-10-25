@@ -36,11 +36,10 @@ const SELECT = "SELECT c.*, cc.name AS cat_name, cc.c1, cc.c2, (SELECT pr.amount
 
 /**
  * Courses taught outside the lesson player (Vedic Mathematics lives at /vedic-math: 30 modules, module 1 free, the rest with a plan). Their catalogue
- * row was seeded once with an early outline and a seeded shop price, so what the listing shows comes from here: the real size, and no fee,
- * because the course is opened by a plan, not sold on its own.
+ * row was seeded once with an early outline and a seeded shop price, so what the listing shows comes from here: the real size, (its own fee comes from the shop).
  */
 const PLAN_TAUGHT: Record<string, Partial<Course>> = {
-  "vedic-mathematics": { modules: 30, hours: "About 150 to 180 hrs", hours_num: 150, weeks: "", pace: "Self-paced", fee_minor: null },
+  "vedic-mathematics": { modules: 30, hours: "About 150 to 180 hrs", hours_num: 150, weeks: "", pace: "Self-paced" },
 };
 
 function map(r: Record<string, unknown>): Course {
