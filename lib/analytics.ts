@@ -255,3 +255,17 @@ export type ShareMethod = "whatsapp" | "facebook" | "x" | "linkedin" | "telegram
 export function trackShare(method: ShareMethod, params: { article: string; category?: string; placement: "top" | "end" }): void {
   trackEvent(method === "copy" ? "copy_article_link" : `share_${method}`, { article_id: params.article, article_category: params.category ?? "", share_method: method, placement: params.placement });
 }
+
+// ── Course catalogue ───────────────────────────────────────
+
+export type CatalogEvent = "course_catalog_view" | "course_search" | "course_search_zero_results" | "course_suggestion_select" | "course_filter_change" | "course_sort_change" | "course_card_open" | "course_enrol_click";
+
+/**
+ * Course catalogue interactions, through the same GA4 gate as every other event. Parameters are only what the student chose (a search phrase, a filter
+ * name and value, a course slug) and counts: never an identity, an email or anything about payment.
+ */
+export function trackCatalog(name: CatalogEvent, params: Record<string, string | number | boolean> = {}): void {
+  const clean: Record<string, string | number | boolean> = {};
+  for (const [k, v] of Object.entries(params)) clean[k] = typeof v === "string" ? v.slice(0, 80) : v;
+  trackEvent(name, clean);
+}

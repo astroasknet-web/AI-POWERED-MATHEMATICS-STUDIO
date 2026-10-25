@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Check, ShoppingCart } from "lucide-react";
 import { addToCart, CART_MAX, useCart, usePaymentsOn } from "@/lib/cart/store";
+import { trackCatalog } from "@/lib/analytics";
 
 /** "Add to cart" for one product code. Shows nothing until online payment is switched on. */
 export default function AddToCart({ sku, label = "Add to cart", compact = false, className = "" }: { sku: string; label?: string; compact?: boolean; className?: string }) {
@@ -21,7 +22,7 @@ export default function AddToCart({ sku, label = "Add to cart", compact = false,
   return (
     <button
       type="button"
-      onClick={() => { if (!addToCart(sku)) window.alert(`Your cart is full (${CART_MAX} items). Check out or remove something first.`); }}
+      onClick={() => { if (sku.startsWith("course-")) trackCatalog("course_enrol_click", { sku }); if (!addToCart(sku)) window.alert(`Your cart is full (${CART_MAX} items). Check out or remove something first.`); }}
       className={`${base} border border-black/[0.18] text-ink hover:bg-cream-2 ${className}`}
     >
       <ShoppingCart className="h-4 w-4" aria-hidden /> {label}
