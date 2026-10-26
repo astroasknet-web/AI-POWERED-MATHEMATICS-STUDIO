@@ -5,7 +5,7 @@ import { catalogue, hubs, totalUnits } from "@/lib/market/exam-prep";
 
 export const metadata: Metadata = {
   title: "Free Exam Prep: JEE, NEET, UPSC, SSC, CAT, SAT, GRE, GMAT, IELTS | GrowQR",
-  description: "Free study material, chapter lists and mock tests for JEE, NEET, UPSC, SSC CGL, CAT, SAT, GRE, GMAT, IELTS, AP Calculus and the Maths Olympiad.",
+  description: "Free study material, chapter lists and mock tests for JEE, NEET, UPSC, SSC CGL, CAT, SAT, GRE, GMAT, IELTS, and AP Calculus. The Maths Olympiad is sold one class at a time.",
   alternates: { canonical: "/exam-prep" },
 };
 

@@ -14,7 +14,14 @@ describe("course fee table", () => {
   it("matches the fees the owner gave", () => {
     expect(COURSE_FEE_RUPEES["Blockchain & Web3"]).toBe(799);
     expect(COURSE_FEE_RUPEES["Digital Safety & Life Skills"]).toBe(299);
-    expect(EXAM_PRODUCTS.map((e) => [e.sku, e.rupees])).toEqual([["imo-all-classes", 499], ["exam-jee", 699], ["exam-neet", 699], ["ielts-prep", 799], ["writing-studio", 499]]);
+    expect(EXAM_PRODUCTS.map((e) => [e.sku, e.rupees])).toEqual([["exam-jee", 699], ["exam-neet", 699], ["ielts-prep", 799], ["writing-studio", 499]]);
+  });
+  it("sells the Maths Olympiad one class at a time: 1 to 5 Rs 499, 6 to 8 Rs 599, 9 to 12 Rs 799, all on sale", () => {
+    const imo = STUDIO_COURSES.filter((s) => s.slug.startsWith("imo-class-"));
+    expect(imo).toHaveLength(12);
+    expect(imo.map((s) => s.rupees)).toEqual([499, 499, 499, 499, 499, 599, 599, 599, 799, 799, 799, 799]);
+    expect(imo.every((s) => s.onSale)).toBe(true);
+    expect(imo.map((s) => s.slug)).toEqual(Array.from({ length: 12 }, (_, i) => `imo-class-${i + 1}`));
   });
 });
 
@@ -54,8 +61,8 @@ describe.skipIf(!DB)("course fees on a real database", () => {
     for (const r of mine) expect(Boolean(r.active), r.sku).toBe(nativeSlugs().includes(r.sku.slice(7)) || STUDIO_COURSES.some((x) => `course-${x.slug}` === r.sku && x.onSale));
     const vedic = mine.find((r) => r.sku === "course-vedic-mathematics")!;
     expect([vedic.amount_minor, Boolean(vedic.active)]).toEqual([79900, true]); // sold on its own at Rs 799 as well as opened by plans
-    const exams = await B.db.all<{ sku: string; active: number }>("SELECT sku, active FROM pay_products WHERE sku IN ('imo-all-classes','exam-jee','exam-neet','ielts-prep','writing-studio')");
-    expect(exams).toHaveLength(5);
+    const exams = await B.db.all<{ sku: string; active: number }>("SELECT sku, active FROM pay_products WHERE sku IN ('exam-jee','exam-neet','ielts-prep','writing-studio')");
+    expect(exams).toHaveLength(4);
     expect(exams.every((e) => !e.active)).toBe(true);
   });
 
@@ -106,6 +113,22 @@ describe.skipIf(!DB)("course fees on a real database", () => {
     expect(await ACC.canStudy(null, courseId, slug)).toBe(false);
     expect(await ACC.courseFee(slug)).toBeNull(); // no longer purchasable
     await B.db.run("UPDATE pay_products SET active = 1 WHERE sku = $1", [`course-${slug}`]);
+  });
+
+  it("sells each Maths Olympiad class on its own: priced by grade band, locked for everyone until bought, and one class opens nothing else", async () => {
+    const rows = await B.db.all<{ sku: string; amount_minor: number; active: number }>("SELECT p.sku, pr.amount_minor, p.active FROM pay_products p JOIN pay_prices pr ON pr.product_id = p.id AND pr.currency = 'INR' WHERE p.sku LIKE 'course-imo-class-%'");
+    const by = Object.fromEntries(rows.map((r) => [r.sku, r]));
+    for (let n = 1; n <= 12; n++) expect([by[`course-imo-class-${n}`]?.amount_minor, Boolean(by[`course-imo-class-${n}`]?.active)], `class ${n}`).toEqual([(n <= 5 ? 499 : n <= 8 ? 599 : 799) * 100, true]);
+    expect(await ACC.accessFor(null, "imo-class-7")).toBeNull();
+    expect(await ACC.accessFor(alice, "imo-class-7")).toBeNull();
+    const { order, accessToken } = await P.createOrder(P.createOrderSchema.parse({ items: [{ sku: "course-imo-class-7", qty: 1 }], country: "IN", billing: { name: "Alice", email: emailOf("alice") } }), { userId: alice });
+    expect(order.totalMinor).toBe(59900);
+    const started = await C.startCheckout(order.id, { userId: alice, token: accessToken }, { origin: "https://growqr.test", provider: null });
+    rzp.pay((started.checkout as { orderId: string }).orderId);
+    await C.confirmPayment(order.id, { userId: alice }, {});
+    expect(await ACC.accessFor(alice, "imo-class-7")).toBe("purchase");
+    expect(await ACC.accessFor(alice, "imo-class-8")).toBeNull(); // another class stays locked
+    expect(await ACC.accessFor(bob, "imo-class-7")).toBeNull(); // so does someone else's account
   });
 
   it("leaves a course with no fee free", async () => {

@@ -29,12 +29,15 @@ export const COURSE_FEE_RUPEES: Record<string, number> = {
  * move behind it) is still to be decided, so nothing can be bought yet.
  */
 export const EXAM_PRODUCTS: Array<{ sku: string; title: string; description: string; rupees: number }> = [
-  { sku: "imo-all-classes", title: "IMO Maths Olympiad, all classes", description: "Olympiad practice for every class.", rupees: 499 },
   { sku: "exam-jee", title: "JEE preparation", description: "JEE preparation.", rupees: 699 },
   { sku: "exam-neet", title: "NEET preparation", description: "NEET preparation.", rupees: 699 },
   { sku: "ielts-prep", title: "IELTS preparation", description: "IELTS preparation.", rupees: 799 },
   { sku: "writing-studio", title: "Writing Clinic (Writing studio)", description: "Essay checks and writing practice.", rupees: 499 },
 ];
+
+/** Maths Olympiad (IMO) is sold one class at a time: Class 1 to 5 Rs 499, Class 6 to 8 Rs 599, Class 9 to 12 Rs 799. Nothing in it is free. */
+export const imoFeeRupees = (classNumber: number): number => (classNumber <= 5 ? 499 : classNumber <= 8 ? 599 : 799);
+export const imoSlug = (classNumber: number): string => `imo-class-${classNumber}`;
 
 /**
  * Studios sold as one course each. They are not in the course catalogue, but they are bought, entitled and refunded exactly like a catalogue course
@@ -42,6 +45,13 @@ export const EXAM_PRODUCTS: Array<{ sku: string; title: string; description: str
  * `onSale: false` saves the product and its price but keeps it off sale, as with EXAM_PRODUCTS.
  */
 export const STUDIO_COURSES: Array<{ slug: string; title: string; description: string; rupees: number; onSale: boolean }> = [
+  ...Array.from({ length: 12 }, (_, i) => ({
+    slug: imoSlug(i + 1),
+    title: `Class ${i + 1} Maths Olympiad (IMO)`,
+    description: `Class ${i + 1} IMO preparation: every chapter with lessons, in-lesson checks and chapter tests, plus unlimited full-syllabus mock tests sectioned like the real olympiad, with worked explanations.`,
+    rupees: imoFeeRupees(i + 1),
+    onSale: true,
+  })),
   {
     slug: "mathematics-speed-enhancement",
     title: "Mathematics Speed Enhancement Studio",
