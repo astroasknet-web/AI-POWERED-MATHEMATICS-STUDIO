@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { MarketShell } from "@/components/market/shell";
 import MockTest, { type MockSec } from "@/components/lms/MockTest";
 import { render } from "@/lib/lms/content";
-import { IMO_SECTIONS, assembleImoMock, classNumber, isClass, sectionLabel } from "@/lib/lms/school";
+import ImoPaywall from "@/components/lms/ImoPaywall";
+import { imoAccess } from "@/lib/lms/imo-access";
+import { IMO_SECTIONS, assembleImoMock, subject, classNumber, isClass, sectionLabel } from "@/lib/lms/school";
 
 export const dynamic = "force-dynamic"; // a fresh set of questions on every visit
 
@@ -14,12 +16,24 @@ const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]/g, "");
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const c = clean((await params).class);
   if (!isClass(c)) return { title: "Test not found | GrowQR", robots: { index: false, follow: true } };
-  return { title: `Class ${classNumber(c)} IMO Mock Test: Free Online Maths Olympiad Test | GrowQR`, description: `A full-syllabus Class ${classNumber(c)} Maths Olympiad mock test, sectioned like the real olympiad, with worked explanations.`, alternates: { canonical: `/olympiad/imo/${c}/mock` } };
+  return { title: `Class ${classNumber(c)} IMO Mock Test: Maths Olympiad Test | GrowQR`, description: `A full-syllabus Class ${classNumber(c)} Maths Olympiad mock test, sectioned like the real olympiad, with worked explanations.`, alternates: { canonical: `/olympiad/imo/${c}/mock` } };
 }
 
 export default async function ImoMock({ params }: P) {
   const c = clean((await params).class);
-  const mock = isClass(c) ? assembleImoMock(c) : null;
+  if (!isClass(c) || !subject(c, "imo")) notFound();
+  const access = await imoAccess(c);
+  if (!access.open) {
+    // Locked: the questions are never assembled or sent, only the purchase card.
+    return (
+      <MarketShell user={null} active="courses">
+        <nav aria-label="Breadcrumb" className="mb-4 text-[13px] text-ink-3"><Link href="/olympiad/imo" className="underline">Maths Olympiad</Link> / <Link href={`/olympiad/imo/${c}`} className="underline">Class {classNumber(c)}</Link> / Mock test</nav>
+        <h1 className="mb-6 text-[26px] font-bold text-ink">Class {classNumber(c)} IMO mock test</h1>
+        <ImoPaywall cls={classNumber(c)} access={access} chapters={subject(c, "imo")!.chapters.length} minutes={subject(c, "imo")!.fullTest?.time_limit_minutes} />
+      </MarketShell>
+    );
+  }
+  const mock = assembleImoMock(c);
   if (!mock || !mock.questions.length) notFound();
   const sections: MockSec[] = IMO_SECTIONS.map((s) => ({
     type: "mcq",

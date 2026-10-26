@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
   const p = await params;
   const s = subject(clean(p.class), clean(p.subject));
   if (!s) return { title: "Subject not found | GrowQR", robots: { index: false, follow: true } };
-  return { title: `Class ${classNumber(s.class)} ${s.label}: ${s.chapters.length} Free Chapters | GrowQR`, description: s.description || `Class ${classNumber(s.class)} ${s.label}: lessons, worked examples, quizzes and chapter tests.`, alternates: { canonical: `/school/${s.class}/${s.subject}` } };
+  return { title: `Class ${classNumber(s.class)} ${s.label}: ${s.chapters.length} ${s.subject === "imo" ? "" : "Free "}Chapters | GrowQR`, description: s.description || `Class ${classNumber(s.class)} ${s.label}: lessons, worked examples, quizzes and chapter tests.`, alternates: { canonical: `/school/${s.class}/${s.subject}` } };
 }
 
 export default async function SubjectPage({ params }: P) {
