@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, CalendarDays, GraduationCap, PlayCircle, Radio, Route as RouteIcon } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, Calculator, CalendarDays, GraduationCap, PenLine, PlayCircle, Radio, Route as RouteIcon, Shapes, Sigma } from "lucide-react";
 import Globe from "@/components/home-options/Globe";
 import InternshipBoard from "@/components/home-options/InternshipBoard";
 import { COUNTRIES } from "@/components/home-options/data";
 import { EBOOKS_URL, LIBRARY_TOPICS, portal } from "./data";
 import { featuredCourses, staticCategories, staticCourses } from "@/lib/market/static-catalogue";
+import LearnShowcase, { type LearnTab } from "./LearnShowcase";
 
 const WRAP = "mx-auto max-w-[1180px]";
 const H2 = "text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.07] tracking-tight";
@@ -48,60 +49,119 @@ export function Opportunities() {
   );
 }
 
-const LEARN = [
-  { icon: GraduationCap, t: "Self-paced courses", d: "Structured lessons, knowledge checks and progress tracking.", href: portal("/courses"), cta: "Browse courses" },
-  { icon: RouteIcon, t: "Exam prep", d: "Free JEE, NEET, UPSC, SSC, CAT, SAT, GRE, GMAT and IELTS material.", href: portal("/exam-prep"), cta: "See exams" },
-  { icon: Radio, t: "Live sessions", d: "Workshops and events with experts you can join live.", href: portal("/events"), cta: "See sessions" },
-  { icon: PlayCircle, t: "Practice tests", d: "IELTS and GRE practice, marked instantly.", href: portal("/practice-tests"), cta: "Practise" },
+const WAYS = [
+  { icon: GraduationCap, t: "Self-paced courses", d: "Structured lessons, knowledge checks and progress tracking.", href: portal("/courses"), cta: "Browse courses", tag: "Certificate and badge", v: "#35d9ff", v2: "#8ff0ff" },
+  { icon: Shapes, t: "Maths Olympiad (IMO)", d: "Every class from 1 to 12 is its own course, with chapter tests and full mock tests.", href: "/olympiad/imo", cta: "Choose a class", tag: "From ₹499 per class", v: "#a78bfa", v2: "#ddd0ff" },
+  { icon: Calculator, t: "Maths Speed Studio", d: "15 levels that build speed and accuracy, with a placement check and daily review.", href: portal("/math-speed"), cta: "Take the placement check", tag: "Free placement check", v: "#ff8a4c", v2: "#ffc36b" },
+  { icon: Sigma, t: "Vedic Mathematics", d: "30 modules of mental-maths shortcuts, with worked examples, in English and Hindi.", href: portal("/vedic-math"), cta: "Start Module 1", tag: "Module 1 free", v: "#2fd39a", v2: "#8cf0c9" },
+  { icon: PenLine, t: "English Writing Studio", d: "IELTS, SAT, GRE and GMAT prompts, scored instantly on every criterion.", href: portal("/writing-clinic"), cta: "Write and get scored", tag: "Free checks every month", v: "#5eead4", v2: "#b6f5ea" },
+  { icon: RouteIcon, t: "Exam prep", d: "JEE, NEET, UPSC, SSC, CAT, SAT, GRE, GMAT and IELTS study material.", href: portal("/exam-prep"), cta: "See exams", tag: "Free study material", v: "#ff5f8f", v2: "#ffa3be" },
+  { icon: PlayCircle, t: "Practice tests", d: "IELTS and GRE practice, timed and marked instantly, with an explanation for every answer.", href: portal("/practice-tests"), cta: "Practise", tag: "Marked instantly", v: "#7857ff", v2: "#b39dff" },
+  { icon: Radio, t: "Live sessions", d: "Workshops and events with experts you can join live.", href: portal("/events"), cta: "See sessions", tag: "Live with experts", v: "#f2c14e", v2: "#ffe29a" },
 ];
 
+/** The fields shown as tabs: the home page's own choice of well-stocked fields (the blockchain track is not featured here). */
+const TAB_FIELDS = ["data", "ai", "dev", "cloud", "cyber", "design", "marketing", "business", "finance"];
+
 export function Learn() {
+  const all = staticCourses();
+  const cats = staticCategories();
+  const names = Object.fromEntries(cats.map((c) => [c.key, c.name]));
+  const pick = (c: (typeof all)[number]) => ({ slug: c.slug, title: c.title, brief: c.brief, levelLabel: c.levelLabel, hours: c.hours, cat: c.cat });
+  const tabs: LearnTab[] = [
+    { key: "popular", label: "Popular", courses: featuredCourses(["data", "ai", "dev", "design", "marketing", "business"]).map(pick) },
+    ...TAB_FIELDS.filter((k) => names[k]).map((k) => ({ key: k, label: names[k].split(/[,&]/)[0].trim(), courses: all.filter((c) => c.cat === k).slice(0, 6).map(pick) })),
+  ];
   return (
-    <section id="learn" className="hx-v-courses scroll-mt-24 bg-[var(--hx-soft)] px-6 py-24 md:px-14 md:py-32" aria-labelledby="hx-learn">
+    <section id="learn" className="hx-v-courses hx-ln scroll-mt-24 px-5 py-20 md:px-14 md:py-28" aria-labelledby="hx-learn">
       <div className={WRAP}>
-        <div className="mb-12 max-w-[720px]">
-          <h2 data-rv id="hx-learn" className={`${H2} text-[var(--hx-text)]`}>Learn Something That <span className="hx-grad-text">Changes Everything.</span></h2>
-          <p data-rv className="mt-4 text-[1.05rem] text-[var(--hx-muted)]">Courses and live classes work together: learn at your pace, then ask questions live.</p>
+        <div className="mx-auto mb-10 max-w-[760px] text-center">
+          <p data-rv className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#0a8fb0]">Learn</p>
+          <h2 data-rv id="hx-learn" className={`mt-3 ${H2} text-[var(--hx-text)]`}>Learn Something That <span className="hx-grad-text">Changes Everything.</span></h2>
+          <p data-rv className="mt-4 text-[1.05rem] leading-relaxed text-[var(--hx-muted)]">Courses, studios, exam practice and live sessions that work together: learn at your pace, practise, then ask questions live.</p>
         </div>
-        <CourseStrip />
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {LEARN.map((l, i) => (
-            <li key={l.t} data-rv style={{ ["--d" as string]: `${i * 0.06}s` }}>
-              <Link href={l.href} className="hx-tile group flex h-full flex-col p-6">
-                <span className="hx-chip"><l.icon className="h-5 w-5" aria-hidden /></span>
-                <h3 className="mt-5 text-[1.1rem] font-semibold text-[var(--hx-text)]">{l.t}</h3>
-                <p className="mt-1.5 flex-1 text-[0.92rem] leading-relaxed text-[var(--hx-muted)]">{l.d}</p>
-                <span className="mt-5 inline-flex items-center gap-1.5 text-[0.9rem] font-semibold text-[var(--hx-text)] group-hover:text-[var(--v)]">{l.cta} <ArrowRight className="h-4 w-4" aria-hidden /></span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <div data-rv className="mt-8"><Link href={portal("/courses")} className="hx-btn hx-btn-dark">Explore Learning <ArrowRight className="h-4 w-4" aria-hidden /></Link></div>
+
+        <LearnShowcase tabs={tabs} total={all.length} fields={cats.length} catNames={names} />
+
+        <div className="mt-14">
+          <p data-rv className="mb-5 text-center text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[var(--hx-muted)]">More ways to learn</p>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {WAYS.map((l, i) => (
+              <li key={l.t} data-rv style={{ ["--d" as string]: `${(i % 4) * 0.06}s`, ["--v" as string]: l.v, ["--v2" as string]: l.v2 }}>
+                <Link href={l.href} className="hx-way group">
+                  <span className="hx-way-ic"><l.icon className="h-5 w-5" aria-hidden /></span>
+                  <span className="hx-way-tag">{l.tag}</span>
+                  <h3 className="mt-3 text-[1.08rem] font-semibold text-[var(--hx-text)]">{l.t}</h3>
+                  <p className="mt-1.5 flex-1 text-[0.9rem] leading-relaxed text-[var(--hx-muted)]">{l.d}</p>
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-[0.9rem] font-semibold text-[var(--hx-text)]">{l.cta} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden /></span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div data-rv className="mt-12 flex flex-wrap items-center justify-center gap-4">
+          <Link href={portal("/courses")} className="hx-btn hx-btn-pri">Explore all {all.length} courses <ArrowRight className="h-4 w-4" aria-hidden /></Link>
+          <Link href="/pricing" className="hx-btn hx-btn-dark">See plans</Link>
+        </div>
       </div>
     </section>
   );
 }
 
+/** Shelf topics are the library's own sections (LIBRARY_TOPICS). The books are a picture of the shelves, not a list of titles; every click opens mathstudy.in. */
+const SHELF = [
+  { h: 250, c1: "#f2c14e", c2: "#e08a1e", rot: -3 },
+  { h: 290, c1: "#35d9ff", c2: "#2b6fe0", rot: 2 },
+  { h: 235, c1: "#ff5f8f", c2: "#b8286a", rot: -2 },
+  { h: 270, c1: "#2fd39a", c2: "#12805c", rot: 3 },
+];
+const LIB_STEPS = [
+  { t: "Browse the library", d: "Open MathStudy and look through the shelves by subject." },
+  { t: "Pick your subject", d: "Find the guide that matches your exam, class or goal." },
+  { t: "Study at your pace", d: "Buy and download on MathStudy, then study whenever suits you." },
+];
+
 export function Library() {
   return (
-    <section id="library" className="hx-v-ebooks scroll-mt-24 bg-white px-6 py-24 md:px-14 md:py-32" aria-labelledby="hx-lib">
-      <div className={`${WRAP} grid items-center gap-12 lg:grid-cols-[1fr,1fr]`}>
-        <div>
-          <p data-rv className="mb-3 inline-flex items-center gap-2 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#a77f10]"><BookOpen className="h-4 w-4" aria-hidden /> E-Books</p>
-          <h2 data-rv id="hx-lib" className={`${H2} text-[var(--hx-text)]`}>A World of Knowledge, <span className="hx-grad-text">One Click Away.</span></h2>
-          <p data-rv className="mt-4 max-w-[34em] text-[1.05rem] leading-relaxed text-[var(--hx-muted)]">Study guides and learning resources from MathStudy. Browsing, purchases and downloads happen on mathstudy.in.</p>
-          <a data-rv href={EBOOKS_URL} target="_blank" rel="noopener noreferrer" className="hx-btn hx-btn-dark mt-8">Explore the Library <ArrowRight className="h-4 w-4" aria-hidden /></a>
+    <section id="library" className="hx-v-ebooks hx-lib scroll-mt-24 px-5 py-20 md:px-14 md:py-28" aria-labelledby="hx-lib">
+      <span aria-hidden className="hx-lib-glow" />
+      <div className={`${WRAP} relative`}>
+        <div className="grid items-center gap-12 lg:grid-cols-[0.95fr,1.05fr]">
+          <div>
+            <p data-rv className="mb-3 inline-flex items-center gap-2 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#f2c14e]"><BookOpen className="h-4 w-4" aria-hidden /> E-Books · MathStudy library</p>
+            <h2 data-rv id="hx-lib" className={`${H2} text-white`}>A World of Knowledge, <span className="hx-lib-grad">One Click Away.</span></h2>
+            <p data-rv className="mt-4 max-w-[34em] text-[1.05rem] leading-relaxed text-white/75">Study guides and learning resources from our MathStudy library. Browsing, purchases and downloads happen on mathstudy.in.</p>
+            <div data-rv className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <a href={EBOOKS_URL} target="_blank" rel="noopener noreferrer" className="hx-btn hx-lib-cta">Explore the Library <ArrowUpRight className="h-4 w-4" aria-hidden /><span className="sr-only"> (opens mathstudy.in in a new tab)</span></a>
+              <Link href="/exam-prep" className="text-[0.95rem] font-semibold text-white/85 underline underline-offset-4 hover:text-white">Free study material on GrowQR</Link>
+            </div>
+          </div>
+
+          <div data-rv style={{ ["--d" as string]: ".1s" }}>
+            <ul className="hx-shelf" aria-label="Library shelves">
+              {LIBRARY_TOPICS.map((t, i) => (
+                <li key={t} style={{ ["--h" as string]: `${SHELF[i].h}px`, ["--c1" as string]: SHELF[i].c1, ["--c2" as string]: SHELF[i].c2, ["--r" as string]: `${SHELF[i].rot}deg` }}>
+                  <a href={EBOOKS_URL} target="_blank" rel="noopener noreferrer" className="hx-book">
+                    <span className="hx-book-spine" aria-hidden />
+                    <span className="hx-book-face"><BookOpen className="h-6 w-6" aria-hidden /><b>{t}</b><span>Open on MathStudy</span></span>
+                    <span className="sr-only"> (opens mathstudy.in in a new tab)</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div aria-hidden className="hx-shelf-board" />
+          </div>
         </div>
-        <ul className="grid grid-cols-2 gap-3" aria-label="Library topics">
-          {LIBRARY_TOPICS.map((t, i) => (
-            <li key={t} data-rv style={{ ["--d" as string]: `${i * 0.06}s` }}>
-              <a href={EBOOKS_URL} target="_blank" rel="noopener noreferrer" className="hx-tile group flex h-full min-h-[140px] flex-col justify-end p-5">
-                <span aria-hidden className="absolute right-5 top-5 h-14 w-10 rounded-sm bg-gradient-to-b from-[var(--v)] to-[var(--v2)] shadow-md" style={{ transform: `rotate(${(i % 2 ? 1 : -1) * 6}deg)` }} />
-                <span className="text-[1rem] font-semibold text-[var(--hx-text)]">{t}</span>
-              </a>
+
+        <ol className="hx-lib-steps mt-14">
+          {LIB_STEPS.map((s, i) => (
+            <li key={s.t} data-rv style={{ ["--d" as string]: `${i * 0.08}s` }}>
+              <span className="hx-lib-n" aria-hidden>{i + 1}</span>
+              <span><b>{s.t}</b><span>{s.d}</span></span>
             </li>
           ))}
-        </ul>
+        </ol>
       </div>
     </section>
   );
@@ -169,35 +229,5 @@ export function FinalCTA3() {
         </div>
       </div>
     </section>
-  );
-}
-
-/** Real catalogue data (lib/market/data/courses.json), so the section shows actual courses even without the database. */
-function CourseStrip() {
-  const total = staticCourses().length;
-  const cats = staticCategories();
-  const picks = featuredCourses(["data", "ai", "dev", "cloud", "business", "marketing"]);
-  return (
-    <div data-rv className="mb-2">
-      <p className="mb-4 text-[0.9rem] font-semibold text-[var(--hx-text)]">{total} courses in {cats.length} categories</p>
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {picks.map((c) => {
-          const cat = cats.find((x) => x.key === c.cat);
-          return (
-            <li key={c.slug}>
-              <Link href={portal(`/courses/${c.slug}`)} className="hx-tile group block h-full p-5">
-                <span className="text-[0.7rem] font-bold uppercase tracking-wider text-[var(--hx-muted)]">{cat?.name}</span>
-                <h3 className="mt-1 text-[1.02rem] font-semibold leading-snug text-[var(--hx-text)]">{c.title}</h3>
-                <p className="mt-1.5 text-[0.86rem] leading-relaxed text-[var(--hx-muted)]">{c.brief}</p>
-                <p className="mt-3 text-[0.78rem] text-[var(--hx-muted)]">{c.levelLabel} · {c.hours}</p>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-      <ul className="mt-4 flex flex-wrap gap-2" aria-label="Course categories">
-        {cats.map((c) => <li key={c.key}><Link href={portal(`/courses?cat=${c.key}`)} className="inline-block rounded-full bg-white px-3.5 py-1.5 text-[0.8rem] font-medium text-[var(--hx-text)] ring-1 ring-slate-200 hover:ring-[var(--hx-violet)]">{c.name} ({c.n})</Link></li>)}
-      </ul>
-    </div>
   );
 }
