@@ -3,6 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarketShell } from "@/components/market/shell";
 import { STUDY_KEYS, chapterCount, studyIndex } from "@/lib/lms/study";
+import ExamBuyStrip from "@/components/lms/ExamBuyStrip";
+import { examForStudy } from "@/lib/lms/exam-products";
+
+export const dynamic = "force-dynamic"; // the purchase strip depends on the visitor
 
 type P = { params: Promise<{ course: string }> };
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -12,7 +16,7 @@ export function generateStaticParams() { return STUDY_KEYS.map((course) => ({ co
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const c = studyIndex(clean((await params).course));
   if (!c) return { title: "Course not found | GrowQR", robots: { index: false, follow: true } };
-  return { title: `${c.title}: Free Course, ${chapterCount(c)} Chapters | GrowQR`, description: c.blurb, alternates: { canonical: `/study/${c.key}` } };
+  return { title: `${c.title}: Course, ${chapterCount(c)} Chapters | GrowQR`, description: c.blurb, alternates: { canonical: `/study/${c.key}` } };
 }
 
 export default async function StudyCourse({ params }: P) {
@@ -24,6 +28,7 @@ export default async function StudyCourse({ params }: P) {
       <p className="text-[0.74rem] font-bold uppercase tracking-wider text-orange-dark">{c.kind}</p>
       <h1 className="mt-1 text-[26px] font-bold leading-tight tracking-tight text-ink sm:text-[34px]">{c.title}</h1>
       <p className="mt-2 max-w-3xl text-[16px] text-ink-3">{c.blurb}</p>
+      {examForStudy(c.key) ? <ExamBuyStrip examKey={examForStudy(c.key)!} /> : null}
       <div className="mt-8 space-y-9">
         {c.modules.map((m) => (
           <section key={m.number} aria-label={m.title}>

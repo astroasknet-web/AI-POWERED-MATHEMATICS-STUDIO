@@ -2,21 +2,25 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketShell } from "@/components/market/shell";
 import { course, speakingTests, writingTests } from "@/lib/lms/ielts";
+import ExamBuyStrip from "@/components/lms/ExamBuyStrip";
+
+export const dynamic = "force-dynamic"; // the purchase strip depends on the visitor
 
 export const metadata: Metadata = {
-  title: "Free IELTS Preparation: Reading and Writing Lessons, Practice Tests | GrowQR",
-  description: "Free IELTS preparation for Academic and General Training: 17 Reading and Writing lessons, Writing and Speaking practice tests, and timed Reading and Listening tests with band scores.",
+  title: "IELTS Preparation: Reading and Writing Lessons, Practice Tests | GrowQR",
+  description: "IELTS preparation for Academic and General Training: 17 Reading and Writing lessons, Writing and Speaking practice tests, and timed Reading and Listening tests with band scores.",
   alternates: { canonical: "/ielts" },
 };
 
-export default function IeltsHub() {
+export default async function IeltsHub() {
   const c = course();
   const sections = Object.values(c.sections);
   return (
     <MarketShell user={null} active="courses">
       <nav aria-label="Breadcrumb" className="mb-4 text-[13px] text-ink-3"><Link href="/exam-prep" className="underline">Exam prep</Link> / IELTS</nav>
       <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] font-semibold text-ink">IELTS preparation</h1>
-      <p className="mt-2 max-w-[46em] text-ink-3">Free lessons for Reading and Writing, covering Academic and General Training, with practice tests for all four skills.</p>
+      <p className="mt-2 max-w-[46em] text-ink-3">Lessons for Reading and Writing, covering Academic and General Training, with practice tests for all four skills.</p>
+      <ExamBuyStrip examKey="ielts" />
 
       <h2 className="mt-8 text-[1.3rem] font-bold text-ink">Practice tests</h2>
       <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

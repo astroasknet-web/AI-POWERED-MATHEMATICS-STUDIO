@@ -4,6 +4,11 @@ import { notFound } from "next/navigation";
 import { MarketShell } from "@/components/market/shell";
 import IeltsLesson from "@/components/lms/IeltsLesson";
 import { allLessons, course, lesson, neighbours } from "@/lib/lms/ielts";
+import ExamLocked from "@/components/lms/ExamLocked";
+import { lockedExam } from "@/lib/lms/exam-access";
+import { examForIelts } from "@/lib/lms/exam-products";
+
+export const dynamic = "force-dynamic"; // what the visitor can open depends on what they bought
 
 type P = { params: Promise<{ section: string; lesson: string }> };
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -21,12 +26,14 @@ async function load(params: P["params"]) {
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { ref, l } = await load(params);
   if (!ref || !l) return { title: "Lesson not found | GrowQR", robots: { index: false, follow: true } };
-  return { title: l.seo?.title ? `${l.seo.title} | GrowQR` : `${l.title}: Free IELTS Lesson | GrowQR`, description: l.seo?.description ?? l.summary, alternates: { canonical: `/ielts/${ref.section}/${l.slug}` } };
+  return { title: l.seo?.title ? `${l.seo.title} | GrowQR` : `${l.title}: IELTS Lesson | GrowQR`, description: l.seo?.description ?? l.summary, alternates: { canonical: `/ielts/${ref.section}/${l.slug}` } };
 }
 
 export default async function IeltsLessonPage({ params }: P) {
   const { ref, l } = await load(params);
   if (!ref || !l) notFound();
+  const lock = await lockedExam(examForIelts());
+  if (lock) return <ExamLocked access={lock} title={l.title} back={{ href: "/ielts", label: "IELTS" }} />;
   const sec = course().sections[ref.section];
   const { prev, next } = neighbours(l.slug);
   return (

@@ -3,6 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarketShell } from "@/components/market/shell";
 import { EXAM_SLUGS, loadExam } from "@/lib/lms/exams";
+import ExamBuyStrip from "@/components/lms/ExamBuyStrip";
+import { examForExamSlug } from "@/lib/lms/exam-products";
+
+export const dynamic = "force-dynamic"; // the purchase strip depends on the visitor
 
 type P = { params: Promise<{ slug: string }> };
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -13,7 +17,7 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
   const d = loadExam(clean((await params).slug));
   if (!d) return { title: "Exam not found | GrowQR", robots: { index: false, follow: true } };
   const m = d.raw.meta;
-  return { title: `${m.name} Mock Test: Syllabus, Pattern and Free Online Test | GrowQR`, description: `${m.fullName}: exam pattern, syllabus, strategy and a free full-length mock test with worked explanations. ${m.tagline}`.slice(0, 160), alternates: { canonical: `/exam/${d.slug}` } };
+  return { title: `${m.name} Mock Test: Syllabus, Pattern and Online Test | GrowQR`, description: `${m.fullName}: exam pattern, syllabus, strategy and a full-length mock test with worked explanations. ${m.tagline}`.slice(0, 160), alternates: { canonical: `/exam/${d.slug}` } };
 }
 
 export default async function ExamOverview({ params }: P) {
@@ -26,9 +30,10 @@ export default async function ExamOverview({ params }: P) {
       <p className="text-[0.74rem] font-bold uppercase tracking-wider text-orange-dark">{meta.category} · {meta.level}</p>
       <h1 className="mt-1 text-[26px] font-bold leading-tight tracking-tight text-ink sm:text-[34px]">{meta.fullName}</h1>
       <p className="mt-2 max-w-3xl text-[16px] text-ink-3">{meta.tagline}</p>
+      {examForExamSlug(d.slug) ? <ExamBuyStrip examKey={examForExamSlug(d.slug)!} /> : null}
 
       <section className="mt-6" aria-label="Take a mock test">
-        <h2 className="text-[20px] font-bold text-ink">Take a free mock test</h2>
+        <h2 className="text-[20px] font-bold text-ink">Take the mock test</h2>
         <ul className="mt-3 grid gap-3 sm:grid-cols-2">
           {d.tests.map((t) => (
             <li key={t.key}><Link href={`/exam/${d.slug}/test/${t.key}`} className="block h-full rounded-xl border border-black/[0.08] bg-white p-4 transition hover:border-orange">

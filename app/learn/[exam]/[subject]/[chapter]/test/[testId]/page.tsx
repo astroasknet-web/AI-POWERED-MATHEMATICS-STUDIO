@@ -4,6 +4,11 @@ import { notFound } from "next/navigation";
 import { MarketShell } from "@/components/market/shell";
 import MockTest, { type MockSec } from "@/components/lms/MockTest";
 import { chapter, exam, render, subjectIndex } from "@/lib/lms/content";
+import ExamLocked from "@/components/lms/ExamLocked";
+import { lockedExam } from "@/lib/lms/exam-access";
+import { examForLearn } from "@/lib/lms/exam-products";
+
+export const dynamic = "force-dynamic"; // what the visitor can open depends on what they bought
 
 type P = { params: Promise<{ exam: string; subject: string; chapter: string; testId: string }> };
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -27,6 +32,8 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
 export default async function TestPage({ params }: P) {
   const { ex, ch, test, idx } = await load(params);
   if (!ex || !ch || !test || !idx) notFound();
+  const lock = await lockedExam(examForLearn(ex.slug));
+  if (lock) return <ExamLocked access={lock} title={`${ch.title}: test`} back={{ href: `/learn/${ex.slug}/${idx.subject}/${ch.slug}`, label: ch.title }} />;
   const sections: MockSec[] = test.sections.map((s) => ({
     type: s.type,
     title: s.title,

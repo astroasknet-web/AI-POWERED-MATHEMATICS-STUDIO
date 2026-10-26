@@ -29,10 +29,24 @@ export const COURSE_FEE_RUPEES: Record<string, number> = {
  * move behind it) is still to be decided, so nothing can be bought yet.
  */
 export const EXAM_PRODUCTS: Array<{ sku: string; title: string; description: string; rupees: number }> = [
-  { sku: "exam-jee", title: "JEE preparation", description: "JEE preparation.", rupees: 699 },
-  { sku: "exam-neet", title: "NEET preparation", description: "NEET preparation.", rupees: 699 },
-  { sku: "ielts-prep", title: "IELTS preparation", description: "IELTS preparation.", rupees: 799 },
   { sku: "writing-studio", title: "Writing Clinic (Writing studio)", description: "Essay checks and writing practice.", rupees: 499 },
+];
+
+/**
+ * Exam preparation, one product per exam (sku `course-exam-<key>`). Notes, chapter tests and mock tests open only for a buyer. `onSale: false` keeps an exam
+ * on the page as "coming soon" until its material exists (GMAT has no lessons yet), with its price saved.
+ */
+export const EXAM_PREP: Array<{ key: string; slug: string; title: string; rupees: number; onSale: boolean; hub: string; blurb: string }> = [
+  { key: "jee", slug: "exam-jee", title: "JEE (Main & Advanced) preparation", rupees: 999, onSale: true, hub: "jee", blurb: "Chapter notes, worked examples and chapter tests in Mathematics, Physics and Chemistry, plus a full JEE Main mock test." },
+  { key: "neet", slug: "exam-neet", title: "NEET UG preparation", rupees: 999, onSale: true, hub: "neet", blurb: "Chapter notes, worked examples and chapter tests in Physics, Chemistry and Biology, plus a full NEET mock test." },
+  { key: "upsc", slug: "exam-upsc", title: "UPSC Civil Services (Prelims) preparation", rupees: 1599, onSale: true, hub: "upsc-prelims", blurb: "Full-length General Studies Paper I and CSAT Paper II mock tests with worked explanations." },
+  { key: "ssc-cgl", slug: "exam-ssc-cgl", title: "SSC CGL preparation", rupees: 899, onSale: true, hub: "ssc-cgl", blurb: "Quantitative Aptitude, Reasoning, English and General Awareness study material, plus Tier 1 and Tier 2 mock tests." },
+  { key: "cat-quant", slug: "exam-cat-quant", title: "CAT Quantitative Aptitude preparation", rupees: 599, onSale: true, hub: "cat-quant", blurb: "Module-by-module Quantitative Aptitude notes, formulas, shortcuts and practice for CAT." },
+  { key: "sat-math", slug: "exam-sat-math", title: "SAT Math preparation", rupees: 1299, onSale: true, hub: "sat", blurb: "Algebra, Advanced Math, Problem-Solving and Data Analysis, and Geometry and Trigonometry, with formulas, shortcuts and practice." },
+  { key: "gre", slug: "exam-gre", title: "GRE Quantitative Reasoning preparation", rupees: 1599, onSale: true, hub: "gre-maths", blurb: "The full GRE Quant course: Arithmetic, Algebra, Geometry and Data Analysis, with practice." },
+  { key: "gmat", slug: "exam-gmat", title: "GMAT Quantitative Reasoning preparation", rupees: 1599, onSale: false, hub: "gmat-maths", blurb: "GMAT Quantitative Reasoning study material. Coming soon." },
+  { key: "ielts", slug: "exam-ielts", title: "IELTS preparation", rupees: 1299, onSale: true, hub: "ielts", blurb: "Reading and Writing lessons and strategies, plus Writing and Speaking practice tests. (The full Reading and Listening test sets are a separate product.)" },
+  { key: "ap-calculus", slug: "exam-ap-calculus", title: "AP Calculus AB preparation", rupees: 1299, onSale: true, hub: "ap-calculus-ab", blurb: "Limits, differentiation and integration with notes, worked examples and chapter mock tests for AP Calculus AB." },
 ];
 
 /** Maths Olympiad (IMO) is sold one class at a time: Class 1 to 5 Rs 499, Class 6 to 8 Rs 599, Class 9 to 12 Rs 799. Nothing in it is free. */
@@ -45,6 +59,7 @@ export const imoSlug = (classNumber: number): string => `imo-class-${classNumber
  * `onSale: false` saves the product and its price but keeps it off sale, as with EXAM_PRODUCTS.
  */
 export const STUDIO_COURSES: Array<{ slug: string; title: string; description: string; rupees: number; onSale: boolean }> = [
+  ...EXAM_PREP.map((e) => ({ slug: e.slug, title: e.title, description: e.blurb, rupees: e.rupees, onSale: e.onSale })),
   ...Array.from({ length: 12 }, (_, i) => ({
     slug: imoSlug(i + 1),
     title: `Class ${i + 1} Maths Olympiad (IMO)`,

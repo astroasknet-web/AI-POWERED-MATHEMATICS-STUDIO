@@ -4,8 +4,8 @@ import { MarketShell } from "@/components/market/shell";
 import { writingTests } from "@/lib/lms/ielts";
 
 export const metadata: Metadata = {
-  title: "IELTS Writing Practice Tests: Free, with a Band Estimate | GrowQR",
-  description: "30 free IELTS Academic Writing practice tests with Task 1 charts, tables, processes and maps, Task 2 essays, a 60-minute timer and an instant estimated band.",
+  title: "IELTS Writing Practice Tests: with a Band Estimate | GrowQR",
+  description: "30 IELTS Academic Writing practice tests with Task 1 charts, tables, processes and maps, Task 2 essays, a 60-minute timer and an instant estimated band.",
   alternates: { canonical: "/ielts/writing-practice-tests" },
 };
 

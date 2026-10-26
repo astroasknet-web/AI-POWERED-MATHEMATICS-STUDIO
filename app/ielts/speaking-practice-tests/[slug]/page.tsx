@@ -4,6 +4,11 @@ import { notFound } from "next/navigation";
 import { MarketShell } from "@/components/market/shell";
 import { PrepTimer, Recorder, SpeakTimer } from "@/components/lms/IeltsSpeaking";
 import { speakingTest, speakingTests } from "@/lib/lms/ielts";
+import ExamLocked from "@/components/lms/ExamLocked";
+import { lockedExam } from "@/lib/lms/exam-access";
+import { examForIelts } from "@/lib/lms/exam-products";
+
+export const dynamic = "force-dynamic"; // what the visitor can open depends on what they bought
 
 type P = { params: Promise<{ slug: string }> };
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -20,6 +25,8 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
 export default async function SpeakingTestPage({ params }: P) {
   const t = speakingTest(clean((await params).slug));
   if (!t) notFound();
+  const lock = await lockedExam(examForIelts());
+  if (lock) return <ExamLocked access={lock} title={t.title} back={{ href: "/ielts/speaking-practice-tests", label: "IELTS Speaking practice tests" }} />;
   const card = "rounded-2xl border border-black/[0.08] bg-white p-5 shadow-card";
   return (
     <MarketShell user={null} active="courses">
