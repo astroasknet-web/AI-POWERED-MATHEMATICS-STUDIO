@@ -193,24 +193,24 @@
       "tags": [
         "All"
       ],
-      "hours": "~30 hrs",
+      "hours": "~14 hrs",
       "modules": 6,
-      "weeks": "~6 weeks",
-      "pace": "5 hrs/wk",
+      "weeks": "~4 weeks",
+      "pace": "3 to 4 hrs/wk",
       "badge": "Excel Automation",
       "prereq": "Advanced Excel; some comfort with formulas.",
       "bestFor": "Finance/operations staff who repeat the same reports every week.",
-      "brief": "Recording macros and writing VBA to automate repetitive reporting.",
+      "brief": "Record, read, write and debug VBA macros, with code to run in your own Excel and labs that train your thinking.",
       "learn": [
-        "Recording, editing, and running macros; the Developer tab",
-        "The VBA editor, modules, and the object model (Workbook/Worksheet/Range)",
-        "Variables, loops (For/Do), and conditionals (If/Select Case)",
-        "Automating formatting, data cleanup, and multi-sheet consolidation",
-        "Building custom functions (UDFs) and simple UserForms",
-        "Error handling and scheduling/triggering macros"
+        "What to automate, recording macros and macro security",
+        "VBA building blocks: variables, types, MsgBox and InputBox",
+        "Workbooks, worksheets, ranges and finding the last row",
+        "If, Select Case, loops and arrays",
+        "Subs, Functions, error handling, debugging and events",
+        "Fast, safe, documented automation you can hand over"
       ],
-      "handsOn": "Build a one-click macro that imports data, cleans it, and generates a formatted report.",
-      "outcome": "Automate hours of manual work; a strong resume differentiator.",
+      "handsOn": "Write the design document for a safe, maintainable macro: inputs and outputs, procedure and safety.",
+      "outcome": "Plan, write and hand over macros that save real time.",
       "icon": "cog"
     },
     {
