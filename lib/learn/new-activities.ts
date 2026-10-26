@@ -43,4 +43,6 @@ export const NEW_ACTIVITIES: Record<string, () => unknown> = {
   "google-workspace": () => require("./data/google-workspace.activities.json"),
   "basic-computer-internet-literacy": () => require("./data/basic-computer-internet-literacy.activities.json"),
   "excel-macros-vba": () => require("./data/excel-macros-vba.activities.json"),
+  "sql-for-data-business": () => require("./data/sql-for-data-business.activities.json"),
+  "advanced-excel-data-analysis": () => require("./data/advanced-excel-data-analysis.activities.json"),
 };

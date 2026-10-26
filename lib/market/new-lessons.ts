@@ -43,4 +43,6 @@ export const NEW_LESSONS: Record<string, () => unknown> = {
   "google-workspace": () => require("./data/lessons/google-workspace.json"),
   "basic-computer-internet-literacy": () => require("./data/lessons/basic-computer-internet-literacy.json"),
   "excel-macros-vba": () => require("./data/lessons/excel-macros-vba.json"),
+  "sql-for-data-business": () => require("./data/lessons/sql-for-data-business.json"),
+  "advanced-excel-data-analysis": () => require("./data/lessons/advanced-excel-data-analysis.json"),
 };

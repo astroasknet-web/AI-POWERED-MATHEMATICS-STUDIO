@@ -35,6 +35,7 @@ export function initialState(a: Activity): ActivityState {
     case "sheet": return { kind: "sheet", sheet: a.initial?.sheet ? cloneSheet(a.initial.sheet) : emptySheet() };
     case "slides": return { kind: "slides", deck: sanitizeDeck(a.initial?.deck ?? emptyDeck()) };
     case "classify": return { kind: "classify", answers: {} };
+    case "sql": return { kind: "sql", query: a.sql?.starter ?? "" };
   }
 }
 
@@ -46,6 +47,7 @@ export function cleanState(a: Activity, raw: unknown): ActivityState | null {
   switch (a.kind) {
     case "word": return typeof o.html === "string" ? { kind: "word", html: sanitizeDoc(o.html) } : null;
     case "slides": return { kind: "slides", deck: sanitizeDeck(o.deck) };
+    case "sql": return typeof o.query === "string" ? { kind: "sql", query: o.query.slice(0, 4000) } : null;
     case "classify": {
       const answers: Record<string, string> = {};
       const ids = new Set(a.classify?.categories.map((c) => c.id));

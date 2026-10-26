@@ -340,24 +340,24 @@
         "Fresher",
         "Mid"
       ],
-      "hours": "~30 hrs",
+      "hours": "~20 hrs",
       "modules": 6,
-      "weeks": "~6 weeks",
-      "pace": "5 hrs/wk",
-      "badge": "SQL Practitioner",
+      "weeks": "~5 weeks",
+      "pace": "4 hrs/wk",
+      "badge": "SQL Analyst",
       "prereq": "None.",
       "bestFor": "Analysts, PMs, marketers — anyone who needs to pull their own data.",
-      "brief": "The universal data language every analyst and PM needs.",
+      "brief": "Learn SQL in your browser: SELECT, joins, grouping, CTEs and window functions on a retail database, with a live query window in every lesson.",
       "learn": [
-        "Databases, tables, and the SELECT statement",
-        "Filtering (WHERE), sorting (ORDER BY), and DISTINCT",
-        "Aggregations — COUNT, SUM, AVG with GROUP BY and HAVING",
-        "Joins — INNER, LEFT/RIGHT, and self-joins",
-        "Subqueries, CTEs, and window functions (ROW_NUMBER, RANK)",
-        "Data types, NULL handling, and query optimisation basics"
+        "Tables, keys and how NULL really behaves",
+        "Expressions, CASE, dates and cleaning data in a query",
+        "COUNT, SUM, AVG, GROUP BY, HAVING and conditional rates",
+        "INNER and LEFT joins, anti-joins and avoiding a fan-out",
+        "Subqueries, CTEs, UNION, INTERSECT and EXCEPT",
+        "Window functions: ranking, running totals, growth and share of total"
       ],
-      "handsOn": "Answer 10 business questions from a sample e-commerce database.",
-      "outcome": "Query any database confidently; feeds Data Analytics and Power BI.",
+      "handsOn": "Build a channel scorecard for a retailer with joins, a CTE and window functions, then write the memo that explains it.",
+      "outcome": "Answer business questions from a relational database with confidence and explain the numbers clearly.",
       "icon": "database"
     },
     {
@@ -429,24 +429,24 @@
       "tags": [
         "All"
       ],
-      "hours": "~30 hrs",
+      "hours": "~22 hrs",
       "modules": 6,
-      "weeks": "~6 weeks",
-      "pace": "5 hrs/wk",
+      "weeks": "~5 weeks",
+      "pace": "4-5 hrs/wk",
       "badge": "Excel Data Analyst",
       "prereq": "Advanced Excel.",
       "bestFor": "Analysts who prefer to stay in Excel before moving to BI tools.",
-      "brief": "Power Query, Power Pivot, and statistics for spreadsheet analysts.",
+      "brief": "Clean, describe, summarise, model and present data in Excel, with in-browser labs that check your formulas.",
       "learn": [
-        "Power Query — importing, cleaning, and transforming data",
-        "Power Pivot and the data model with relationships",
-        "Intro to DAX measures inside Excel",
-        "Statistical functions — regression, correlation, forecasting",
-        "Advanced lookups, array formulas, and dynamic arrays (FILTER, SORT, UNIQUE)",
-        "Interactive dashboards with slicers and timelines"
+        "Clean and prepare data with formulas and tidy-data habits",
+        "Describe data with mean, median, spread, quartiles, outliers and z-scores",
+        "Summarise like a pivot table with SUMIFS cross-tabs and Pareto analysis",
+        "Measure relationships, fit a line and forecast with seasonality",
+        "Build break-even models, scenarios and an A/B significance test",
+        "Design KPI dashboards and write findings people act on"
       ],
-      "handsOn": "Build a self-refreshing analytics workbook from multiple data files.",
-      "outcome": "Do serious analysis without leaving Excel; natural bridge to Power BI.",
+      "handsOn": "Analyse a small sales dataset end to end and write the one-page memo that explains it.",
+      "outcome": "Take messy data to a clear, honest recommendation, and explain every number.",
       "icon": "table"
     },
     {

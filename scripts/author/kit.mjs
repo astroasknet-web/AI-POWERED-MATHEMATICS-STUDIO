@@ -67,6 +67,8 @@ export const chainLab = (spec) => widgetHtml({ type: "chainlab", ...spec });
 export const merkle = (spec) => widgetHtml({ type: "merkle", ...spec });
 /** A code listing students can copy into a free tool such as Remix or Node. lang is shown as a label; source is escaped. */
 export const code = (lang, source, caption) => `<figure class="cw-code"><figcaption><span class="cw-label">${esc(lang)}</span>${caption ? ` ${esc(caption)}` : ""}</figcaption><pre><code>${esc(String(source).trim())}</code></pre></figure>`;
+/** A live SQL window in a lesson. tables is [[name, [columns], [[row], ...]], ...]; query is what starts in the editor (it must run). */
+export const sqlPlay = ({ id, title, intro, tables, query }) => widgetHtml({ type: "sqlplay", id, title, ...(intro ? { intro } : {}), tables: tables.map(([name, columns, rows]) => ({ name, columns, rows })), query });
 export const flashcards = (id, title, cards) => widgetHtml({ type: "flashcards", id, title, cards: cards.map(([front, back]) => ({ front, back })) });
 /** Move the correct option to a chosen position (swap), so answers are spread over A to D instead of piling up on one letter. */
 function place(options, correct, target) {
@@ -201,5 +203,27 @@ export function course(c) {
     },
     solutions: Object.fromEntries(labs.map((l) => [l.activity.id, l.solution])),
     catalogue: c.catalogue,
+  };
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- SQL practice */
+export const Q = {
+  runs: () => ({ k: "sql.runs" }),
+  /** The student's result must equal what this model query returns on the same tables (row order only matters when ordered is true). */
+  result: (solution, o = {}) => ({ k: "sql.result", solution, ...(o.ordered ? { ordered: true } : {}) }),
+  /** The query text must contain this pattern (a regular expression string); what is how the check names it to the student. */
+  uses: (re, what) => ({ k: "sql.uses", re, what }),
+};
+/** A small repeatable pseudo-random generator, so authored sample data is the same every build. */
+export function rng(seed = 7) {
+  let s = seed >>> 0;
+  const next = () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296);
+  return { next, int: (a, b) => a + Math.floor(next() * (b - a + 1)), pick: (arr) => arr[Math.floor(next() * arr.length)], money: (a, b) => Math.round((a + next() * (b - a)) * 100) / 100 };
+}
+/** SQL lab. tables is [[name, [columns], [[row], ...]], ...]; solution is the model query used by the tests. */
+export function sqlLab(o) {
+  return {
+    activity: { ...base(o, "sql"), sql: { tables: o.tables.map(([name, columns, rows]) => ({ name, columns, rows })), starter: o.starter ?? "-- Write your query below, then press Run query\n" } },
+    solution: { query: o.solution },
   };
 }

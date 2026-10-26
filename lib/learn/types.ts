@@ -1,11 +1,12 @@
 import type { SheetState } from "./sheet/engine";
 import type { Deck } from "./slides";
+import type { SqlTable } from "./sql/engine";
 
 /**
  * Reusable learning-activity model. A course lists activities as data (lib/learn/data/<course>.activities.json); the interactive
  * components render them and lib/learn/checks.ts judges them. New courses add JSON, not code, unless they need a new playground.
  */
-export type ActivityKind = "word" | "sheet" | "slides" | "classify";
+export type ActivityKind = "word" | "sheet" | "slides" | "classify" | "sql";
 export type Level = "beginner" | "intermediate" | "challenge";
 
 export type CheckSpec =
@@ -37,6 +38,10 @@ export type CheckSpec =
   | { k: "slides.shapes"; min: number }
   | { k: "slides.theme"; notDefault?: boolean }
   | { k: "slides.title-first"; text?: string }
+  // SQL practice: the query must run, must return what the model query returns on the same tables, or must use certain words
+  | { k: "sql.runs" }
+  | { k: "sql.result"; /** The model query. It runs on the activity's own tables to give the expected result. */ solution: string; /** Rows must also come back in the same order. */ ordered?: boolean }
+  | { k: "sql.uses"; re: string; what: string }
   // Classify
   | { k: "classify.item"; item: string };
 
@@ -69,6 +74,8 @@ export interface Activity {
   /** Starting content: HTML for Word, a SheetState for sheets, a Deck for slides. Absent for classify. */
   initial?: { html?: string; sheet?: SheetState; deck?: Deck };
   classify?: ClassifyData;
+  /** SQL only: the tables the student queries and the text that starts in the editor. */
+  sql?: { tables: SqlTable[]; starter: string };
   /** Spreadsheet only: the grid area to show and which columns are headers. */
   view?: { cols: number; rows: number };
 }
@@ -77,7 +84,8 @@ export type ActivityState =
   | { kind: "word"; html: string }
   | { kind: "sheet"; sheet: SheetState }
   | { kind: "slides"; deck: Deck }
-  | { kind: "classify"; answers: Record<string, string> };
+  | { kind: "classify"; answers: Record<string, string> }
+  | { kind: "sql"; query: string };
 
 export interface CheckResult { id: string; label: string; passed: boolean; message: string; hint: string; explain: string }
 export interface RunResult { results: CheckResult[]; passed: number; total: number; score: number; allPassed: boolean }

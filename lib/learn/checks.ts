@@ -1,6 +1,7 @@
 import { analyzeDoc } from "./doc";
 import { analyse, Calculator, chartData, expandRange, formatValue, isErr, parseFormula, parseRef, refName, type SheetState, type Value } from "./sheet/engine";
 import { bullets, deckText, sanitizeDeck, themeOf, type Deck } from "./slides";
+import { runSqlFull, type SqlValue } from "./sql/engine";
 import type { Activity, ActivityState, Check, CheckResult, CheckSpec, RunResult } from "./types";
 
 /**
@@ -171,11 +172,39 @@ function slidesCheck(spec: CheckSpec, deck: Deck): Out {
   }
 }
 
+const canon = (v: SqlValue): string => (typeof v === "number" ? String(Math.round(v * 1e6) / 1e6) : v === null ? "\u0000null" : typeof v === "boolean" ? (v ? "1" : "0") : String(v));
+const rowKey = (r: SqlValue[]): string => r.map(canon).join("\u0001");
+
+function sqlCheck(spec: CheckSpec, query: string, a: Activity): Out {
+  const db = { tables: a.sql?.tables ?? [] };
+  if (spec.k === "sql.uses") {
+    let re: RegExp;
+    try { re = new RegExp(spec.re, "i"); } catch { return no("This check is misconfigured."); }
+    return re.test(query) ? yes() : no(`Your query should use ${spec.what}.`);
+  }
+  const mine = runSqlFull(db, query);
+  if (!mine.ok) return no(`Your query did not run: ${mine.error}${mine.hint ? " " + mine.hint : ""}`);
+  if (spec.k === "sql.runs") return yes();
+  if (spec.k !== "sql.result") return no("Unknown check.");
+  const want = runSqlFull(db, spec.solution);
+  if (!want.ok) return no("This check could not be prepared. Please report it.");
+  if (mine.columns.length !== want.columns.length) return no(`Your result has ${mine.columns.length} column${mine.columns.length === 1 ? "" : "s"}; this task needs ${want.columns.length}.`);
+  if (mine.rows.length !== want.rows.length) return no(`Your query returned ${mine.rows.length} row${mine.rows.length === 1 ? "" : "s"}; this task needs ${want.rows.length}.`);
+  const a1 = mine.rows.map(rowKey), b1 = want.rows.map(rowKey);
+  const same = (x: string[], y: string[]) => x.every((v, i) => v === y[i]);
+  if (spec.ordered) {
+    if (same(a1, b1)) return yes();
+    return same([...a1].sort(), [...b1].sort()) ? no("The right rows, but in the wrong order. Check your ORDER BY.") : no("The right number of rows, but some values are not what the task asks for. Re-read the task and compare your first row.");
+  }
+  return same([...a1].sort(), [...b1].sort()) ? yes() : no("The right number of rows, but some values are not what the task asks for. Re-read the task and compare your first row.");
+}
+
 function runOne(c: Check, state: ActivityState, a: Activity): CheckResult {
   let o: Out;
   const k = c.spec.k;
   if (k.startsWith("doc.")) o = state.kind === "word" ? wordCheck(c.spec, state.html) : no("Wrong kind of work.");
   else if (k.startsWith("sheet.")) o = state.kind === "sheet" ? sheetCheck(c.spec, state.sheet) : no("Wrong kind of work.");
+  else if (k.startsWith("sql.")) o = state.kind === "sql" ? sqlCheck(c.spec, state.query, a) : no("Wrong kind of work.");
   else if (k.startsWith("slides.")) o = state.kind === "slides" ? slidesCheck(c.spec, sanitizeDeck(state.deck)) : no("Wrong kind of work.");
   else if (c.spec.k === "classify.item") {
     const spec = c.spec;

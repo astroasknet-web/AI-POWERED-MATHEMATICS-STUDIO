@@ -8,6 +8,7 @@ import type { Activity, ActivityState, RunResult } from "@/lib/learn/types";
 import { submitActivity, type SubmitReply } from "@/app/courses/[slug]/learn/activity-actions";
 import ClassifyBoard from "./ClassifyBoard";
 import SheetGrid from "./SheetGrid";
+import SqlLab from "./SqlLab";
 import SlideStudio from "./SlideStudio";
 import WordPad from "./WordPad";
 import AssistantPanel from "./AssistantPanel";
@@ -17,7 +18,7 @@ import AssistantPanel from "./AssistantPanel";
  * The checks run here for instant feedback and again on the server for the result that counts.
  */
 const LEVEL: Record<string, string> = { beginner: "Beginner", intermediate: "Intermediate", challenge: "Challenge" };
-const KIND: Record<string, string> = { word: "Document", sheet: "Spreadsheet", slides: "Presentation", classify: "Sort and decide" };
+const KIND: Record<string, string> = { word: "Document", sheet: "Spreadsheet", slides: "Presentation", classify: "Sort and decide", sql: "SQL practice" };
 const btnPrimary = "inline-flex min-h-[48px] items-center justify-center rounded-lg bg-orange-deep px-6 text-[15px] font-semibold text-white hover:bg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-deep disabled:opacity-50";
 const btnGhost = "inline-flex min-h-[48px] items-center justify-center rounded-lg border border-black/[0.18] bg-white px-5 text-[15px] font-medium text-ink hover:bg-cream-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-deep disabled:opacity-50";
 
@@ -84,6 +85,7 @@ export default function ActivityRunner({ slug, activity, initial, signedIn, aiEn
         {state.kind === "word" ? <WordPad html={state.html} label={label} onChange={(html) => setState({ kind: "word", html })} /> : null}
         {state.kind === "sheet" ? <SheetGrid sheet={state.sheet} view={activity.view} label={label} onChange={(sheet) => setState({ kind: "sheet", sheet })} /> : null}
         {state.kind === "slides" ? <SlideStudio deck={state.deck} label={label} onChange={(deck) => setState({ kind: "slides", deck })} /> : null}
+        {state.kind === "sql" && activity.sql ? <SqlLab tables={activity.sql.tables} query={state.query} label={label} onChange={(query) => setState({ kind: "sql", query })} /> : null}
         {state.kind === "classify" && activity.classify ? <ClassifyBoard data={activity.classify} answers={state.answers} marks={marks} onChange={(answers) => setState({ kind: "classify", answers })} /> : null}
       </section>
 
