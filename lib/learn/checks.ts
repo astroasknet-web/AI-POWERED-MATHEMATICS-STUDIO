@@ -66,6 +66,7 @@ function formulaFeedback(state: SheetState, ref: string, spec: Extract<CheckSpec
   const info = analyse(tree);
   const missing = (spec.fns ?? []).filter((f) => !info.fns.has(f.toUpperCase()));
   if (missing.length) return no(`The formula in ${ref} should use ${missing.join(" and ")}. Right now it does not.`);
+  if (spec.pattern && !new RegExp(spec.pattern, "i").test(raw)) return no(spec.patternMsg ?? `The formula in ${ref} is not written the way this step asks.`);
   if (spec.cover) {
     const want = expandRange(spec.cover);
     const lack = want.filter((c) => !info.refs.has(c));
@@ -121,7 +122,7 @@ function sheetCheck(spec: CheckSpec, s: SheetState): Out {
     }
     case "sheet.format": {
       const f = s.formats[spec.ref.toUpperCase()] ?? {};
-      const ok = spec.what === "bold" ? f.bold : spec.what === "currency" ? f.num === "currency" : spec.what === "percent" ? f.num === "percent" : f.align === "center";
+      const ok = spec.what === "bold" ? f.bold : spec.what === "currency" ? f.num === "currency" : spec.what === "percent" ? f.num === "percent" : spec.what === "date" ? f.num === "date" : f.align === "center";
       return ok ? yes() : no(`${spec.ref} is not ${spec.what === "bold" ? "bold" : spec.what === "center" ? "centred" : `formatted as ${spec.what}`} yet.`);
     }
     case "sheet.noerrors": {

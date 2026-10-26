@@ -140,7 +140,7 @@ export default function SheetGrid({ sheet, onChange, view, label }: { sheet: She
         <button type="button" className={btn} aria-label="Align right" onClick={() => fmt({ align: "right" })}>&#8677;</button>
         <label className="sr-only" htmlFor="sg-num">Number format</label>
         <select id="sg-num" className={`${btn} pr-6`} value={curFmt.num ?? "auto"} onChange={(e) => fmt({ num: e.target.value as CellFormat["num"] })}>
-          <option value="auto">General</option><option value="int">Whole number</option><option value="dec2">2 decimals</option><option value="currency">Currency (&#8377;)</option><option value="percent">Percent</option>
+          <option value="auto">General</option><option value="int">Whole number</option><option value="dec2">2 decimals</option><option value="currency">Currency (&#8377;)</option><option value="date">Date (31-Jan-2026)</option><option value="percent">Percent</option>
         </select>
         {FILLS.map((f) => <button key={f} type="button" className="h-8 w-8 rounded-md border border-black/[0.2]" style={{ background: f }} aria-label={`Fill colour ${f}`} onClick={() => fmt({ bg: f })} />)}
         <button type="button" className={btn} onClick={() => fmt({ bg: undefined })}>No fill</button>

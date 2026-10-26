@@ -1,0 +1,222 @@
+import { bars, example, explorer, flow, formula, list, mistakes, module_, p, table, tip, topic, tryIt, warn } from "../kit.mjs";
+
+/* ------------------------------------------------------------------------------------------------ module 4 */
+export const M4 = module_({
+  slug: "text-dates-cleaning", title: "Text, dates and data cleaning", hours: 2, level: "Applied skills",
+  summary: "Clean messy text, split and join values, do arithmetic with dates, and format results for people to read.",
+  outcome: "You can take a messy export, make it consistent, and build the labels, dates and deadlines a report needs.",
+  intro: "Real data is rarely tidy. Names arrive in capitals, codes hide three facts in one cell, dates are typed ten ways, and numbers turn into text. Analysts say they spend most of their time **cleaning**. The functions in this module turn that into a few formulas.",
+  topics: [
+    topic({
+      title: "Cleaning text: TRIM, PROPER, UPPER, LOWER, SUBSTITUTE", slug: "cleaning-text",
+      blocks: [
+        p("Data typed by people is full of small inconsistencies: extra spaces, MIXED capitals, odd punctuation. These break lookups (a trailing space makes \"Asha\" and \"Asha \" different keys) and make reports look careless."),
+        table("The cleaning kit", ["Function", "Fixes", "Example", "Result"], [["TRIM", "Extra spaces at the ends and between words", "=TRIM(\"  asha   rao \")", "asha rao"], ["PROPER", "Capitalises each word", "=PROPER(\"asha rao\")", "Asha Rao"], ["UPPER / LOWER", "All capitals or all lowercase", "=LOWER(\"ASHA\")", "asha"], ["SUBSTITUTE", "Replaces one piece of text with another", "=SUBSTITUTE(\"98-765-43210\",\"-\",\"\")", "9876543210"], ["LEN", "Counts characters (find hidden spaces)", "=LEN(A2)", "a number"]]),
+        example("Clean a name list", "Names such as `  asha RAO ` and `chitra   nair` need to be tidy.", ["Chain two functions: `=PROPER(TRIM(A2))`.", "TRIM runs first and removes the extra spaces; PROPER then fixes the capitals.", "Result: Asha Rao and Chitra Nair."], "Nested functions run from the inside out."),
+        tip("To check whether two cells that look the same really match, compare their lengths: `=LEN(A2)=LEN(B2)`. A hidden space shows up at once."),
+        warn("Formulas leave the original data untouched, in another column. Keep the raw column: you may need to re-run the cleaning when new data arrives."),
+        mistakes(["Cleaning with find and replace and losing the original data.", "Forgetting that PROPER also changes things like \"McDonald\" to \"Mcdonald\": check names that matter.", "Using TRIM on a number stored as text and expecting it to become a number: use VALUE for that."]),
+      ],
+      points: ["TRIM, PROPER, UPPER and LOWER make text consistent.", "SUBSTITUTE swaps one piece of text for another.", "Clean in a new column and keep the raw data."],
+      check: [["Which function removes the extra spaces between words?", ["PROPER", "TRIM", "LEN", "LEFT"], 1, "TRIM removes extra spaces at the ends and between words."], ["=PROPER(TRIM(\"  bilal   KHAN \")) gives:", ["bilal khan", "Bilal Khan", "BILAL KHAN", "Bilal   Khan"], 1, "TRIM tidies the spaces and PROPER fixes the capitals."]],
+    }),
+    topic({
+      title: "Splitting and joining: LEFT, MID, RIGHT, FIND, &, TEXT", slug: "splitting-joining",
+      blocks: [
+        p("Codes often pack several facts into one cell: `IN-2026-0042` is a country, a year and a serial number. **Text functions** pull the pieces apart; the **&** operator and TEXT put them back together."),
+        table("Cutting text", ["Function", "What it takes", "Example on IN-2026-0042", "Result"], [["LEFT(text, n)", "n characters from the start", "=LEFT(A2,2)", "IN"], ["MID(text, start, n)", "n characters from a position", "=MID(A2,4,4)", "2026"], ["RIGHT(text, n)", "n characters from the end", "=RIGHT(A2,4)", "0042"], ["FIND(text, within)", "The position of a character", "=FIND(\"-\",A2)", "3"]]),
+        example("Split, convert, rebuild", "From IN-2026-0042 you need the year as a number and a label INV-0042.", ["Year: `=VALUE(MID(A2,4,4))` gives the number 2026. VALUE turns text into a number you can calculate with.", "Serial: `=VALUE(RIGHT(A2,4))` gives 42.", "Label: `=\"INV-\"&TEXT(D2,\"0000\")` pads the number to four digits: INV-0042."], "Cut with LEFT, MID, RIGHT; convert with VALUE; rebuild with & and TEXT."),
+        table("Useful TEXT formats", ["Format", "Result for", "Shows"], [["0000", "42", "0042"], ["#,##0.00", "1234.5", "1,234.50"], ["0.0%", "0.256", "25.6%"], ["dd-mmm-yyyy", "a date", "05-Jan-2026"], ["dddd", "a date", "Monday"]]),
+        p("To split at a character whose position varies, combine FIND with LEFT or MID: the first name in `Asha Rao` is `=LEFT(A2,FIND(\" \",A2)-1)`: take everything before the space (position minus one)."),
+        tip("`TEXTJOIN(\", \",TRUE,A2:A6)` joins a whole range with a separator and skips blanks, which is handy for building a list in one cell."),
+        mistakes(["Doing maths on text that looks like a number: wrap it in VALUE first.", "Forgetting the minus one in LEFT(A2,FIND(\" \",A2)-1), which includes the space.", "Hard-coding positions when the pieces vary in length: use FIND to locate the separator."]),
+      ],
+      points: ["LEFT, MID and RIGHT cut text; FIND locates a character.", "VALUE turns text into a number; TEXT turns a number into formatted text.", "& joins pieces of text."],
+      check: [["=MID(\"IN-2026-0042\",4,4) returns:", ["IN", "2026", "0042", "-2026"], 1, "Start at character 4 and take 4 characters."], ["Which function turns the text \"42\" into the number 42?", ["TEXT", "VALUE", "TRIM", "FIND"], 1, "VALUE converts text to a number."]],
+    }),
+    topic({
+      title: "Dates are numbers", slug: "dates-are-numbers",
+      blocks: [
+        p("Excel stores a date as a **serial number**: the count of days since a starting day. 1 January 2026 is stored as 46023. That is why you can **add days to a date** and why subtracting two dates gives the number of days between them. The cell only *shows* it as a date because of its format."),
+        table("The date toolkit", ["Function", "Does", "Example", "Result"], [["DATE(y,m,d)", "Builds a date", "=DATE(2026,3,12)", "12-Mar-2026 (46093)"], ["YEAR / MONTH / DAY", "Pulls out a part", "=MONTH(B2)", "3"], ["EDATE(date, n)", "Same day n months later", "=EDATE(B2,1)", "one month on"], ["EOMONTH(date, n)", "Last day of the month n months on", "=EOMONTH(B2,0)", "31-Mar-2026"], ["WEEKDAY(date, 2)", "Day of week, Monday = 1", "=WEEKDAY(B2,2)", "1 for Monday"], ["NETWORKDAYS(a,b)", "Working days between two dates", "=NETWORKDAYS(B2,D2)", "9"], ["DATEDIF(a,b,\"Y\")", "Whole years, months or days between", "=DATEDIF(A2,B2,\"Y\")", "age in years"]]),
+        example("A project schedule", "A task starts on 2 March 2026 and takes 10 days.", ["Due date: `=B2+C2` gives 12 March 2026 once the cell is formatted as a date.", "Working days: `=NETWORKDAYS(B2,D2)` counts Monday to Friday and includes both ends: 9.", "Month end: `=EOMONTH(B2,0)` gives 31 March 2026, handy for monthly reports."], "Dates behave like numbers, so a schedule is just arithmetic."),
+        formula("Age in whole years", "=DATEDIF(date_of_birth, today, \"Y\")", "DATEDIF counts complete years. It is one of the few functions Excel does not list in the function picker, but it works."),
+        warn("A date typed as text (for example `12.03.26`) is not a date and will not calculate. If subtraction returns #VALUE!, check whether Excel really recognised the date; a date lines up on the right of the cell, text on the left."),
+        tip("Enter dates in an unambiguous form such as 2026-03-12 or build them with DATE. A date like 03/04/2026 means different things in different countries."),
+        tryIt("How many days are there between 1 January and 31 January 2026?", "30. Subtract the earlier date from the later one: the result counts the days between them (add 1 if you want to include both ends)."),
+      ],
+      points: ["A date is a serial number shown with a date format.", "Add days with +, subtract dates to count days.", "EOMONTH and NETWORKDAYS handle month ends and working days."],
+      check: [["What does =B2+10 do when B2 holds a date?", ["Adds 10 months", "Moves the date 10 days later", "Shows an error", "Adds 10 years"], 1, "Dates are day counts, so adding 10 moves 10 days on."], ["Which function counts working days between two dates?", ["DATEDIF", "NETWORKDAYS", "EOMONTH", "WEEKDAY"], 1, "NETWORKDAYS counts Monday to Friday."]],
+    }),
+    topic({
+      title: "Data hygiene: consistent, unique, trustworthy", slug: "data-hygiene",
+      blocks: [
+        p("Clean formulas are no use on untidy data. Before analysing, check the data against a short list. Each check is a question you can answer with a formula."),
+        table("A data hygiene checklist", ["Check", "How to test it"], [["Numbers stored as text", "`=COUNT(B2:B100)` against `=COUNTA(B2:B100)`: if the counts differ, some values are text"], ["Duplicates", "`=COUNTIF($A$2:$A$100,A2)>1` flags a repeated key"], ["Blanks in required columns", "`=COUNTBLANK(B2:B100)`"], ["Inconsistent spellings", "A pivot or a sorted list reveals Kolkata and Calcutta side by side"], ["Impossible values", "A negative quantity, a date in the future: `=COUNTIF(C2:C100,\"<0\")`"], ["Extra spaces", "`=SUMPRODUCT(--(LEN(A2:A100)<>LEN(TRIM(A2:A100))))` counts cells with spare spaces"]]),
+        example("Find the duplicates", "Customer IDs are in A2:A100. Some were entered twice.", ["In B2 write `=COUNTIF($A$2:$A$100,A2)`.", "Copy down. Any value above 1 is a repeated ID.", "Filter column B for values above 1 and review each pair before deleting anything."], "Check before you delete: two rows with the same ID may be two real people."),
+        bars("Where analysts' time typically goes (an illustrative guide)", [["Finding and cleaning data", 60], ["Analysing", 25], ["Presenting results", 15]]),
+        list("A short routine before you trust a dataset", ["Keep a copy of the raw data and work on another sheet.", "Run the checklist above and note what you found.", "Fix problems with formulas in new columns, so the steps are visible.", "Re-check totals against the raw data after cleaning.", "Write one line saying what you changed."], true),
+        warn("Never delete the raw data. If the cleaning rule turns out to be wrong you will want to start again from the original."),
+      ],
+      points: ["Test data for text numbers, duplicates, blanks and impossible values.", "Clean in new columns and keep the raw data.", "Re-check totals after cleaning."],
+      check: [["COUNT is 90 and COUNTA is 100 for the same column. What does that suggest?", ["Ten values are text or non-numbers", "The sheet is protected", "Ten rows are duplicates", "A chart is missing"], 0, "COUNT counts only numbers, COUNTA counts everything that is not empty."], ["Before deleting an apparent duplicate you should:", ["Delete it at once", "Check whether it is really the same record", "Hide the column", "Sort descending"], 1, "Two rows with the same ID may still be different records."]],
+    }),
+  ],
+  terms: [["TRIM", "Removes extra spaces"], ["VALUE", "Turns text into a number"], ["Serial number", "How Excel stores a date: a day count"], ["EOMONTH", "The last day of a month"], ["NETWORKDAYS", "Working days between two dates"], ["Duplicate", "A record that appears more than once"]],
+  practical: { title: "Practical: clean a contact list", intro: "Prepare a messy list for a mail-merge.", steps: ["Make a list of twelve people with untidy names, phone numbers with dashes and a join date.", "Clean the names with TRIM and PROPER, and remove dashes from the phones with SUBSTITUTE.", "Add a column that flags duplicate names with COUNTIF.", "Add a column for the end of each person's join month with EOMONTH."] },
+  quiz: [
+    ["Which function removes extra spaces in the middle of text?", ["PROPER", "TRIM", "LEN", "RIGHT"], 1, "TRIM collapses spaces to one between words."],
+    ["How is a date stored in Excel?", ["As text", "As a serial number counting days", "As an image", "As three separate cells"], 1, "Dates are numbers formatted to look like dates."],
+    ["=EOMONTH(\"2026-02-10\",0) gives:", ["10 February", "28 February 2026", "31 March 2026", "1 February"], 1, "EOMONTH with 0 months is the last day of the same month."],
+    ["How do you take the first name from 'Asha Rao'?", ["=LEFT(A2,FIND(\" \",A2)-1)", "=RIGHT(A2,4)", "=MID(A2,5)", "=TRIM(A2)"], 0, "FIND locates the space; LEFT takes what is before it."],
+    ["Why use VALUE(MID(...))?", ["To format text", "To turn the cut text into a real number", "To sort it", "To hide it"], 1, "MID returns text; VALUE makes it a number."],
+    ["A formula that counts duplicates for A2 is:", ["=COUNTIF($A$2:$A$100,A2)", "=SUM(A2)", "=LEN(A2)", "=TRIM(A2)"], 0, "COUNTIF counts how many times the value appears."],
+    ["Why keep the raw data untouched?", ["To save memory", "So you can re-run or correct the cleaning", "Excel requires it", "To make the file look bigger"], 1, "You may need to start again from the original."],
+  ],
+});
+
+/* ------------------------------------------------------------------------------------------------ module 5 */
+export const M5 = module_({
+  slug: "analysis-tools", title: "Analysis tools: summaries, charts and trends", hours: 2.5, level: "Applied skills",
+  summary: "Summarise data the way a PivotTable does, choose charts that answer questions, spot trends with statistics, and use what-if thinking.",
+  outcome: "You can turn a long table into a summary, a chart and a forecast, and explain what the numbers do and do not show.",
+  intro: "Analysis is the step between *having data* and *knowing something*. In this module you learn the tools analysts reach for first: summaries by group, a chart for every question, and simple statistics to measure a trend. You build the summary with formulas so that you see exactly what a PivotTable does.",
+  topics: [
+    topic({
+      title: "Tidy tables, sorting and filtering", slug: "tidy-tables",
+      blocks: [
+        p("Every analysis tool, including PivotTables, charts and the IFS functions, assumes your data is a **tidy table**: one heading row, one record per row, one fact per column, and nothing else in the way."),
+        table("A tidy table", ["Region", "Product", "Units", "Revenue"], [["North", "Pen", "10", "100"], ["South", "Pen", "20", "200"], ["North", "Book", "5", "250"]]),
+        list("The rules of a tidy table", ["One row of headings, each heading unique and meaningful.", "One record per row: do not put a subtotal row in the middle.", "One kind of value per column: do not mix numbers and notes.", "No blank rows or columns inside the data.", "No merged cells: they break sorting, filtering and pivots."]),
+        example("Sort and filter safely", "You want the top-selling products.", ["Select the **whole table**, not one column. Sorting one column alone scrambles the rows.", "Sort by Revenue, largest first.", "Filter Region to North to see one region, then clear the filter.", "Filters hide rows; they never delete them, so totals built with SUM still include hidden rows. Use SUBTOTAL when you want visible rows only."], "A sorted, filtered view is an answer; the raw data stays intact."),
+        warn("Sort the whole block, including the columns to the right. If formulas point at other rows, sorting can change what they refer to: sort the raw data first, then build formulas."),
+        tip("Turn the data into an **Excel Table** (Insert > Table). Formulas that point at a table grow automatically when you add rows."),
+      ],
+      points: ["Tidy data: one heading row, one record per row, no blanks, no merged cells.", "Always sort the whole table, never a single column.", "Filters hide rows without deleting them."],
+      check: [["Why are merged cells a problem for analysis?", ["They are slow", "They break sorting, filtering and pivots", "They are too wide", "They hide formulas"], 1, "Tools expect one value per cell."], ["What is wrong with sorting only one column of a table?", ["Nothing", "The rows no longer match across columns", "It deletes headings", "It changes the font"], 1, "The other columns stay where they were."]],
+    }),
+    topic({
+      title: "Summaries by group: what a PivotTable does", slug: "pivot-summaries",
+      blocks: [
+        p("A **PivotTable** summarises a table by groups: regions down the side, products across the top, and the **total of revenue** in each cell. You drag fields into rows, columns and values; Excel does the sums. Underneath, every cell of a pivot is a SUMIFS."),
+        flow("How a pivot is built", ["Choose a tidy table", "Pick the field for rows (Region)", "Pick the field for columns (Product)", "Pick the value to add up (Revenue)"]),
+        example("The same summary with one formula", "Orders are in A1:C9 (Region, Product, Revenue). Regions are listed in F2:F5 and products in G1:H1.", ["In G2 write `=SUMIFS($C$2:$C$9,$A$2:$A$9,$F2,$B$2:$B$9,G$1)`.", "The data ranges are locked with $...$; the region is locked to column F with `$F2`; the product is locked to row 1 with `G$1`.", "Copy the formula across and down the grid. Each cell finds its own region and product.", "Add a row total with `=SUM(G2:H2)`."], "A grid of SUMIFS is a PivotTable you built yourself."),
+        table("Pivot or formulas?", ["Use a PivotTable when", "Use formulas when"], [["You want to explore: regroup and re-slice quickly", "The report layout is fixed and shared with others"], ["The data changes shape often", "You need the summary inside a bigger model"], ["You only need totals and counts", "You need ratios, ranks and decisions beside the totals"]]),
+        warn("A PivotTable does not update on its own: after the data changes you must refresh it. A formula summary updates by itself. In the GrowQR practice sheet you build the formula version, so the lab can check it; the reasoning is the same as for a pivot in desktop Excel."),
+        tip("Always add a **total check**: the grand total of your summary must equal the total of the raw data. If it does not, a category was missed or misspelled."),
+      ],
+      points: ["A PivotTable is a grid of group totals; each cell is a SUMIFS.", "Mixed references let one SUMIFS fill a whole grid.", "Check the grand total against the raw data."],
+      check: [["What is each cell of a PivotTable, in effect?", ["A VLOOKUP", "A SUMIFS over the raw data", "A chart", "A text value"], 1, "A pivot adds the values for one row group and one column group."], ["Why add a total check to a summary?", ["To make it longer", "To catch categories that were missed or misspelled", "To format it", "To sort it"], 1, "If the summary total differs from the data total, something was lost."]],
+    }),
+    topic({
+      title: "Charts that answer questions", slug: "charts-that-answer",
+      blocks: [
+        p("A good chart answers **one question** in a few seconds. Choose the chart from the question, then remove everything that does not help."),
+        table("Question to chart", ["The question", "Chart", "Why"], [["Which is biggest? How do categories compare?", "Bar or column", "Length is the easiest thing to compare"], ["How did it change over time?", "Line", "The eye follows a trend"], ["What share does each part take?", "Pie (few parts) or a stacked bar", "Parts of a whole"], ["Are two measures related?", "Scatter", "Shows the pattern between two numbers"]]),
+        bars("Revenue by region (a bar chart answers 'who sold most?')", [["North", 470], ["South", 300], ["East", 270], ["West", 150]]),
+        list("Make the chart clear", ["A title that states the finding, not just the topic: *North led every month* beats *Sales by region*.", "Sort the bars from largest to smallest unless there is a natural order.", "Start bar charts at zero; a cut axis exaggerates differences.", "Use one colour, and a second colour only for the bar you want noticed.", "Label the units (rupees, thousands) once."]),
+        mistakes(["Pie charts with many slices.", "3D effects that distort lengths.", "A chart with no title or with Chart 1 as the title.", "Charting the Total row together with the data, which dwarfs every other bar."]),
+        tip("After you build the chart, cover the title and ask a colleague what it shows. If they cannot say in five seconds, simplify it."),
+      ],
+      points: ["Choose the chart from the question.", "A title should state the finding.", "Start bar charts at zero, and keep colours few."],
+      check: [["Which chart best shows change over twelve months?", ["Pie", "Line", "Table", "Radar"], 1, "A line follows values through time."], ["Why start a bar chart at zero?", ["It looks tidier", "A cut axis exaggerates differences", "Excel requires it", "To save space"], 1, "Bar length should be proportional to the value."]],
+    }),
+    topic({
+      title: "Statistics and forecasting", slug: "statistics-forecasting",
+      blocks: [
+        p("Three ideas turn a table into insight: the **centre** of the data, how **spread out** it is, and whether two measures are **related**."),
+        table("The statistics toolkit", ["Question", "Function", "Meaning"], [["What is typical?", "AVERAGE, MEDIAN", "MEDIAN is not pulled around by extreme values"], ["How spread out?", "STDEV", "A small value means points are close to the average"], ["Are two things related?", "CORREL", "Near +1: rise together. Near 0: no relationship. Near -1: one rises as the other falls"], ["What straight line fits?", "SLOPE, INTERCEPT", "How much y changes per unit of x, and where the line starts"]]),
+        example("Forecast the next month", "Sales for six months are 102, 110, 121, 129, 141 and 150 (months 1 to 6, month in A2:A7 and sales in B2:B7).", ["Slope: `=SLOPE(B2:B7,A2:A7)` is about 9.74: sales rise by about 9.7 a month.", "Intercept: `=INTERCEPT(B2:B7,A2:A7)` is 91.4.", "Month 7 forecast: `=E3+E2*7` is about 159.6.", "Correlation: `=CORREL(A2:A7,B2:B7)` is about 0.999: the points sit almost exactly on a line, so a straight-line forecast is sensible."], "Always check the correlation before trusting a straight-line forecast."),
+        explorer({ id: "trend-explorer", title: "Forecast with a line", intro: "Choose the month to forecast and see the straight-line estimate.", inputs: [{ id: "m", label: "Month to forecast", min: 7, max: 12, step: 1, value: 7 }], outputs: [{ label: "Forecast sales", expr: "91.4 + 9.742857 * m", unit: "n" }, { label: "Rise per month", expr: "9.742857", unit: "n" }] }),
+        warn("Correlation is not causation. Two measures can move together because of a third reason, or by chance. A forecast is a reasonable guess, not a promise: the further ahead you look, the less you should trust it."),
+        mistakes(["Giving SLOPE the ranges the wrong way round: the **y** values (what you predict) come first.", "Forecasting far beyond the data you have.", "Reading a high correlation as proof that one thing causes the other."]),
+      ],
+      points: ["MEDIAN resists extreme values; STDEV measures spread.", "CORREL measures how closely two measures move together.", "SLOPE and INTERCEPT give a straight-line forecast: check the correlation first."],
+      check: [["A CORREL of 0.99 means:", ["No relationship", "The two measures rise together very closely", "One causes the other", "Both are constant"], 1, "Near +1 means they move together, which says nothing about causes."], ["In SLOPE(B2:B7,A2:A7), B holds:", ["The x values", "The y values you want to predict", "Dates", "Weights"], 1, "SLOPE takes y first, then x."]],
+    }),
+  ],
+  terms: [["Tidy table", "One heading row, one record per row, no blanks"], ["PivotTable", "A summary of a table by groups"], ["Correlation", "How closely two measures move together"], ["Slope", "How much y changes per unit of x"], ["Median", "The middle value"], ["Standard deviation", "A measure of spread"]],
+  practical: { title: "Practical: a report from real data", intro: "Analyse something from your own life or work.", steps: ["Collect at least twenty rows of data with a category and a number, such as expenses by type or hours by project.", "Check that the table is tidy.", "Build a category-by-category summary with SUMIFS and a total check.", "Chart the summary with a title that states the finding, and write one sentence of insight."] },
+  quiz: [
+    ["Which of these makes a table tidy?", ["Merged headings", "One heading row and one record per row", "Blank rows between groups", "Subtotals in the middle"], 1, "Tools expect a plain, regular table."],
+    ["A PivotTable cell is in effect:", ["A chart", "A SUMIFS or similar group total", "A lookup", "A date"], 1, "Each cell adds the values for one row group and one column group."],
+    ["In the formula =SUMIFS($C$2:$C$9,$A$2:$A$9,$F2,$B$2:$B$9,G$1), why is G$1 written that way?", ["Decoration", "The product row is locked while the column moves", "It is a date", "It is a mistake"], 1, "The row is locked and the column moves as the formula is copied across."],
+    ["Which chart suits 'which category is biggest'?", ["Pie with twenty slices", "Bar chart", "Scatter", "Radar"], 1, "Bar length is the easiest to compare."],
+    ["A correlation near 0 means:", ["Strong link", "No straight-line relationship", "A mistake", "Perfect forecast"], 1, "The points show no line."],
+    ["Why is a forecast far beyond your data risky?", ["It looks messy", "The pattern may not continue", "Excel cannot compute it", "It uses more memory"], 1, "The further ahead, the less reliable."],
+    ["Why add a grand-total check to a summary?", ["To fill space", "To catch missed or misspelled categories", "To sort the data", "To change colours"], 1, "The totals must agree."],
+  ],
+});
+
+/* ------------------------------------------------------------------------------------------------ module 6 */
+export const M6 = module_({
+  slug: "finance-and-models", title: "Finance and models", hours: 2.5, level: "Professional skills",
+  summary: "Price loans, compare investments with NPV and IRR, build a what-if model, and finish a workbook you would be comfortable sharing.",
+  outcome: "You can answer 'what will it cost?' and 'is it worth it?' with a transparent, checked model that others can follow and change.",
+  intro: "Spreadsheets earn their keep when money is involved: loan repayments, project returns, break-even points. Finance functions look intimidating, but each one answers a plain question. This module teaches the questions first, then the functions, and finishes with the habits that make a model trustworthy.",
+  topics: [
+    topic({
+      title: "Loans: PMT, PV, NPER and RATE", slug: "loans",
+      blocks: [
+        p("A loan has four numbers: the **rate**, the **number of periods**, the **payment** and the **amount borrowed** (the present value). Give Excel any three and it finds the fourth."),
+        table("Loan functions", ["You know...", "You want...", "Use", "Example"], [["Rate, periods, amount", "The payment", "PMT", "=PMT(0.01,12,60000)"], ["Rate, periods, payment", "The amount you can borrow", "PV", "=PV(0.01,12,-5000)"], ["Rate, payment, amount", "How many periods", "NPER", "=NPER(0.01,-6000,60000)"], ["Periods, payment, amount", "The rate per period", "RATE", "=RATE(12,-5331,60000)"]]),
+        example("A laptop loan", "60,000 at 12% a year for 12 months.", ["Monthly rate: 12% divided by 12 = 1% = 0.01. Rate and periods must use the **same time unit**.", "Payment: `=PMT(0.01,12,60000)` is about -5,330.93. The minus sign means money you pay out.", "Total paid: `=-B5*B3` is about 63,971.13.", "Interest cost: total paid minus 60,000 is about 3,971.13."], "Check your answer with a rough estimate: 12 payments of about 5,300 is about 63,600."),
+        explorer({ id: "loan-explorer", title: "Price your own loan", intro: "Move the amount, the yearly rate and the months and watch the monthly payment and the interest cost.", inputs: [{ id: "amt", label: "Loan amount (rupees)", min: 10000, max: 500000, step: 5000, value: 60000 }, { id: "rate", label: "Yearly rate (%)", min: 1, max: 24, step: 0.5, value: 12 }, { id: "n", label: "Months", min: 6, max: 60, step: 6, value: 12 }], outputs: [{ label: "Monthly payment", expr: "amt * (rate / 1200) / (1 - pow(1 + rate / 1200, -n))", unit: "rs" }, { label: "Total interest", expr: "n * amt * (rate / 1200) / (1 - pow(1 + rate / 1200, -n)) - amt", unit: "rs" }] }),
+        warn("Match the units. A yearly rate with monthly periods gives a wildly wrong payment. Divide the yearly rate by 12 when payments are monthly."),
+        mistakes(["Using the yearly rate with monthly periods.", "Ignoring the sign: PMT returns a negative number for money you pay.", "Forgetting fees: the rate in the formula is not the whole cost of a loan."]),
+      ],
+      points: ["Rate, periods, payment and amount: give three, find the fourth.", "Use the same time unit for the rate and the periods.", "PMT is negative because it is money going out."],
+      check: [["A loan has monthly payments. Which rate goes into PMT?", ["The yearly rate", "The yearly rate divided by 12", "The yearly rate times 12", "Any rate"], 1, "The rate must match the payment period."], ["Which function finds how many months a payment would take?", ["PMT", "PV", "NPER", "RATE"], 2, "NPER returns the number of periods."]],
+    }),
+    topic({
+      title: "Is it worth it? NPV and IRR", slug: "npv-irr",
+      blocks: [
+        p("A rupee today is worth more than a rupee next year, because today's rupee can be invested or put to work. **Net present value (NPV)** translates future cash into today's money so projects can be compared fairly."),
+        table("Two questions about an investment", ["Question", "Tool", "Decision rule"], [["How much better off am I, in today's money, at my required return?", "NPV", "Positive NPV: the project beats the required return"], ["What return does the project itself earn?", "IRR", "Compare it with the return you require"]]),
+        example("A new oven", "An oven costs 100,000 now and brings extra cash of 40,000, 50,000 and 60,000 over three years. The owner requires 10%.", ["Discount the future cash: `=NPV(B1,B3:B5)` discounts years 1 to 3.", "Add the cost, which is today and so is not discounted: `=NPV(B1,B3:B5)+B2` where B2 is -100,000.", "NPV is about 22,765: positive, so the oven beats the 10% requirement.", "`=IRR(B2:B5)` is about 21.6%: the oven earns more than the 10% needed."], "Decision: invest. A negative NPV would mean skip, or ask for a better price."),
+        explorer({ id: "npv-explorer", title: "What if the required return changes?", intro: "Move the discount rate and watch the NPV of the oven change.", inputs: [{ id: "r", label: "Required return (%)", min: 0, max: 30, step: 1, value: 10 }], outputs: [{ label: "NPV", expr: "40000 / (1 + r / 100) + 50000 / pow(1 + r / 100, 2) + 60000 / pow(1 + r / 100, 3) - 100000", unit: "rs", hint: "Where NPV reaches zero is the IRR." }] }),
+        warn("NPV in Excel discounts the **first** value by one full period. That is why the year 0 cash, which is not discounted, is added outside the NPV function."),
+        mistakes(["Putting the year 0 cost inside NPV, which discounts it as if it were a year away.", "Comparing IRRs without looking at the size of the project.", "Using one optimistic cash flow forecast: test a pessimistic one too."]),
+      ],
+      points: ["NPV turns future cash into today's money.", "Positive NPV beats the required return; IRR is the return the project earns.", "Add the year 0 amount outside the NPV function."],
+      check: [["A project has a positive NPV at your required return. This means:", ["It loses money", "It beats the required return", "Its IRR is zero", "It costs nothing"], 1, "A positive NPV means it earns more than you required."], ["Why is the year 0 cost added outside NPV?", ["It is optional", "Excel discounts every value inside NPV by at least one period", "It is secret", "Excel cannot read negatives"], 1, "NPV treats the first value as one period away."]],
+    }),
+    topic({
+      title: "What-if models and break-even", slug: "what-if-models",
+      blocks: [
+        p("A **model** is a sheet where you change an input and see what happens to the result. The art is keeping it **simple, labelled and checkable**."),
+        formula("Break-even units", "break-even = fixed costs / (price - variable cost per unit)", "Each unit sold contributes price minus variable cost towards the fixed costs. When contributions equal fixed costs, you break even."),
+        example("A stall at a fair", "Fixed costs are 6,000. Each item sells for 120 and costs 70 to make.", ["Contribution per item: 120 - 70 = 50.", "Break-even: 6,000 / 50 = 120 items.", "Profit at 200 items: 200 * 50 - 6,000 = 4,000."], "Selling fewer than 120 means a loss; every item beyond adds 50 of profit."),
+        explorer({ id: "breakeven-explorer", title: "A stall at a fair", intro: "Change the price, the cost and the items sold to see break-even and profit.", inputs: [{ id: "price", label: "Price per item (rupees)", min: 80, max: 200, step: 5, value: 120 }, { id: "cost", label: "Cost per item (rupees)", min: 30, max: 100, step: 5, value: 70 }, { id: "qty", label: "Items sold", min: 0, max: 400, step: 10, value: 200 }], outputs: [{ label: "Break-even items", expr: "6000 / (price - cost)", unit: "n" }, { label: "Profit", expr: "qty * (price - cost) - 6000", unit: "rs" }] }),
+        list("The anatomy of a good model", ["**Inputs** in one labelled block, in a different colour.", "**Calculations** that only point at inputs and other calculations.", "**Results** at the top or on their own sheet.", "**Checks** that must be zero or TRUE.", "A short note saying what the model is for and who last changed it."]),
+        warn("A model is only as honest as its assumptions. Show the assumptions beside the result and test an unfavourable case before you share good news."),
+        tip("Use **Data > What-If Analysis > Goal Seek** in desktop Excel to work backwards: *what price makes the profit 5,000?* It changes one input until a result reaches the target."),
+      ],
+      points: ["Break-even is fixed costs divided by the contribution per unit.", "Separate inputs, calculations, results and checks.", "State assumptions and test an unfavourable case."],
+      check: [["Fixed costs are 6,000 and each item contributes 50. Break-even is:", ["120 items", "50 items", "300 items", "6,050 items"], 0, "6,000 divided by 50 is 120."], ["What belongs in an input block?", ["Results", "Values you can change, labelled", "Checks", "Charts"], 1, "Inputs are the numbers a user may change."]],
+    }),
+    topic({
+      title: "Finishing a workbook others can trust", slug: "finishing",
+      blocks: [
+        p("A workbook is finished when a stranger can open it, understand it, change an input and trust the answer. These last steps take ten minutes and prevent most embarrassment."),
+        list("The finishing checklist", ["**Test** with easy numbers where you know the answer.", "**Check totals** two ways (for example column totals and row totals must agree).", "**Scan for errors**: look for error codes, text left-aligned in number columns and numbers that look too good.", "**Label** every input, every sheet and every unit.", "**Format** consistently: the same number format, no rainbow colours.", "**Protect** the formulas (Review > Protect Sheet) and leave only the inputs editable.", "**Save a clear file name** with a date or version, and keep an unprotected master.", "**Explain** the model in a short note: purpose, inputs, results, known limits."], true),
+        table("Sharing choices", ["You want people to...", "Share as"], [["Read only", "PDF, or a copy with values only (Paste Special > Values)"], ["Change the inputs", "A protected workbook with unlocked input cells"], ["Collaborate live", "A shared online workbook, with a named owner"], ["Reuse the model", "A template with the inputs cleared and a note"]]),
+        warn("Before sharing a file outside your organisation, check for hidden sheets, comments and names you did not intend to share. Paste values into a fresh file if in doubt."),
+        example("A ten-minute review", "You are about to send a sales model to a manager.", ["Change a key input to a round number and check the result by hand.", "Make sure the check cells show zero.", "Protect the formulas and lock the sheet.", "Add a note saying what the model does and what it does not."], "A reviewed, labelled, protected model builds trust faster than any clever formula."),
+      ],
+      points: ["Test with easy numbers and check totals two ways.", "Label inputs, units and sheets; protect formulas.", "Choose the sharing format to match what people should do with it."],
+      check: [["Why test a model with easy numbers?", ["It is faster", "You can see at once whether the answer is right", "Excel prefers them", "To hide errors"], 1, "Easy numbers let you verify by hand."], ["How can you stop people overwriting formulas?", ["Colour them red", "Protect the sheet with only inputs unlocked", "Rename the file", "Hide the ribbon"], 1, "Sheet protection locks every cell except the ones you unlock."]],
+    }),
+  ],
+  terms: [["PMT", "The payment on a loan"], ["Present value", "Future money expressed in today's terms"], ["NPV", "Net present value of a series of cash flows"], ["IRR", "The return a project itself earns"], ["Break-even", "Where income equals costs"], ["Model", "A sheet where changing an input updates the result"]],
+  practical: { title: "Practical: your own decision model", intro: "Model a real choice: a loan, a course fee or a small business idea.", steps: ["List the inputs (cost, rate, time, income) in a labelled block.", "Calculate the key result with the right finance function.", "Add a check cell and a result cell with a clear decision (for example Invest or Skip).", "Change an input to a pessimistic value and note how the decision changes."] },
+  quiz: [
+    ["Which function gives the monthly payment on a loan?", ["PV", "PMT", "NPER", "IRR"], 1, "PMT returns the payment."],
+    ["A 12% yearly loan is paid monthly. Which rate do you use in PMT?", ["12%", "1%", "144%", "0.12 per day"], 1, "Divide the yearly rate by 12."],
+    ["PMT returns a negative number. Why?", ["It is a mistake", "It is money paid out", "The loan is too small", "The rate is high"], 1, "Excel uses signs to show direction of money."],
+    ["A positive NPV means:", ["Money is lost", "The project beats the required return", "The IRR is zero", "The payment is too high"], 1, "It earns more than you required."],
+    ["What does IRR give?", ["The monthly payment", "The return a project itself earns", "The break-even", "The loan period"], 1, "IRR is the rate that makes NPV zero."],
+    ["Fixed costs 6,000; price 120; cost 70. What is the break-even?", ["120 items", "60 items", "6,000 items", "50 items"], 0, "6,000 divided by (120 - 70) is 120."],
+    ["Which step protects formulas from being overwritten?", ["Changing colour", "Protecting the sheet with only inputs unlocked", "Hiding columns", "Renaming the file"], 1, "Protection locks the formulas."],
+  ],
+});

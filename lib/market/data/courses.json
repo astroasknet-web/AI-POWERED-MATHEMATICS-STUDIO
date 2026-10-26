@@ -164,24 +164,24 @@
       "tags": [
         "All"
       ],
-      "hours": "~25 hrs",
+      "hours": "~14 hrs",
       "modules": 6,
-      "weeks": "~5 weeks",
-      "pace": "5 hrs/wk",
-      "badge": "Excel Analyst",
+      "weeks": "~4 weeks",
+      "pace": "3 to 4 hrs/wk",
+      "badge": "Excel Advanced",
       "prereq": "Basic Excel (or equivalent).",
       "bestFor": "Analysts, accountants, and managers who work in spreadsheets daily.",
-      "brief": "Pivot tables, lookups, and dashboards for analysts and managers.",
+      "brief": "Lookups, SUMIFS, INDEX and MATCH, data cleaning, dates, pivot-style summaries, forecasts and finance, with a checked spreadsheet lab in every module.",
       "learn": [
-        "PivotTables & PivotCharts — grouping, slicers, and calculated fields",
-        "Lookup functions — VLOOKUP, XLOOKUP, INDEX-MATCH, HLOOKUP",
-        "Logical & text functions — nested IF, IFS, CONCAT, TEXT, LEFT/RIGHT/MID",
-        "Conditional formatting and data validation (dropdowns)",
-        "What-if analysis — Goal Seek, Scenario Manager, Data Tables",
-        "Building an interactive dashboard with charts and controls"
+        "Mixed references, IFS, SWITCH and error handling",
+        "VLOOKUP, approximate matches, INDEX with MATCH and XLOOKUP",
+        "SUMIFS, COUNTIFS, AVERAGEIFS, rankings and SUMPRODUCT",
+        "Cleaning text, splitting codes and calculating with dates",
+        "Pivot-style summaries, charts that answer questions, trends and forecasts",
+        "Loans, NPV, IRR, break-even and a workbook you can share with confidence"
       ],
-      "handsOn": "Create a sales dashboard from raw transaction data with slicers and KPIs.",
-      "outcome": "Do real reporting/analysis; next step Excel Macros & VBA or Power BI.",
+      "handsOn": "Build a regional performance dashboard with SUMIFS, percent of target, a status, a rank, the best region and a chart.",
+      "outcome": "Analyse and report on real business data with the formulas professionals use every day.",
       "icon": "table"
     },
     {

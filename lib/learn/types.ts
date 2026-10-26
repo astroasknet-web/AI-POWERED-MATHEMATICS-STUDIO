@@ -21,12 +21,12 @@ export type CheckSpec =
   | { k: "doc.order"; texts: string[] }
   // Spreadsheet
   | { k: "sheet.value"; ref: string; equals: string | number }
-  | { k: "sheet.formula"; ref: string; fns?: string[]; cover?: string; equals?: number | string }
+  | { k: "sheet.formula"; ref: string; fns?: string[]; cover?: string; equals?: number | string; /** A regular expression the typed formula must match (for example, mixed references like $A2), with what to tell the student when it does not. */ pattern?: string; patternMsg?: string }
   | { k: "sheet.filled"; range: string; min?: number }
   | { k: "sheet.result"; ref: string; equals: number | string; tolerance?: number }
   | { k: "sheet.chart"; type?: "bar" | "line" | "pie"; labels?: string; values?: string }
   | { k: "sheet.sorted"; range: string; dir: "asc" | "desc" }
-  | { k: "sheet.format"; ref: string; what: "bold" | "currency" | "percent" | "center" }
+  | { k: "sheet.format"; ref: string; what: "bold" | "currency" | "percent" | "center" | "date" }
   | { k: "sheet.noerrors" }
   // Slides
   | { k: "slides.count"; min: number; max?: number }
