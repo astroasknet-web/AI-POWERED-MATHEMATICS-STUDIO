@@ -110,20 +110,20 @@
       "modules": 6,
       "weeks": "~3 weeks",
       "pace": "4 hrs/wk",
-      "badge": "Digital Starter",
+      "badge": "Digital Basics",
       "prereq": "None — designed for absolute first-time users.",
       "bestFor": "Seniors, homemakers, and Tier-2/3 learners entering the digital economy.",
-      "brief": "File management, browsers, email, safe internet use, and government/UPI portals.",
+      "brief": "Computers, files, the web, email and staying safe online, with a practice lab in every module.",
       "learn": [
-        "Computer parts, operating a Windows PC, keyboard & mouse basics",
-        "Files & folders — create, rename, copy, move, search, and back up",
-        "Web browsers — searching, tabs, bookmarks, downloads, and clearing history",
-        "Email — creating an account, composing, attachments, spam, and etiquette",
-        "Everyday government & utility portals — DigiLocker, UPI apps, online bill payment",
-        "Staying safe — recognising scams, strong passwords, and privacy basics"
+        "The parts of a computer, software and how storage is measured",
+        "Files, folders, naming and the shortcuts that save time",
+        "How the internet works, using a browser and searching well",
+        "Writing clear emails and sharing files safely",
+        "Strong passwords, 2-step verification, scams, updates and backups",
+        "Safe online services, fixing common problems and learning new tools"
       ],
-      "handsOn": "Set up an email account, send an email with an attachment, and complete a mock UPI payment.",
-      "outcome": "Confidently use a computer and the internet for daily life; ready for Basic Excel or Google Workspace.",
+      "handsOn": "Write a one-page digital safety card for your family with rules, warning signs and steps to take.",
+      "outcome": "Use a computer and the internet with confidence, and keep yourself and your money safe.",
       "icon": "monitor"
     },
     {
@@ -164,24 +164,24 @@
       "tags": [
         "All"
       ],
-      "hours": "~25 hrs",
+      "hours": "~14 hrs",
       "modules": 6,
-      "weeks": "~5 weeks",
-      "pace": "5 hrs/wk",
-      "badge": "Excel Analyst",
+      "weeks": "~4 weeks",
+      "pace": "3 to 4 hrs/wk",
+      "badge": "Excel Advanced",
       "prereq": "Basic Excel (or equivalent).",
       "bestFor": "Analysts, accountants, and managers who work in spreadsheets daily.",
-      "brief": "Pivot tables, lookups, and dashboards for analysts and managers.",
+      "brief": "Lookups, SUMIFS, INDEX and MATCH, data cleaning, dates, pivot-style summaries, forecasts and finance, with a checked spreadsheet lab in every module.",
       "learn": [
-        "PivotTables & PivotCharts — grouping, slicers, and calculated fields",
-        "Lookup functions — VLOOKUP, XLOOKUP, INDEX-MATCH, HLOOKUP",
-        "Logical & text functions — nested IF, IFS, CONCAT, TEXT, LEFT/RIGHT/MID",
-        "Conditional formatting and data validation (dropdowns)",
-        "What-if analysis — Goal Seek, Scenario Manager, Data Tables",
-        "Building an interactive dashboard with charts and controls"
+        "Mixed references, IFS, SWITCH and error handling",
+        "VLOOKUP, approximate matches, INDEX with MATCH and XLOOKUP",
+        "SUMIFS, COUNTIFS, AVERAGEIFS, rankings and SUMPRODUCT",
+        "Cleaning text, splitting codes and calculating with dates",
+        "Pivot-style summaries, charts that answer questions, trends and forecasts",
+        "Loans, NPV, IRR, break-even and a workbook you can share with confidence"
       ],
-      "handsOn": "Create a sales dashboard from raw transaction data with slicers and KPIs.",
-      "outcome": "Do real reporting/analysis; next step Excel Macros & VBA or Power BI.",
+      "handsOn": "Build a regional performance dashboard with SUMIFS, percent of target, a status, a rank, the best region and a chart.",
+      "outcome": "Analyse and report on real business data with the formulas professionals use every day.",
       "icon": "table"
     },
     {
@@ -193,24 +193,24 @@
       "tags": [
         "All"
       ],
-      "hours": "~30 hrs",
+      "hours": "~14 hrs",
       "modules": 6,
-      "weeks": "~6 weeks",
-      "pace": "5 hrs/wk",
+      "weeks": "~4 weeks",
+      "pace": "3 to 4 hrs/wk",
       "badge": "Excel Automation",
       "prereq": "Advanced Excel; some comfort with formulas.",
       "bestFor": "Finance/operations staff who repeat the same reports every week.",
-      "brief": "Recording macros and writing VBA to automate repetitive reporting.",
+      "brief": "Record, read, write and debug VBA macros, with code to run in your own Excel and labs that train your thinking.",
       "learn": [
-        "Recording, editing, and running macros; the Developer tab",
-        "The VBA editor, modules, and the object model (Workbook/Worksheet/Range)",
-        "Variables, loops (For/Do), and conditionals (If/Select Case)",
-        "Automating formatting, data cleanup, and multi-sheet consolidation",
-        "Building custom functions (UDFs) and simple UserForms",
-        "Error handling and scheduling/triggering macros"
+        "What to automate, recording macros and macro security",
+        "VBA building blocks: variables, types, MsgBox and InputBox",
+        "Workbooks, worksheets, ranges and finding the last row",
+        "If, Select Case, loops and arrays",
+        "Subs, Functions, error handling, debugging and events",
+        "Fast, safe, documented automation you can hand over"
       ],
-      "handsOn": "Build a one-click macro that imports data, cleans it, and generates a formatted report.",
-      "outcome": "Automate hours of manual work; a strong resume differentiator.",
+      "handsOn": "Write the design document for a safe, maintainable macro: inputs and outputs, procedure and safety.",
+      "outcome": "Plan, write and hand over macros that save real time.",
       "icon": "cog"
     },
     {
@@ -222,24 +222,24 @@
       "tags": [
         "All"
       ],
-      "hours": "~12 hrs",
+      "hours": "~11.5 hrs",
       "modules": 6,
       "weeks": "~3 weeks",
-      "pace": "4 hrs/wk",
-      "badge": "Workspace Collaborator",
+      "pace": "3 to 4 hrs/wk",
+      "badge": "Workspace Ready",
       "prereq": "Basic computer familiarity.",
       "bestFor": "Students, startups, and remote teams that collaborate online.",
-      "brief": "Cloud collaboration and Forms surveys.",
+      "brief": "Drive, Docs, Sheets, Slides, Forms and safe teamwork, with a practice lab in every module.",
       "learn": [
-        "Google Drive — storage, sharing, permissions, and version history",
-        "Docs — collaborative writing, comments, suggestions, and templates",
-        "Sheets — formulas, sharing, and basic charts (with Excel differences)",
-        "Slides — quick decks and real-time co-editing",
-        "Forms — building surveys/quizzes and reading responses in Sheets",
-        "Google Meet & Calendar basics for team coordination"
+        "Organising and sharing files in Drive with the right access",
+        "Writing structured Docs with styles, lists, tables and comments",
+        "Tracking data in Sheets with formulas, drop-downs and charts",
+        "Planning and presenting with Slides",
+        "Designing Forms and reading the results",
+        "A team way of working, Calendar, Meet and account safety"
       ],
-      "handsOn": "Run a live feedback survey with Forms and auto-summarise responses in Sheets.",
-      "outcome": "Collaborate smoothly in any modern workplace.",
+      "handsOn": "Write a one-page team project plan with a task table, a sharing plan and next steps.",
+      "outcome": "Run a small team project from one shared folder, confidently and safely.",
       "icon": "grid"
     },
     {

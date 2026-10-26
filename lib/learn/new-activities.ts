@@ -39,4 +39,8 @@ export const NEW_ACTIVITIES: Record<string, () => unknown> = {
   "time-management-productivity": () => require("./data/time-management-productivity.activities.json"),
   "token-development-erc-standards": () => require("./data/token-development-erc-standards.activities.json"),
   "web3-development-javascript-nodejs": () => require("./data/web3-development-javascript-nodejs.activities.json"),
+  "advanced-excel": () => require("./data/advanced-excel.activities.json"),
+  "google-workspace": () => require("./data/google-workspace.activities.json"),
+  "basic-computer-internet-literacy": () => require("./data/basic-computer-internet-literacy.activities.json"),
+  "excel-macros-vba": () => require("./data/excel-macros-vba.activities.json"),
 };

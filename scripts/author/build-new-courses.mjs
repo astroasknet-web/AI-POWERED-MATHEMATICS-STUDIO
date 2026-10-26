@@ -14,6 +14,10 @@ import { pathToFileURL } from "node:url";
 const root = path.resolve(import.meta.dirname, "../..");
 const dir = path.join(import.meta.dirname, "courses");
 
+/**
+ * Sources are built in file-name order, and the answer positions of every quiz depend on that order (see kit.mjs: a shared counter spreads the correct
+ * answers over A to D). So a new course must be named so that it sorts AFTER every existing one (z1-, z2-, ...): then no earlier course's generated files change.
+ */
 export async function loadSources() {
   const files = readdirSync(dir).filter((f) => f.endsWith(".mjs")).sort();
   const out = [];

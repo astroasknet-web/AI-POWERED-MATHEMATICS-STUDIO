@@ -66,7 +66,7 @@ export function cleanState(a: Activity, raw: unknown): ActivityState | null {
         formats[k] = {
           ...(f.bold === true ? { bold: true } : {}),
           ...(f.align === "left" || f.align === "center" || f.align === "right" ? { align: f.align } : {}),
-          ...(["auto", "int", "dec2", "currency", "percent"].includes(f.num as string) ? { num: f.num } : {}),
+          ...(["auto", "int", "dec2", "currency", "percent", "date"].includes(f.num as string) ? { num: f.num } : {}),
           ...(typeof f.bg === "string" && /^#[0-9a-fA-F]{6}$/.test(f.bg) ? { bg: f.bg.toLowerCase() } : {}),
         };
       }

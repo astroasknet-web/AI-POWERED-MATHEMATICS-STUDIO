@@ -1,10 +1,11 @@
+import { MORE_FUNCS, formatDate, moreFn, parseIsoDate } from "./more-functions";
 import { analyse, colName, FormulaError, MAX_COLS, MAX_ROWS, parseFormula, parseRef, refName, type Node } from "./formula";
 
 /**
  * The spreadsheet model and calculator. A sheet is a plain object of raw cell text ("Math", "42", "=SUM(B2:B5)"); everything else
  * (values, errors, charts) is derived. Evaluation is a tree walk over the parsed formula: no eval, no Function, no dynamic code.
  */
-export type CellFormat = { bold?: boolean; align?: "left" | "center" | "right"; num?: "auto" | "int" | "dec2" | "currency" | "percent"; bg?: string };
+export type CellFormat = { bold?: boolean; align?: "left" | "center" | "right"; num?: "auto" | "int" | "dec2" | "currency" | "percent" | "date"; bg?: string };
 export type ChartSpec = { type: "bar" | "line" | "pie"; labels: string; values: string; title?: string };
 export interface SheetState {
   cells: Record<string, string>;
@@ -31,7 +32,7 @@ const MSG: Record<string, string> = {
   "#N/A": "The value could not be found.",
 };
 
-const FUNCS = new Set(["SUM", "AVERAGE", "MIN", "MAX", "COUNT", "COUNTA", "IF", "ROUND", "ABS", "AND", "OR", "NOT", "COUNTIF", "SUMIF", "AVERAGEIF", "IFERROR", "SQRT", "INT", "MOD", "POWER", "ROUNDUP", "ROUNDDOWN", "MEDIAN", "STDEV", "VAR", "PMT", "FV", "CORREL", "SLOPE", "INTERCEPT"]);
+const FUNCS = new Set(["SUM", "AVERAGE", "MIN", "MAX", "COUNT", "COUNTA", "IF", "ROUND", "ABS", "AND", "OR", "NOT", "COUNTIF", "SUMIF", "AVERAGEIF", "IFERROR", "SQRT", "INT", "MOD", "POWER", "ROUNDUP", "ROUNDDOWN", "MEDIAN", "STDEV", "VAR", "PMT", "FV", "CORREL", "SLOPE", "INTERCEPT", ...MORE_FUNCS]);
 export const SUPPORTED_FUNCTIONS = [...FUNCS];
 
 export class Calculator {
@@ -91,7 +92,7 @@ export class Calculator {
       case "range": {
         const out: Value[] = [];
         for (let r = n.r1; r <= n.r2; r++) for (let c = n.c1; c <= n.c2; c++) out.push(this.value(refName(c, r)));
-        return out;
+        return Object.assign(out, { rows: n.r2 - n.r1 + 1, cols: n.c2 - n.c1 + 1 }); // the shape lets lookups and INDEX read a table
       }
       case "un": {
         const a = this.num(this.ev(n.a));
@@ -116,7 +117,7 @@ export class Calculator {
     if (v === null) return 0;
     if (typeof v === "number") return v;
     if (typeof v === "boolean") return v ? 1 : 0;
-    const n = parseNumber(v);
+    const n = parseNumber(v) ?? parseIsoDate(v); // a date typed as 2026-01-31 works in sums and differences
     return n === null ? err("#VALUE!", MSG["#VALUE!"]) : n;
   }
 
@@ -162,7 +163,7 @@ export class Calculator {
   }
 
   private fn(name: string, args: Node[]): Value {
-    if (!FUNCS.has(name)) return err("#NAME?", `"${name}" is not a function GrowQR knows yet. Try SUM, AVERAGE, MIN, MAX, COUNT, COUNTA, IF, ROUND, COUNTIF, SUMIF, AVERAGEIF or IFERROR.`);
+    if (!FUNCS.has(name)) return err("#NAME?", `"${name}" is not a function GrowQR knows yet. Check the spelling, or try SUM, AVERAGE, IF, COUNTIFS, SUMIFS, VLOOKUP, XLOOKUP, INDEX, MATCH or TEXT.`);
     const need = (min: number, max: number): Value | null => (args.length < min || args.length > max ? err("#VALUE!", `${name} needs ${min === max ? min : `${min} to ${max}`} value${max === 1 ? "" : "s"} inside the brackets, but it has ${args.length}.`) : null);
     switch (name) {
       case "SUM": { const n = this.numbers(args); return Array.isArray(n) ? n.reduce((a, b) => a + b, 0) : n; }
@@ -311,7 +312,7 @@ export class Calculator {
         if (name === "PMT") return r === 0 ? -a / n : (-a * r) / (1 - Math.pow(1 + r, -n));
         return r === 0 ? -a * n : -(a * (Math.pow(1 + r, n) - 1)) / r;
       }
-      default: return err("#NAME?", MSG["#NAME?"]);
+      default: return moreFn(name, args, { ev: (n) => this.ev(n), scalar: (v) => this.scalar(v), num: (v) => this.num(v), numbers: (a) => this.numbers(a), err, isErr, compare, matches, text });
     }
   }
 }
@@ -363,6 +364,7 @@ export function formatValue(v: Value, fmt?: CellFormat): string {
     case "dec2": return v.toFixed(2);
     case "currency": return "₹" + v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     case "percent": return (v * 100).toFixed(1).replace(/\.0$/, "") + "%";
+    case "date": return formatDate(v);
     default: return Number.isInteger(v) ? String(v) : String(parseFloat(v.toPrecision(10)));
   }
 }
