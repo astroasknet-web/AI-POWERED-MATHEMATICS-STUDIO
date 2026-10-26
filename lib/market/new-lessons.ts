@@ -41,4 +41,5 @@ export const NEW_LESSONS: Record<string, () => unknown> = {
   "web3-development-javascript-nodejs": () => require("./data/lessons/web3-development-javascript-nodejs.json"),
   "advanced-excel": () => require("./data/lessons/advanced-excel.json"),
   "google-workspace": () => require("./data/lessons/google-workspace.json"),
+  "basic-computer-internet-literacy": () => require("./data/lessons/basic-computer-internet-literacy.json"),
 };

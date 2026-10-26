@@ -110,20 +110,20 @@
       "modules": 6,
       "weeks": "~3 weeks",
       "pace": "4 hrs/wk",
-      "badge": "Digital Starter",
+      "badge": "Digital Basics",
       "prereq": "None — designed for absolute first-time users.",
       "bestFor": "Seniors, homemakers, and Tier-2/3 learners entering the digital economy.",
-      "brief": "File management, browsers, email, safe internet use, and government/UPI portals.",
+      "brief": "Computers, files, the web, email and staying safe online, with a practice lab in every module.",
       "learn": [
-        "Computer parts, operating a Windows PC, keyboard & mouse basics",
-        "Files & folders — create, rename, copy, move, search, and back up",
-        "Web browsers — searching, tabs, bookmarks, downloads, and clearing history",
-        "Email — creating an account, composing, attachments, spam, and etiquette",
-        "Everyday government & utility portals — DigiLocker, UPI apps, online bill payment",
-        "Staying safe — recognising scams, strong passwords, and privacy basics"
+        "The parts of a computer, software and how storage is measured",
+        "Files, folders, naming and the shortcuts that save time",
+        "How the internet works, using a browser and searching well",
+        "Writing clear emails and sharing files safely",
+        "Strong passwords, 2-step verification, scams, updates and backups",
+        "Safe online services, fixing common problems and learning new tools"
       ],
-      "handsOn": "Set up an email account, send an email with an attachment, and complete a mock UPI payment.",
-      "outcome": "Confidently use a computer and the internet for daily life; ready for Basic Excel or Google Workspace.",
+      "handsOn": "Write a one-page digital safety card for your family with rules, warning signs and steps to take.",
+      "outcome": "Use a computer and the internet with confidence, and keep yourself and your money safe.",
       "icon": "monitor"
     },
     {

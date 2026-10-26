@@ -41,4 +41,5 @@ export const NEW_ACTIVITIES: Record<string, () => unknown> = {
   "web3-development-javascript-nodejs": () => require("./data/web3-development-javascript-nodejs.activities.json"),
   "advanced-excel": () => require("./data/advanced-excel.activities.json"),
   "google-workspace": () => require("./data/google-workspace.activities.json"),
+  "basic-computer-internet-literacy": () => require("./data/basic-computer-internet-literacy.activities.json"),
 };
