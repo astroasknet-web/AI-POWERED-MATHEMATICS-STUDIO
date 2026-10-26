@@ -43,4 +43,11 @@ export const NEW_ACTIVITIES: Record<string, () => unknown> = {
   "google-workspace": () => require("./data/google-workspace.activities.json"),
   "basic-computer-internet-literacy": () => require("./data/basic-computer-internet-literacy.activities.json"),
   "excel-macros-vba": () => require("./data/excel-macros-vba.activities.json"),
+  "sql-for-data-business": () => require("./data/sql-for-data-business.activities.json"),
+  "advanced-excel-data-analysis": () => require("./data/advanced-excel-data-analysis.activities.json"),
+  "data-analytics-python-sql": () => require("./data/data-analytics-python-sql.activities.json"),
+  "business-analytics-power-bi": () => require("./data/business-analytics-power-bi.activities.json"),
+  "data-visualization-tableau": () => require("./data/data-visualization-tableau.activities.json"),
+  "data-engineering-fundamentals": () => require("./data/data-engineering-fundamentals.activities.json"),
+  "google-analytics-4": () => require("./data/google-analytics-4.activities.json"),
 };

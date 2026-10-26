@@ -1,0 +1,253 @@
+import { bars, code, def, example, flow, formula, list, mistakes, module_, p, table, tip, topic, tryIt, vizPlay, warn } from "../kit.mjs";
+import { lessonOrders } from "./tb-data.mjs";
+
+const NOTE_RUN = "Tableau Desktop and Tableau Public are desktop applications and do not run in a browser tab, so the steps described here (opening Tableau, connecting, publishing) are explained rather than run. What does run here is a practice viz builder with the same ideas: fields on the Columns and Rows shelves, the Marks card, filters, calculated fields and table calculations, on a real table.";
+const D = lessonOrders;
+
+/* ------------------------------------------------------------------------------------------------ module 1 */
+export const M1 = module_({
+  slug: "tableau-basics", title: "Tableau basics: fields, shelves and your first charts", hours: 3.5, level: "Getting started",
+  summary: "Learn how Tableau thinks: dimensions and measures, discrete and continuous fields, shelves and the Marks card, and how a chart is built from fields.",
+  outcome: "You can tell dimensions from measures and discrete from continuous, say what the Columns, Rows and Marks shelves do, and build a bar chart, a horizontal bar chart and a sorted view.",
+  intro: "Tableau is the best-known tool for visual analysis, and its big idea is simple: you do not choose a chart type and then feed it data. You put **fields** on **shelves**, and Tableau draws the chart that fits. Learn what the shelves mean and you can build almost any chart. This module teaches that grammar. A practice viz builder runs in your browser with the same shelves, so you build the charts yourself. " + NOTE_RUN,
+  topics: [
+    topic({
+      title: "What Tableau is, and its products", slug: "what-is-tableau",
+      blocks: [
+        p("Tableau is a visual analytics platform: you connect to data, drag fields onto a canvas, and Tableau turns them into charts, dashboards and stories that people can explore."),
+        table("The Tableau family", ["Product", "What it is", "Typical use"], [["Tableau Desktop", "A paid desktop application (Windows and Mac)", "Connect to data, build and publish visualisations"], ["Tableau Public", "A free desktop application, with a public gallery", "Learning, portfolios and public data. Work is saved publicly"], ["Tableau Prep Builder", "A data preparation tool", "Clean, combine and reshape data before analysis"], ["Tableau Cloud and Tableau Server", "Online and self-hosted servers", "Publish, share and secure workbooks and data sources for an organisation"], ["Tableau Mobile", "Apps for phones and tablets", "View and interact with dashboards"]]),
+        flow("How work flows in Tableau", ["Connect to data", "Build sheets (single views)", "Combine sheets into a dashboard", "Tell a story (optional)", "Publish and share"]),
+        def("Workbook, sheet, dashboard, story", "A **workbook** is the file. A **sheet** is one view (one chart or table). A **dashboard** arranges several sheets on one page with filters and actions. A **story** is a sequence of sheets or dashboards that leads a reader through a narrative."),
+        example("A small team's use", "A distributor's analyst builds a sales dashboard.", ["She connects Tableau Desktop to the company database and builds three sheets: sales by region, monthly trend, and profit by sub-category.", "She combines them into a dashboard with a region filter.", "She publishes it to Tableau Cloud, where managers open it in a browser and on their phones."], "Sheets are the building blocks; the dashboard is what people use."),
+        warn("**Tableau Public publishes your work to the public web.** Never use it for private or company data. For internal sharing use Tableau Cloud or Server."),
+        mistakes(["Thinking Tableau is only a chart gallery: its strength is exploring data interactively.", "Using Tableau Public for confidential data.", "Building everything on one crowded sheet instead of several simple ones."]),
+        tryIt("What is the difference between a sheet and a dashboard?", "A sheet is one view; a dashboard arranges several sheets (and filters and actions) on one page."),
+      ],
+      points: ["Desktop builds, Public is free but public, Prep cleans data, Cloud and Server share.", "A workbook holds sheets, dashboards and stories.", "Never use Tableau Public for private data."],
+      check: [["Which product is free but publishes your work publicly?", ["Tableau Server", "Tableau Public", "Tableau Prep", "Tableau Cloud"], 1, "Tableau Public shares workbooks on the public web."], ["A dashboard is:", ["One chart", "Several sheets arranged on one page", "A data file", "A colour palette"], 1, "It combines sheets with filters and actions."]],
+    }),
+    topic({
+      title: "Dimensions, measures, discrete and continuous", slug: "dimensions-measures",
+      blocks: [
+        p("Every field in Tableau's data pane is a **dimension** or a **measure**, and every field you use is **discrete** or **continuous**. These two ideas explain most of what Tableau does."),
+        table("Dimensions and measures", ["", "Dimension", "Measure"], [["What it is", "A category or label you slice by", "A number you add up or average"], ["Examples", "Region, Category, Customer, Order Date, Order ID", "Sales, Profit, Quantity, Discount"], ["What Tableau does", "Splits the data into groups, one mark per group", "Aggregates (sum by default) within each group"], ["In the data pane", "Top section", "Bottom section"]]),
+        table("Discrete and continuous", ["", "Discrete (blue pill)", "Continuous (green pill)"], [["Meaning", "Separate, countable values", "An unbroken range of values"], ["On a chart", "Adds headers: one column or row per value", "Adds an axis with a scale"], ["Typical fields", "Dimensions such as Region", "Measures such as SUM(Sales)"], ["Dates", "Discrete: Year, Month as separate labels", "Continuous: a smooth timeline"]]),
+        p("A useful picture: **dimensions create the marks, measures give them size.** One dimension on Columns and one measure on Rows gives one bar per dimension value, as tall as the measure's total."),
+        vizPlay({ id: "tb-play-basics", title: "Your first chart", intro: "Region is a dimension (it makes the bars); SUM(Sales) is a measure (it sets their height). Change Region to Category, or the aggregation to Average, and watch the bars change.", data: D, start: { columns: [{ field: "Region" }], rows: [{ field: "Sales" }] } }),
+        warn("**Aggregation is the usual surprise.** Tableau sums a measure by default. If you put Discount on Rows you get the sum of the discounts, which is meaningless; you almost always want the average. Always check the aggregation in the pill's menu."),
+        example("Choosing the field's role", "You drag Order ID onto Columns and get 120 columns.", ["Order ID is a dimension: it makes one mark per value (one per order).", "If you wanted the number of orders, you wanted a measure: COUNTD(Order ID) (distinct count).", "Counting the dimension turns it into a measure."], "The same field can be a label or something to count, depending on how you use it."),
+        mistakes(["Putting an identifier such as Order ID on a shelf as a dimension and getting hundreds of marks.", "Summing a field that should be averaged.", "Confusing blue and green pills with dimensions and measures: blue and green mean discrete and continuous."]),
+        tryIt("Which pill colour does SUM(Sales) usually have, and why?", "Green: it is a continuous measure, so Tableau draws an axis for it."),
+      ],
+      points: ["Dimensions group the data into marks; measures are aggregated within each mark.", "Discrete (blue) fields add headers; continuous (green) fields add axes.", "Check the aggregation of every measure."],
+      check: [["Which field is normally a dimension?", ["Sales", "Profit", "Region", "Quantity"], 2, "Region is a category you slice by."], ["A green pill on a shelf is:", ["Discrete", "Continuous", "A filter", "A dimension only"], 1, "Green means continuous; blue means discrete."]],
+    }),
+    topic({
+      title: "Shelves and the Marks card", slug: "shelves-marks",
+      blocks: [
+        p("The canvas has a few places to put fields, and each controls one aspect of the chart."),
+        table("Where a field can go", ["Place", "What it controls"], [["Columns shelf", "The horizontal layout: headers or the x-axis"], ["Rows shelf", "The vertical layout: headers or the y-axis"], ["Marks card: Color", "The colour of each mark (a dimension gives a legend; a measure gives a colour scale)"], ["Marks card: Size", "The size of each mark"], ["Marks card: Label", "Text printed on or beside each mark"], ["Marks card: Detail", "Splits marks into finer groups without changing the look"], ["Marks card: Tooltip", "What appears when you hover"], ["Filters shelf", "Which rows of data are included"]]),
+        p("The **mark type** (bar, line, area, circle, square, text, pie) is also on the Marks card. By default it is **Automatic**: Tableau picks the mark from the fields you have used."),
+        table("What Automatic does", ["You put", "Tableau draws"], [["A dimension on Columns, a measure on Rows", "Vertical bars (a line if the dimension is a date)"], ["A measure on Columns, a dimension on Rows", "Horizontal bars"], ["A measure on each shelf", "A scatter plot of circles"], ["A dimension on each shelf", "A text table (or a heat map with a coloured measure)"]]),
+        vizPlay({ id: "tb-play-marks", title: "Marks, colour and size", intro: "Put Category on Color to split the bars into a stack. Try the Marks menu: Circle, Pie, Text. Put Profit on Label.", data: D, start: { columns: [{ field: "Region" }], rows: [{ field: "Sales" }], color: { field: "Category" } } }),
+        example("Same data, four views", "Sales by region.", ["Region on Columns, SUM(Sales) on Rows: vertical bars.", "Swap them: horizontal bars.", "Add Category to Color: stacked bars showing the mix inside each region.", "Add Profit to Label: the profit printed on each bar."], "Each field on a different shelf changes one thing, which is why you can build a view by adding one field at a time."),
+        tip("Build a view one field at a time and watch what each addition changes. When a chart looks wrong, remove the last field you added."),
+        mistakes(["Putting a measure on Color when a dimension was meant (a legend of categories needs a dimension).", "Using Detail when you wanted Color (Detail adds marks without telling them apart).", "Forgetting to look at the Marks card: the mark type can be set to something other than what you expect."]),
+        tryIt("Which shelf do you use to split bars into a stack by Category?", "Color on the Marks card (a dimension on Color stacks the bars)."),
+      ],
+      points: ["Columns and Rows set the layout; the Marks card sets colour, size, labels and detail.", "Automatic marks follow the fields: bars, lines, circles or text.", "Add one field at a time and see what changes."],
+      check: [["Putting a dimension on Color:", ["Does nothing", "Splits marks by colour and adds a legend", "Sorts the chart", "Deletes marks"], 1, "Each value gets its own colour."], ["A measure on each of Columns and Rows gives:", ["Bars", "A scatter plot", "A pie", "A table"], 1, "Two measures give a position on both axes."]],
+    }),
+    topic({
+      title: "Sorting, and bars that read well", slug: "sorting",
+      blocks: [
+        p("A bar chart is the workhorse of business visuals, and a few habits make it read well."),
+        list("Habits for good bar charts", ["**Sort** bars by value, largest first, unless the categories have a natural order (months, ratings).", "**Horizontal bars** when category names are long.", "**Bars start at zero**: Tableau does this by default for bars.", "**Label the value** on the bar when exact numbers matter.", "**Limit the number of bars**: show the top 10 and group the rest, or filter."]),
+        vizPlay({ id: "tb-play-sort", title: "Sort and show the top", intro: "Sales by sub-category on horizontal bars. Choose Sort: High to low, then Show: Top 5. Sorting is what makes a bar chart readable.", data: D, start: { columns: [{ field: "Sales" }], rows: [{ field: "Sub-Category" }] } }),
+        bars("Sorted bars rank at a glance (sales by sub-category, illustrative, ₹ thousand)", [["Chairs", 36], ["Tables", 31], ["Phones", 18], ["Bookcases", 12], ["Accessories", 9], ["Storage", 6], ["Binders", 3], ["Paper", 2]], "k"),
+        example("Why sorting matters", "A bar chart of sales by sub-category is in alphabetical order.", ["The reader must scan every bar to find the largest.", "Sorted high to low, the ranking is obvious in a second.", "The best and worst performers sit at the two ends."], "Alphabetical order is rarely the right order. Sort by the measure that matters."),
+        warn("Do not sort categories that have a natural order. Months should run January to December, and survey ratings from low to high; sorting them by value scrambles the story."),
+        mistakes(["Leaving bars in alphabetical order.", "A vertical bar chart with long, rotated labels.", "Showing 40 bars when the top 10 tell the story."]),
+        tryIt("Why use horizontal bars for sub-category names?", "Long labels read naturally on the left of horizontal bars, where vertical bars would need rotated text."),
+      ],
+      points: ["Sort bars by value unless there is a natural order; use horizontal bars for long names.", "Bars start at zero; label values when exact numbers matter.", "Show the top N and filter the rest."],
+      check: [["When should you NOT sort by value?", ["Never", "When categories have a natural order such as months", "For long lists", "For horizontal bars"], 1, "Preserve a natural order."], ["Horizontal bars suit:", ["Long category names", "Dates only", "Pie charts", "Maps"], 0, "Labels read left to right."]],
+    }),
+  ],
+  practical: { title: "Practical: build your first views", intro: "Open the **Dimension or measure?**, **Sales by category** and **Sorted horizontal bars** labs.", steps: ["Sort each field into dimension or measure.", "Build the bar chart with the right fields on the right shelves.", "Flip it to horizontal and sort it high to low.", "Press Check my work."] },
+  terms: [["Dimension", "A category that groups the data."], ["Measure", "A number that is aggregated."], ["Discrete", "Separate values: blue pills, headers."], ["Continuous", "An unbroken range: green pills, axes."], ["Shelf", "A place to put fields: Columns, Rows, Filters."], ["Marks card", "Controls colour, size, labels, detail and mark type."], ["Sheet", "One view; sheets combine into dashboards."]],
+  quiz: [
+    ["A dimension in Tableau is:", ["A number to add up", "A category that groups data", "A chart", "A colour"], 1, "Dimensions create the groups."],
+    ["Tableau sums a measure by default. For Discount you usually want:", ["The sum", "The average", "The count", "Nothing"], 1, "A sum of discounts is meaningless."],
+    ["Blue and green pills mean:", ["Dimension and measure", "Discrete and continuous", "Good and bad", "Filter and sort"], 1, "Colour shows discrete or continuous."],
+    ["Which shelf stacks bars by Category?", ["Rows", "Color on the Marks card", "Pages", "Filters"], 1, "A dimension on Color splits marks."],
+    ["A dimension on Columns and a measure on Rows gives (Automatic marks):", ["Horizontal bars", "Vertical bars", "A scatter plot", "A map"], 1, "Vertical bars."],
+    ["Bars should start at:", ["Zero", "Any value", "The minimum", "The average"], 0, "Bar length must be proportional."],
+    ["Tableau Public is best for:", ["Confidential data", "Public data and portfolios", "Row-level security", "Server administration"], 1, "Work is public."],
+    ["A dashboard is made of:", ["Sheets", "Only data", "Only filters", "Fonts"], 0, "It arranges sheets on a page."],
+  ],
+});
+
+/* ------------------------------------------------------------------------------------------------ module 2 */
+export const M2 = module_({
+  slug: "core-charts", title: "Core charts: lines, stacks, scatters, heat maps", hours: 4, level: "Building skills",
+  summary: "Build the charts you will use most, choose them by the question, and filter to focus: top N, dimension filters and measure filters.",
+  outcome: "You can build line charts with date levels, stacked bars, scatter plots with detail, heat maps and text tables, and filter and rank to focus on what matters.",
+  intro: "Five or six chart types cover almost every business question. This module builds each one in the practice viz builder and, more importantly, teaches you which question each one answers. The same fields give different charts depending on where they go, so by the end you should be able to look at a question and know which fields go on which shelves.",
+  topics: [
+    topic({
+      title: "Lines and trends over time", slug: "lines",
+      blocks: [
+        p("A **line chart** shows change over time. Put a date on Columns and a measure on Rows, and Tableau draws a line. The **date level** (year, quarter, month, day) decides how the time is grouped."),
+        vizPlay({ id: "tb-play-line", title: "Sales over time", intro: "MONTH(Order Date) groups sales by month. Change it to Quarter or Year with the menu on the pill, and add Region to Color for one line per region.", data: D, start: { columns: [{ field: "Order Date", date: "month" }], rows: [{ field: "Sales" }] } }),
+        table("Date levels", ["Level", "Groups the data by", "Use for"], [["Year", "Calendar year", "Long-run comparison"], ["Quarter", "Year and quarter", "Business reporting cycles"], ["Month", "Year and month", "Trends and seasonality"], ["Day", "Each date", "Detailed daily patterns (many marks)"]]),
+        example("Two years, one line per year", "You want to compare 2024 and 2025 month by month.", ["Put MONTH(Order Date) on Columns.", "Colour by YEAR(Order Date), so each year has its own line.", "The lines overlap month for month and the gap between them is the growth."], "Putting the year on Color rather than in the axis lets you compare the same months across years."),
+        warn("A line chart connects points and so implies that the values **between** them exist. Use lines for continuous time. For separate categories (regions, products) use bars, even when the categories happen to be ordered."),
+        mistakes(["A line chart for unrelated categories.", "Too many lines (more than five or six) with similar colours.", "Daily data with hundreds of points when a month would show the trend."]),
+        tryIt("How do you compare the same months across two years on one chart?", "Put MONTH(Order Date) on Columns, SUM(Sales) on Rows and YEAR(Order Date) on Color: one line per year."),
+      ],
+      points: ["A date on Columns with a measure on Rows draws a line.", "The date level (year, quarter, month, day) sets the grouping.", "Compare years by putting the year on Color; keep lines few."],
+      check: [["A line chart suits:", ["Unrelated categories", "Change over time", "Parts of a whole", "Rankings of 50 items"], 1, "Lines show trends."], ["To get one line per year you put YEAR(Order Date) on:", ["Rows", "Color", "Filters only", "Label"], 1, "A dimension on Color splits lines."]],
+    }),
+    topic({
+      title: "Stacks, scatter plots and heat maps", slug: "stacks-scatter-heat",
+      blocks: [
+        p("Three more chart types, each answering a different question."),
+        table("Question to chart", ["Question", "Chart", "How to build it"], [["How is each total made up of parts?", "Stacked bar", "Dimension on Columns, measure on Rows, another dimension on Color"], ["Are two measures related? Which items are outliers?", "Scatter plot", "A measure on Columns and another on Rows, with a dimension on Detail (one dot per item)"], ["Where are the hot and cold spots across two dimensions?", "Heat map", "A dimension on each shelf, Square mark, a measure on Color"]]),
+        vizPlay({ id: "tb-play-scatter", title: "Sales against profit", intro: "Each dot is a sub-category (Detail). Dots low on the chart lose money however much they sell. Add Category to Color.", data: D, start: { columns: [{ field: "Sales" }], rows: [{ field: "Profit" }], detail: [{ field: "Sub-Category" }] } }),
+        vizPlay({ id: "tb-play-heat", title: "A heat map of profit", intro: "Sub-category down the side, region across the top, colour for profit. Darker means larger. Try a different colour measure.", data: D, start: { mark: "square", columns: [{ field: "Region" }], rows: [{ field: "Sub-Category" }], color: { field: "Profit" } } }),
+        example("Finding the problem with a scatter", "You plot Sales (x) against Profit (y), one dot per sub-category.", ["Most dots rise to the right: more sales, more profit.", "Two dots sit well below zero profit despite large sales.", "Those sub-categories sell a lot and lose money: the discount policy deserves a look."], "A scatter turns 'which items are unusual?' into a glance."),
+        warn("**Stacked bars compare only the bottom segment accurately.** All other segments start at different heights, so they are hard to compare. If the comparison between parts matters, use side-by-side bars or a heat map instead."),
+        mistakes(["A scatter plot without a Detail field: Tableau sums everything into a single dot.", "A stacked bar with ten colours.", "A heat map with a colour scale that is not centred when both gains and losses matter."]),
+        tryIt("Why does a scatter plot need a dimension on Detail?", "Without it, Tableau aggregates all rows into one dot; Detail makes one dot per member."),
+      ],
+      points: ["Stacked bars show composition; scatter plots show relationships and outliers; heat maps show hot spots.", "A scatter needs a Detail dimension for one dot per item.", "Stacks compare only the bottom segment well."],
+      check: [["Which chart shows the relationship between two measures?", ["Pie", "Scatter plot", "Stacked bar", "Text table"], 1, "A scatter positions dots by both."], ["A heat map is built with:", ["A dimension on each shelf and a measure on Color", "Two measures", "A date only", "A map"], 0, "Rows by columns, coloured by a measure."]],
+    }),
+    topic({
+      title: "Filtering and ranking: focus on what matters", slug: "filters",
+      blocks: [
+        p("Filters decide which data is in the view. The type of field you filter on decides how the filter behaves."),
+        table("Kinds of filter", ["Filter", "Works on", "Example"], [["Dimension filter", "Which members of a dimension to keep", "Only the East and West regions"], ["Measure filter", "A range of an aggregated measure", "Only marks with SUM(Sales) above 10,000"], ["Date filter", "A range or part of a date", "Only 2025, or the last 3 months"], ["Top N", "The N members with the highest (or lowest) measure", "The top 10 customers by sales"], ["Context filter", "A filter that runs first, so others work on its result", "Top 5 products within the East region"]]),
+        vizPlay({ id: "tb-play-filter", title: "Filter and rank", intro: "Use + Add filter to keep only some regions, or a measure filter on Sales. Then Sort: High to low and Show: Top 5.", data: D, start: { columns: [{ field: "Sales" }], rows: [{ field: "Customer" }], sort: { dir: "desc" } } }),
+        example("Order matters: Top N and a dimension filter", "You want the top 5 customers **within the East**.", ["A plain Top 5 customers filter is evaluated over all regions first.", "Then the East filter removes some of those five, leaving fewer than five.", "Make the Region filter a **context filter** so it runs first; then Top 5 works within the East."], "Filters run in a fixed order, so the order can change the answer. This is one of the most common Tableau surprises."),
+        flow("A simplified order of operations", ["Extract and data source filters", "Context filters", "Top N and set filters", "Dimension filters", "Measure filters", "Table calculations"]),
+        warn("Show only what the reader needs. A filter that removes rows changes every number in the view, so say what is filtered in the title or a caption ('Technology only, 2025')."),
+        mistakes(["Expecting Top N to respect a dimension filter without a context filter.", "Filtering out data and not saying so.", "Offering a dozen interactive filters on a dashboard."]),
+        tryIt("Why make a filter a context filter?", "So it runs first and other filters, such as Top N, work on its result."),
+      ],
+      points: ["Dimension, measure, date, Top N and context filters do different jobs.", "Filters run in a fixed order; use a context filter so one filter works before another.", "Say what is filtered."],
+      check: [["A context filter:", ["Runs after all others", "Runs first, so other filters work on its result", "Changes colours", "Sorts data"], 1, "It sets the data the others work on."], ["A measure filter keeps:", ["Members of a dimension", "Marks whose aggregated value is in a range", "Dates", "Colours"], 1, "It filters on the aggregated number."]],
+    }),
+    topic({
+      title: "Choosing the right chart", slug: "choosing",
+      blocks: [
+        p("Choose the chart by the question, not by what is available."),
+        table("Question to chart", ["Question", "Chart"], [["How much? (compare categories)", "Bar chart, sorted"], ["How has it changed over time?", "Line chart"], ["What is it made of?", "Stacked bar (a pie only for 2 to 4 parts)"], ["Are two things related?", "Scatter plot"], ["Where are the highs and lows across two categories?", "Heat map or highlight table"], ["What exactly are the numbers?", "Text table"], ["How is it distributed?", "Histogram"], ["Where is it?", "Map"]]),
+        list("Questions to ask yourself before you build", ["What is the one question this chart answers?", "Who is the reader and what will they do with it?", "Which field is the measure of interest, and which dimensions slice it?", "Is a table clearer than a chart?", "What could mislead?"]),
+        example("Choosing under pressure", "A manager asks: 'Are discounts hurting profit?'", ["The question is about a relationship between two measures: discount and profit.", "A scatter of average discount (x) against profit (y), one dot per sub-category, shows it.", "A bar chart of each alone would hide the relationship."], "The question names the chart."),
+        warn("The default chart from Tableau's Show Me panel is a suggestion, not a verdict. A pie or a map can be technically possible and still a poor choice."),
+        mistakes(["Choosing a chart for how it looks.", "A pie chart for twelve categories.", "A map when the location is not the point."]),
+        tryIt("Which chart answers 'which products sell a lot but lose money?'", "A scatter plot of sales against profit with one dot per product."),
+      ],
+      points: ["Choose by the question: bars, lines, stacks, scatters, heat maps, tables, histograms, maps.", "Decide the one question each chart answers.", "Treat Show Me as a suggestion."],
+      check: [["Which chart suits 'how has revenue changed?'", ["Pie", "Line", "Scatter", "Heat map"], 1, "Lines show change over time."], ["The best first step in choosing a chart is to:", ["Open Show Me", "State the question the chart answers", "Choose colours", "Add a legend"], 1, "The question names the chart."]],
+    }),
+  ],
+  practical: { title: "Practical: the core charts", intro: "Open the **Monthly sales**, **Sales by region and category**, **Sales against profit**, **A profit heat map**, **Top 5 customers**, **East and West only** and **Which chart?** activities.", steps: ["Decide the question and the fields before you build.", "Add fields one at a time and watch the chart change.", "Check that the aggregation and the date level are what the task asks.", "Press Check my work."] },
+  terms: [["Date level", "Year, quarter, month or day."], ["Stacked bar", "Bars split by a second dimension on Color."], ["Scatter plot", "A measure on each axis, one dot per Detail member."], ["Heat map", "A grid coloured by a measure."], ["Top N", "Keep the N highest (or lowest) members."], ["Context filter", "A filter that runs first."], ["Measure filter", "A filter on an aggregated number."]],
+  quiz: [
+    ["The date level MONTH groups sales by:", ["Day", "Year and month", "Quarter", "Region"], 1, "Month level."],
+    ["A scatter plot of sales against profit needs a dimension on Detail to:", ["Add colour", "Make one dot per item", "Sort", "Filter"], 1, "Otherwise everything is one dot."],
+    ["Which chart compares composition?", ["Stacked bar", "Line", "Scatter", "Histogram"], 0, "It shows parts of each total."],
+    ["Top N within a region needs:", ["A context filter on region", "Nothing special", "A pie", "A calculated field"], 0, "The region filter must run first."],
+    ["A heat map shows:", ["A trend", "Highs and lows across two dimensions", "A distribution", "Nothing"], 1, "Colour shows magnitude in a grid."],
+    ["Stacked bars compare accurately only:", ["The top segment", "The bottom segment", "Every segment", "None"], 1, "Only the baseline is shared."],
+    ["A line implies:", ["Separate categories", "Continuity over time", "A ranking", "A part of a whole"], 1, "Use lines for continuous time."],
+    ["A measure filter acts on:", ["Members of a dimension", "The aggregated value of the marks", "The data source", "Dates only"], 1, "It filters aggregated numbers."],
+  ],
+});
+
+/* ------------------------------------------------------------------------------------------------ module 3 */
+export const M3 = module_({
+  slug: "calculations", title: "Calculations: fields, table calcs and LOD expressions", hours: 5, level: "Intermediate",
+  summary: "Create calculated fields, use quick table calculations for running totals and percent of total, and control the level of detail with FIXED, INCLUDE and EXCLUDE.",
+  outcome: "You can write row-level and aggregate calculated fields, avoid the 'ratio of sums' trap, apply table calculations, and write FIXED, INCLUDE and EXCLUDE expressions.",
+  intro: "Tableau's built-in fields rarely answer a real business question on their own. You want a profit ratio, a flag for loss-making orders, a running total, each region's share of its category. This module teaches the three tools for that: **calculated fields**, **table calculations** and **level-of-detail (LOD) expressions**. All three run in the practice viz builder with real Tableau syntax, so you can write them, see them change the chart, and see the errors Tableau would give.",
+  topics: [
+    topic({
+      title: "Calculated fields: row-level and aggregate", slug: "calculated-fields",
+      blocks: [
+        p("A **calculated field** is a new field you define with a formula. There are two kinds, and the difference matters."),
+        table("Row-level and aggregate calculations", ["", "Row-level", "Aggregate"], [["Worked out", "For every row of data, then aggregated", "Once per mark, after the rows are grouped"], ["Looks like", "`[Sales] - [Profit]`; `IF [Profit] < 0 THEN \"Loss\" ELSE \"Profit\" END`", "`SUM([Profit]) / SUM([Sales])`"], ["Result", "A new dimension (text) or measure (number)", "A measure"], ["Use for", "Flags, bands, per-row arithmetic", "Ratios, averages of totals, percentages"]]),
+        formula("A ratio, done right", "Profit Ratio = SUM([Profit]) / SUM([Sales])", "Divide the totals, not each row's ratio. The result is the correct ratio for every mark, whatever is in the view."),
+        vizPlay({ id: "tb-play-calc", title: "Create a calculated field", intro: "Write Profit Ratio = SUM([Profit]) / SUM([Sales]) in the box on the left and press Create field. Then add it to Rows. Try a flag: Result = IF [Profit] < 0 THEN \"Loss\" ELSE \"Profit\" END, and put it on Color.", data: D, start: { columns: [{ field: "Sub-Category" }], rows: [{ field: "Sales" }] }, allowCalcs: true }),
+        example("Why the ratio of sums matters", "Two sub-categories have profit ratios of 40% on sales of 100 and 10% on sales of 900.", ["Average of the two ratios: (40% + 10%) / 2 = 25%.", "Ratio of the totals: (40 + 90) / (100 + 900) = 13%.", "Most of the sales are at 10%, so the overall ratio must be near 10%."], "`SUM([Profit]) / SUM([Sales])` gives 13%; averaging the row ratios gives a wrong 25%."),
+        warn("**You cannot mix aggregate and non-aggregate values** in one calculation: `SUM([Profit]) / [Sales]` is an error, because one part is a total and the other a single row. Wrap everything in an aggregate (or use ATTR for a dimension)."),
+        list("Useful functions", ["**Logic**: `IF ... THEN ... ELSEIF ... ELSE ... END`, `CASE`, `IIF`.", "**Numbers**: `ROUND`, `ABS`, `ZN` (null to zero), `IFNULL`.", "**Text**: `UPPER`, `LEFT`, `CONTAINS`, `LEN`.", "**Dates**: `YEAR`, `MONTH`, `DATETRUNC('month', [Order Date])`.", "**Aggregates**: `SUM`, `AVG`, `MIN`, `MAX`, `COUNT`, `COUNTD`, `MEDIAN`, `ATTR`."]),
+        mistakes(["Averaging row ratios instead of dividing totals.", "Mixing aggregate and non-aggregate parts.", "Naming a field the same as an existing one."]),
+        tryIt("Write the calculated field for the share of sales that comes with a discount, if Discount is 0 when there is none.", "Row-level flag: `IF [Discount] > 0 THEN [Sales] ELSE 0 END`; then the aggregate `SUM(...) / SUM([Sales])`."),
+      ],
+      points: ["Row-level calculations run per row; aggregate calculations run per mark.", "Calculate ratios as SUM / SUM, not an average of ratios.", "You cannot mix aggregate and non-aggregate values."],
+      check: [["Which is an aggregate calculation?", ["[Sales] - [Profit]", "SUM([Profit]) / SUM([Sales])", "IF [Profit] < 0 THEN \"Loss\" END", "UPPER([Region])"], 1, "It aggregates before dividing."], ["SUM([Profit]) / [Sales] fails because:", ["Tableau cannot divide", "It mixes aggregate and non-aggregate values", "Profit is a dimension", "It is too long"], 1, "A total cannot be divided by a single row."]],
+    }),
+    topic({
+      title: "Table calculations: running totals, percent of total, rank", slug: "table-calcs",
+      blocks: [
+        p("A **table calculation** works on the values already in the view, across the marks, after the data has been aggregated. Running totals, percent of total, rank and differences are table calculations. In Tableau you add the common ones with **Quick Table Calculation** on a pill's menu."),
+        table("Common quick table calculations", ["Calculation", "What it does", "Example"], [["Running Total", "Adds each mark to those before it", "Cumulative sales through the year"], ["Percent of Total", "Each mark as a share of all marks", "Each category's share of sales"], ["Rank", "1 for the largest, 2 for the next, and so on", "Customers ranked by profit"], ["Difference", "This mark minus the previous one", "Month-on-month change"], ["Percent Difference", "The change as a share of the previous mark", "Month-on-month growth %"], ["Moving Average", "The average of the last few marks", "A smoothed trend"]]),
+        vizPlay({ id: "tb-play-tablecalc", title: "A running total", intro: "The line shows each month's sales. Open the menu on the Sales pill and choose Running total, then Percent of total, Rank and Difference, and see how the numbers change.", data: D, start: { columns: [{ field: "Order Date", date: "month" }], rows: [{ field: "Sales" }] } }),
+        example("Direction matters", "A running total of sales by month, split by Region.", ["The calculation runs **along the months**, separately for each region (the partition).", "Each region gets its own running total.", "If it ran across regions instead, you would add the regions together within each month, which is rarely wanted."], "Every table calculation has a direction (what it moves along) and a partition (what it restarts for). Check both."),
+        warn("**Table calculations depend on the layout of the view.** Add or remove a dimension and the calculation can change meaning or break. If you need a figure that does not depend on the layout, use a level-of-detail expression (next lessons)."),
+        mistakes(["A running total that restarts or runs across the wrong dimension.", "Filtering out the first mark and wondering why the difference calculation is blank.", "Using a table calculation where a fixed figure was needed."]),
+        tryIt("Which quick table calculation shows each category's share of total sales?", "Percent of Total."),
+      ],
+      points: ["Table calculations work on the aggregated marks in the view.", "Running total, percent of total, rank and difference cover most needs.", "They depend on the view's layout, direction and partition."],
+      check: [["A running total adds:", ["Each mark to those before it", "All marks into one", "Only the largest", "Nothing"], 0, "It accumulates along the axis."], ["Table calculations are worked out:", ["Before aggregation, per row", "After aggregation, across the marks in the view", "At the data source", "Only in dashboards"], 1, "They use the aggregated marks."]],
+    }),
+    topic({
+      title: "Level of detail expressions: FIXED, INCLUDE and EXCLUDE", slug: "lod",
+      blocks: [
+        p("Normally Tableau calculates at the **level of detail of the view**: the dimensions on the shelves decide how the rows are grouped. A **level of detail (LOD) expression** lets you calculate at a **different** level, so a figure does not change when the view does."),
+        table("The three LOD expressions", ["Expression", "Calculates at", "Example"], [["`{ FIXED [Region] : SUM([Sales]) }`", "Exactly the dimensions you name, whatever is in the view", "Each region's total, even in a chart split by category"], ["`{ INCLUDE [Customer] : SUM([Sales]) }`", "The view's level **plus** the dimensions you add", "Each customer's total, then averaged per region: `AVG({ INCLUDE [Customer] : SUM([Sales]) })`"], ["`{ EXCLUDE [Category] : SUM([Sales]) }`", "The view's level **minus** the dimensions you remove", "The region total while the view shows categories"]]),
+        formula("Share within a group, with FIXED", "Region Sales = { FIXED [Region] : SUM([Sales]) }\nShare of Region = SUM([Sales]) / MAX([Region Sales])", "The FIXED field is each region's total on every row; dividing each mark's sales by it gives the share of its region."),
+        vizPlay({ id: "tb-play-lod", title: "Share of region with a FIXED expression", intro: "Create the two fields from the formula box above (one per line, one at a time). Put Region on Columns, Share of Region on Rows and Category on Color: each region's stack adds up to 100%.", data: D, start: { columns: [{ field: "Region" }], rows: [{ field: "Sales" }], color: { field: "Category" } }, allowCalcs: true }),
+        example("INCLUDE: the average customer", "'What does the average customer spend, by region?' The view has only Region on it.", ["`SUM([Sales])` per region is the region total: not what is asked.", "`AVG({ INCLUDE [Customer] : SUM([Sales]) })` first totals sales **per customer within each region**, then averages those totals.", "The answer is the average customer's spend in each region."], "INCLUDE adds a level of detail inside the view, then aggregates it back up."),
+        code("Tableau calculation", "{ FIXED [Customer] : MIN([Order Date]) }", "Each customer's first order date: a classic FIXED use for cohorts"),
+        warn("**FIXED expressions run before dimension filters** (but after context filters). A FIXED calculation will not change when you filter a normal dimension, which is often wanted (a region's total stays the same) and sometimes a surprise. Add the filter to context if the calculation should respect it."),
+        mistakes(["Using a table calculation where a FIXED expression was needed.", "Forgetting that INCLUDE and EXCLUDE need an outer aggregate.", "Expecting a FIXED expression to respond to an ordinary filter."]),
+        tryIt("Which LOD would give each customer's total sales regardless of the view?", "`{ FIXED [Customer] : SUM([Sales]) }`"),
+      ],
+      points: ["FIXED calculates at the named level whatever the view; INCLUDE adds dimensions; EXCLUDE removes them.", "LOD expressions do not depend on the view's layout, unlike table calculations.", "FIXED runs before ordinary dimension filters."],
+      check: [["A FIXED expression calculates:", ["At the view's level", "At exactly the named dimensions whatever the view", "Only for dates", "After table calculations"], 1, "It fixes the level of detail."], ["INCLUDE [Customer] makes the level of detail:", ["The view's level plus Customer", "Only Customer", "The view's level minus Customer", "The whole table"], 0, "It adds a dimension."]],
+    }),
+    topic({
+      title: "Choosing between calculation types", slug: "choosing-calcs",
+      blocks: [
+        p("Four tools, one decision: how do you choose?"),
+        table("Which calculation?", ["You need", "Use"], [["A per-row value or flag (profit minus cost, a band)", "Row-level calculated field"], ["A ratio or aggregate that follows the view (profit ratio)", "Aggregate calculated field"], ["A value that depends on the order or position of marks (running total, rank, difference)", "Table calculation"], ["A figure at a different level than the view (customer total, region total)", "LOD expression"]]),
+        flow("A way to decide", ["Is it a value for each row? Use a row-level field", "Does it need the marks in the view? Use a table calculation", "Does it need a fixed or different level? Use an LOD", "Otherwise an aggregate field"]),
+        example("The same question three ways", "What share of its region's sales is each category?", ["Table calculation: Percent of Total, computed **within each region** (works, but depends on the layout).", "FIXED LOD: `SUM([Sales]) / MAX({ FIXED [Region] : SUM([Sales]) })` (works whatever the layout).", "Both give the same numbers here; the LOD survives a change in the view."], "Prefer the LOD when you need the figure to stay stable as the view changes; use a table calculation for quick, layout-based questions."),
+        list("Habits for calculations", ["Name fields clearly (Profit Ratio, not Calculation1).", "Comment complex formulas with `//`.", "Build big calculations from small ones.", "Test a calculation on a few rows you can check by hand.", "Watch performance: LODs and table calculations on very large data can be slow."]),
+        warn("A calculation that gives a number is not a calculation that gives the **right** number. Check one case by hand against the data (or a text table of the underlying values)."),
+        mistakes(["Writing a long calculation without testing parts.", "Choosing a table calculation when the view will change.", "Calculating a ratio from rounded numbers."]),
+      ],
+      points: ["Row-level for per-row values, aggregate for view-following ratios, table calculations for position-based figures, LOD for a different level.", "Test calculations by hand on a few rows.", "Name and comment them."],
+      check: [["A running total is best done with:", ["A row-level field", "A table calculation", "A FIXED LOD", "A filter"], 1, "It depends on the order of marks."], ["A customer's total that must not change with the view uses:", ["A table calculation", "A FIXED LOD expression", "A pie", "Nothing"], 1, "FIXED fixes the level."]],
+    }),
+  ],
+  practical: { title: "Practical: calculate", intro: "Open the **Profit ratio**, **Loss flag**, **Running total**, **Percent of total** and **Share of region (FIXED)** labs.", steps: ["Decide which kind of calculation each task needs.", "Create the calculated field with the exact name the task gives.", "Add it to the view and check the numbers.", "Press Check my work."] },
+  terms: [["Calculated field", "A new field defined by a formula."], ["Row-level", "Worked out for each row."], ["Aggregate", "Worked out per mark."], ["Table calculation", "Works across the marks of the view."], ["LOD expression", "Calculates at a chosen level of detail."], ["FIXED", "Calculates at exactly the named dimensions."], ["Partition", "What a table calculation restarts for."]],
+  quiz: [
+    ["The overall profit ratio is correctly:", ["The average of row ratios", "SUM(Profit) / SUM(Sales)", "MAX(Profit)", "SUM(Sales) / SUM(Profit)"], 1, "Divide totals."],
+    ["A row-level text calculation becomes:", ["A measure", "A dimension", "A filter", "A chart"], 1, "Text results group the data."],
+    ["Mixing SUM([Profit]) with [Sales] causes:", ["No problem", "An aggregate / non-aggregate error", "A faster chart", "A new filter"], 1, "Wrap both in aggregates."],
+    ["Quick table calculations include:", ["Running total", "JOIN", "UNION", "Extract"], 0, "They work across marks."],
+    ["EXCLUDE removes dimensions from:", ["The view's level of detail", "The data source", "The colours", "The dashboard"], 0, "It coarsens the calculation."],
+    ["FIXED expressions run:", ["After table calculations", "Before dimension filters (after context filters)", "Never", "Only on dates"], 1, "They are early in the order."],
+    ["Which keeps a figure stable when the view changes?", ["A table calculation", "A FIXED LOD", "A pie", "A label"], 1, "It does not depend on the layout."],
+    ["Before trusting a calculation you should:", ["Hide it", "Check a case by hand", "Add colour", "Sort it"], 1, "Verify against the data."],
+  ],
+});
+
+export { NOTE_RUN };

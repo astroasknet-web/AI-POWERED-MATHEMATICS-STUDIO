@@ -18,6 +18,9 @@ const fallbacks = {
   hashlab: (s) => `<h3>${esc(s.title)}</h3>${s.intro ? `<p>${esc(s.intro)}</p>` : ""}<p>Type any text and see its SHA-256 fingerprint change completely when one letter changes.</p>`,
   chainlab: (s) => `<h3>${esc(s.title)}</h3>${s.intro ? `<p>${esc(s.intro)}</p>` : ""}<p>A chain of ${s.blocks.length} linked blocks. Change the data in one block and see every later block break until it is mined again.</p>`,
   merkle: (s) => `<h3>${esc(s.title)}</h3>${s.intro ? `<p>${esc(s.intro)}</p>` : ""}<p>${s.txs.length} transactions are hashed in pairs up to one Merkle root. Change one transaction and the root changes.</p>`,
+  sqlplay: (s) => `<h3>${esc(s.title)}</h3>${s.intro ? `<p>${esc(s.intro)}</p>` : ""}<p>Tables: ${s.tables.map((t) => esc(t.name)).join(", ")}. Starting query:</p><pre><code>${esc(s.query)}</code></pre>`,
+  daxplay: (s) => `<h3>${esc(s.title)}</h3>${s.intro ? `<p>${esc(s.intro)}</p>` : ""}<p>Tables: ${s.model.tables.map((t) => esc(t.name)).join(", ")}. Starting formula:</p><pre><code>${esc(s.code)}</code></pre>`,
+  vizplay: (s) => `<h3>${esc(s.title)}</h3>${s.intro ? `<p>${esc(s.intro)}</p>` : ""}<p>A live chart builder on a table with the fields: ${s.data.fields.map((f) => esc(f.name)).join(", ")}.</p>`,
   complete: () => "",
 };
 

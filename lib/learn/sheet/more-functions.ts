@@ -24,7 +24,21 @@ export const MORE_FUNCS = [
   "ISNUMBER", "ISTEXT", "ISBLANK", "ISERROR", "LEN", "LEFT", "RIGHT", "MID", "UPPER", "LOWER", "PROPER", "TRIM", "CONCAT", "CONCATENATE", "TEXTJOIN", "SUBSTITUTE",
   "FIND", "SEARCH", "TEXT", "VALUE", "REPT", "DATE", "YEAR", "MONTH", "DAY", "EDATE", "EOMONTH", "WEEKDAY", "DAYS", "DATEDIF", "NETWORKDAYS", "LARGE", "SMALL", "RANK",
   "PRODUCT", "COUNTBLANK", "ROWS", "COLUMNS", "CEILING", "FLOOR", "TRUNC", "NPV", "IRR", "PV", "NPER", "RATE",
+  "PERCENTILE", "PERCENTILE.INC", "QUARTILE", "QUARTILE.INC", "MODE", "MODE.SNGL", "STDEV.S", "STDEV.P", "STDEVP", "VAR.S", "VAR.P", "VARP", "RSQ", "FORECAST", "FORECAST.LINEAR",
+  "STANDARDIZE", "NORM.S.DIST", "NORM.DIST", "COVARIANCE.S", "COVARIANCE.P", "GEOMEAN", "SUMSQ", "AVERAGEA", "PERCENTRANK", "PERCENTRANK.INC",
 ];
+
+/** Standard normal cumulative distribution (Abramowitz and Stegun 7.1.26 via erf; error below 1.5e-7, far below what a spreadsheet shows). */
+const normCdf = (z: number): number => {
+  const x = Math.abs(z) / Math.SQRT2, tt = 1 / (1 + 0.3275911 * x);
+  const erf = 1 - (((((1.061405429 * tt - 1.453152027) * tt) + 1.421413741) * tt - 0.284496736) * tt + 0.254829592) * tt * Math.exp(-x * x);
+  return z >= 0 ? 0.5 * (1 + erf) : 0.5 * (1 - erf);
+};
+const pairs = (a: Value[], b: Value[]): { xs: number[]; ys: number[] } => {
+  const xs: number[] = [], ys: number[] = [];
+  for (let i = 0; i < Math.min(a.length, b.length); i++) if (typeof a[i] === "number" && typeof b[i] === "number") { xs.push(a[i] as number); ys.push(b[i] as number); }
+  return { xs, ys };
+};
 
 /* ---- dates: serial numbers count days from 1899-12-30, as in Excel for every date after February 1900 ---- */
 const EPOCH = Date.UTC(1899, 11, 30);
@@ -408,6 +422,99 @@ export function moreFn(name: string, args: Node[], c: Ctx): Value {
       if (f(lo) * f(hi) > 0) return err("#VALUE!", "RATE could not find a rate for these numbers.");
       for (let i = 0; i < 200; i++) { const mid = (lo + hi) / 2; if (f(lo) * f(mid) <= 0) hi = mid; else lo = mid; }
       return (lo + hi) / 2;
+    }
+    /* ---- statistics for data analysis ---- */
+    case "PERCENTILE": case "PERCENTILE.INC": case "QUARTILE": case "QUARTILE.INC": {
+      const bad = need(2, 2); if (bad) return bad;
+      const r = rangeOf(0); if (!isRange(r)) return r;
+      const k0 = nm(1); if (typeof k0 !== "number") return k0;
+      const quart = name.startsWith("QUARTILE");
+      if (quart && (k0 < 0 || k0 > 4 || !Number.isInteger(k0))) return err("#VALUE!", "QUARTILE needs a whole number from 0 to 4: 0 is the minimum, 1 the first quartile, 2 the median, 3 the third quartile, 4 the maximum.");
+      const k = quart ? k0 / 4 : k0;
+      if (k < 0 || k > 1) return err("#VALUE!", "PERCENTILE needs a value from 0 to 1, for example 0.9 for the 90th percentile.");
+      const ns = r.vals.filter((x): x is number => typeof x === "number").sort((p, q) => p - q);
+      if (!ns.length) return err("#VALUE!", `${name} found no numbers.`);
+      const pos = k * (ns.length - 1), lo = Math.floor(pos), hi = Math.ceil(pos);
+      return ns[lo] + (ns[hi] - ns[lo]) * (pos - lo);
+    }
+    case "PERCENTRANK": case "PERCENTRANK.INC": {
+      const bad = need(2, 3); if (bad) return bad;
+      const r = rangeOf(0); if (!isRange(r)) return r;
+      const x = nm(1); if (typeof x !== "number") return x;
+      const ns = r.vals.filter((v): v is number => typeof v === "number").sort((p, q) => p - q);
+      if (ns.length < 2 || x < ns[0] || x > ns[ns.length - 1]) return err("#N/A", "PERCENTRANK needs a value inside the range of the data.");
+      const below = ns.filter((v) => v < x).length, same = ns.filter((v) => v === x).length;
+      const rank = same ? below / (ns.length - 1) : (() => { const i = below - 1; return (i + (x - ns[i]) / (ns[i + 1] - ns[i])) / (ns.length - 1); })();
+      const d = args[2] ? nm(2) : 3; if (typeof d !== "number") return d;
+      const f = Math.pow(10, d);
+      return Math.floor(rank * f + 1e-9) / f;
+    }
+    case "MODE": case "MODE.SNGL": {
+      const ns = c.numbers(args); if (!Array.isArray(ns)) return ns;
+      const count = new Map<number, number>();
+      for (const v of ns) count.set(v, (count.get(v) ?? 0) + 1);
+      let best: number | null = null, bc = 1;
+      for (const v of ns) if ((count.get(v) ?? 0) > bc) { best = v; bc = count.get(v) ?? 0; }
+      return best === null ? err("#N/A", "MODE found no value that appears more than once.") : best;
+    }
+    case "STDEV.S": case "STDEV.P": case "STDEVP": case "VAR.S": case "VAR.P": case "VARP": {
+      const ns = c.numbers(args); if (!Array.isArray(ns)) return ns;
+      const pop = name.endsWith(".P") || name === "STDEVP" || name === "VARP";
+      if (ns.length < (pop ? 1 : 2)) return err("#DIV/0!", `${name} needs at least ${pop ? "one number" : "two numbers"}.`);
+      const m = ns.reduce((a, b) => a + b, 0) / ns.length;
+      const v = ns.reduce((a, b) => a + (b - m) * (b - m), 0) / (ns.length - (pop ? 0 : 1));
+      return name.startsWith("STDEV") ? Math.sqrt(v) : v;
+    }
+    case "SUMSQ": { const ns = c.numbers(args); return Array.isArray(ns) ? ns.reduce((a, b) => a + b * b, 0) : ns; }
+    case "AVERAGEA": { const ns = c.numbers(args); return Array.isArray(ns) ? (ns.length ? ns.reduce((a, b) => a + b, 0) / ns.length : err("#DIV/0!", "AVERAGEA found no numbers.")) : ns; }
+    case "GEOMEAN": {
+      const ns = c.numbers(args); if (!Array.isArray(ns)) return ns;
+      if (!ns.length || ns.some((v) => v <= 0)) return err("#VALUE!", "GEOMEAN needs numbers that are all above zero.");
+      return Math.exp(ns.reduce((a, b) => a + Math.log(b), 0) / ns.length);
+    }
+    case "RSQ": case "COVARIANCE.S": case "COVARIANCE.P": {
+      const bad = need(2, 2); if (bad) return bad;
+      const a = rangeOf(0), b = rangeOf(1); if (!isRange(a)) return a; if (!isRange(b)) return b;
+      if (a.vals.length !== b.vals.length) return err("#N/A", `${name} needs two ranges of the same size.`);
+      const { xs, ys } = pairs(a.vals, b.vals);
+      const pop = name === "COVARIANCE.P";
+      if (xs.length < (pop ? 1 : 2)) return err("#DIV/0!", `${name} needs at least two pairs of numbers.`);
+      const mx = xs.reduce((u, v) => u + v, 0) / xs.length, my = ys.reduce((u, v) => u + v, 0) / ys.length;
+      let sxy = 0, sxx = 0, syy = 0;
+      for (let i = 0; i < xs.length; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; syy += (ys[i] - my) ** 2; }
+      if (name === "RSQ") return sxx === 0 || syy === 0 ? err("#DIV/0!", "RSQ needs numbers that vary.") : (sxy * sxy) / (sxx * syy);
+      return sxy / (xs.length - (pop ? 0 : 1));
+    }
+    case "FORECAST": case "FORECAST.LINEAR": {
+      const bad = need(3, 3); if (bad) return bad;
+      const x = nm(0); if (typeof x !== "number") return x;
+      const ky = rangeOf(1), kx = rangeOf(2); if (!isRange(ky)) return ky; if (!isRange(kx)) return kx;
+      if (ky.vals.length !== kx.vals.length) return err("#N/A", `${name} needs the known y values and the known x values to be the same size.`);
+      const { xs, ys } = pairs(kx.vals, ky.vals);
+      if (xs.length < 2) return err("#DIV/0!", `${name} needs at least two pairs of numbers.`);
+      const mx = xs.reduce((u, v) => u + v, 0) / xs.length, my = ys.reduce((u, v) => u + v, 0) / ys.length;
+      let sxy = 0, sxx = 0;
+      for (let i = 0; i < xs.length; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; }
+      if (sxx === 0) return err("#DIV/0!", "FORECAST needs x values that vary.");
+      return my + (sxy / sxx) * (x - mx);
+    }
+    case "STANDARDIZE": {
+      const bad = need(3, 3); if (bad) return bad;
+      const x = nm(0), m = nm(1), s = nm(2); if (typeof x !== "number") return x; if (typeof m !== "number") return m; if (typeof s !== "number") return s;
+      return s <= 0 ? err("#VALUE!", "STANDARDIZE needs a standard deviation above zero.") : (x - m) / s;
+    }
+    case "NORM.S.DIST": {
+      const bad = need(1, 2); if (bad) return bad;
+      const z = nm(0); if (typeof z !== "number") return z;
+      const cum = args[1] ? c.scalar(c.ev(args[1])) : true;
+      return cum === false || cum === 0 ? Math.exp(-z * z / 2) / Math.sqrt(2 * Math.PI) : normCdf(z);
+    }
+    case "NORM.DIST": {
+      const bad = need(4, 4); if (bad) return bad;
+      const x = nm(0), m = nm(1), s = nm(2); if (typeof x !== "number") return x; if (typeof m !== "number") return m; if (typeof s !== "number") return s;
+      if (s <= 0) return err("#VALUE!", "NORM.DIST needs a standard deviation above zero.");
+      const cum = c.scalar(c.ev(args[3])), z = (x - m) / s;
+      return cum === false || cum === 0 ? Math.exp(-z * z / 2) / (s * Math.sqrt(2 * Math.PI)) : normCdf(z);
     }
     default: return err("#NAME?", `"${name}" is not a function GrowQR knows yet.`);
   }

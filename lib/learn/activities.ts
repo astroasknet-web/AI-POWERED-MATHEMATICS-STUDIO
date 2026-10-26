@@ -3,6 +3,7 @@ import bbaFinancialAccounting from "./data/bba-financial-accounting.activities.j
 import { NEW_ACTIVITIES } from "./new-activities";
 import { cloneSheet, emptySheet } from "./sheet/engine";
 import { emptyDeck, sanitizeDeck } from "./slides";
+import { sanitizeCalcs, sanitizeSpec } from "./viz/engine";
 import { sanitizeDoc } from "./doc";
 import type { Activity, ActivityState, Badge, LearnCourse } from "./types";
 
@@ -35,6 +36,9 @@ export function initialState(a: Activity): ActivityState {
     case "sheet": return { kind: "sheet", sheet: a.initial?.sheet ? cloneSheet(a.initial.sheet) : emptySheet() };
     case "slides": return { kind: "slides", deck: sanitizeDeck(a.initial?.deck ?? emptyDeck()) };
     case "classify": return { kind: "classify", answers: {} };
+    case "sql": return { kind: "sql", query: a.sql?.starter ?? "" };
+    case "dax": return { kind: "dax", code: a.dax?.starter ?? "" };
+    case "viz": return { kind: "viz", spec: JSON.parse(JSON.stringify(a.viz?.start ?? { columns: [], rows: [] })), calcs: {} };
   }
 }
 
@@ -46,6 +50,9 @@ export function cleanState(a: Activity, raw: unknown): ActivityState | null {
   switch (a.kind) {
     case "word": return typeof o.html === "string" ? { kind: "word", html: sanitizeDoc(o.html) } : null;
     case "slides": return { kind: "slides", deck: sanitizeDeck(o.deck) };
+    case "viz": return { kind: "viz", spec: sanitizeSpec(o.spec), calcs: a.viz?.allowCalcs ? sanitizeCalcs(o.calcs) : {} };
+    case "dax": return typeof o.code === "string" ? { kind: "dax", code: o.code.slice(0, 6000) } : null;
+    case "sql": return typeof o.query === "string" ? { kind: "sql", query: o.query.slice(0, 4000) } : null;
     case "classify": {
       const answers: Record<string, string> = {};
       const ids = new Set(a.classify?.categories.map((c) => c.id));

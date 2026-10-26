@@ -198,3 +198,42 @@ describe("registry", () => {
     expect(isErr(v) && v.err).toBe("#NAME?");
   });
 });
+
+describe("statistics for data analysis", () => {
+  const D = { A1: "2", A2: "4", A3: "4", A4: "4", A5: "5", A6: "5", A7: "7", A8: "9" };
+  const X = { A1: "1", A2: "2", A3: "3", A4: "4", A5: "5", B1: "2", B2: "4", B3: "5", B4: "4", B5: "5" };
+  it("percentiles, quartiles, percent rank and mode", () => {
+    expect(f("=PERCENTILE(A1:A8,0.25)", D)).toBe(4);
+    expect(f("=QUARTILE(A1:A8,3)", D)).toBe(5.5);
+    expect(f("=QUARTILE.INC(A1:A8,2)", D)).toBe(4.5);
+    expect(f("=QUARTILE(A1:A8,0)", D)).toBe(2);
+    expect(f("=QUARTILE(A1:A8,4)", D)).toBe(9);
+    expect(f("=PERCENTRANK.INC(A1:A8,5)", D)).toBe(0.571);
+    expect(f("=MODE(A1:A8)", D)).toBe(4);
+    expect(isErr(f("=MODE(A1:A3)", { A1: "1", A2: "2", A3: "3" }))).toBe(true);
+    expect(isErr(f("=QUARTILE(A1:A8,5)", D))).toBe(true);
+  });
+  it("sample and population spread", () => {
+    expect(f("=STDEV.P(A1:A8)", D)).toBeCloseTo(2, 9);
+    expect(f("=STDEV.S(A1:A8)", D)).toBeCloseTo(2.138089935, 8);
+    expect(f("=VAR.P(A1:A8)", D)).toBeCloseTo(4, 9);
+    expect(f("=VAR.S(A1:A8)", D)).toBeCloseTo(32 / 7, 9);
+    expect(f("=GEOMEAN(1,4)")).toBeCloseTo(2, 9);
+    expect(f("=SUMSQ(1,2,3)")).toBe(14);
+  });
+  it("regression helpers", () => {
+    expect(f("=RSQ(B1:B5,A1:A5)", X)).toBeCloseTo(0.6, 9);
+    expect(f("=FORECAST(6,B1:B5,A1:A5)", X)).toBeCloseTo(5.8, 9);
+    expect(f("=FORECAST.LINEAR(0,B1:B5,A1:A5)", X)).toBeCloseTo(2.2, 9);
+    expect(f("=COVARIANCE.S(A1:A5,B1:B5)", X)).toBeCloseTo(1.5, 9);
+    expect(f("=COVARIANCE.P(A1:A5,B1:B5)", X)).toBeCloseTo(1.2, 9);
+  });
+  it("z-scores and the normal distribution", () => {
+    expect(f("=STANDARDIZE(9,5,2)")).toBe(2);
+    expect(f("=NORM.S.DIST(0,TRUE)")).toBeCloseTo(0.5, 6);
+    expect(f("=NORM.S.DIST(1.96,TRUE)")).toBeCloseTo(0.9750021, 5);
+    expect(f("=NORM.DIST(110,100,10,TRUE)")).toBeCloseTo(0.8413447, 5);
+    expect(f("=NORM.DIST(100,100,10,FALSE)")).toBeCloseTo(0.0398942, 6);
+    expect(isErr(f("=STANDARDIZE(1,0,0)"))).toBe(true);
+  });
+});

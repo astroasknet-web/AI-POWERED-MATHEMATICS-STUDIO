@@ -1,4 +1,7 @@
 import { evaluate, names, ExprError } from "./expr";
+import { runSql } from "../sql/engine";
+import { runDax } from "../dax/engine";
+import { computeViz } from "../viz/engine";
 import type { EquationSpec, ExplorerSpec, JournalSpec, JournalTxn, Line, QuizSpec, WidgetSpec } from "./types";
 
 /* ------------------------------------------------------------------------------------------------------------------ spec transport */
@@ -172,6 +175,25 @@ export function validateSpec(spec: WidgetSpec): string[] {
     case "merkle":
       need([4, 8].includes(spec.txs.length), "merkle needs 4 or 8 transactions");
       break;
+    case "sqlplay": {
+      need(spec.tables.length >= 1 && spec.tables.length <= 6, "sqlplay needs 1-6 tables");
+      need(spec.tables.reduce((n, t) => n + t.rows.length, 0) <= 400, "sqlplay sample data is too large (400 rows at most)");
+      const r = runSql({ tables: spec.tables }, spec.query);
+      need(r.ok, `sqlplay starting query does not run: ${r.ok ? "" : r.error}`);
+      break;
+    }
+    case "daxplay": {
+      need(spec.model.tables.length >= 1 && spec.visuals.length >= 1, "daxplay needs a model and at least one visual");
+      const r = runDax(spec.model, spec.code, spec.visuals, spec.show);
+      need(r.ok, `daxplay starting formula does not run: ${r.ok ? "" : r.error}`);
+      break;
+    }
+    case "vizplay": {
+      need(spec.data.fields.length >= 2 && spec.data.rows.length >= 1 && spec.data.rows.length <= 400, "vizplay needs data with at least two fields and 1 to 400 rows");
+      const r = computeViz(spec.data, spec.start);
+      need(r.ok, `vizplay starting view does not draw: ${r.ok ? "" : r.error}`);
+      break;
+    }
     case "flashcards":
       need(spec.cards.length >= 3, "need at least 3 cards");
       spec.cards.forEach((c, i) => need(c.front.length > 0 && c.back.length > 0, `card ${i} is empty`));

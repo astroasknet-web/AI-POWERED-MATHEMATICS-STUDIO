@@ -1,0 +1,256 @@
+import { code, def, example, flow, formula, list, mistakes, module_, p, sqlPlay, table, topic, tryIt, vizPlay, warn } from "../kit.mjs";
+import { trafficData } from "./ga-data.mjs";
+import { ga_events } from "./ga-mini.mjs";
+
+const NOTE_RUN = "Google Analytics itself is a cloud service that needs your own website and Google account, so you cannot open it inside this course. What does run here: a practice report builder (dimensions, metrics, calculated metrics, filters and charts, like GA4's Reports and Explorations) on the traffic of a small learning site, and a SQL window on that traffic as it appears in a GA4 export. The lessons describe the real GA4 screens and settings as of this writing; Google changes the interface and some names often, so always check the current help pages.";
+const T = trafficData;
+
+/* ------------------------------------------------------------------------------------------------ module 1 */
+export const M1 = module_({
+  slug: "ga4-foundations", title: "Web analytics and the GA4 data model", hours: 3.5, level: "Getting started",
+  summary: "Understand what web analytics is for, how GA4 records everything as events, and how users, sessions, dimensions and metrics fit together.",
+  outcome: "You can say what questions analytics answers, describe GA4's event-based model, tell a dimension from a metric, and define users, sessions, engaged sessions and engagement rate.",
+  intro: "Every website and app owner asks the same questions: who comes, where from, what do they do, and does it lead to something we want? Google Analytics 4 (GA4) answers them by recording what visitors do as a stream of events and turning those events into reports. Used well, it shows where marketing works and where the site loses people; used badly, it produces confident numbers that mean nothing. This course teaches the model and the judgement. " + NOTE_RUN,
+  topics: [
+    topic({
+      title: "What web analytics is for", slug: "purpose",
+      blocks: [
+        p("Web analytics measures behaviour on a website or app so people can decide what to improve. The value is in the **questions**, not the tool."),
+        table("Questions analytics answers", ["Area", "Typical question", "Example decision"], [["Acquisition", "Where do visitors come from?", "Shift budget to the channel that brings buyers"], ["Behaviour", "What do they do on the site?", "Rewrite a page people leave at once"], ["Conversion", "Do they do what we want (buy, sign up, enquire)?", "Fix the step of checkout where most people drop out"], ["Audience", "Who are they (device, country, new or returning)?", "Make the mobile experience work, because most visitors are on phones"], ["Retention", "Do they come back?", "Send a reminder email to people who did not finish"]]),
+        flow("The analytics loop", ["Set a goal and its measures", "Collect data (tags, events)", "Report and explore", "Find an insight", "Change something, and measure again"]),
+        example("From a number to a decision", "A learning site sees 12,000 visits in a month.", ["The number alone says nothing: is that good?", "Split it: 55% of visits are on mobile, but mobile visitors rarely buy.", "Decision: test a simpler checkout on phones, then compare the mobile conversion rate next month."], "Analytics is useful when a measure points to a change you can test."),
+        warn("**Vanity metrics** (total visits, page views, followers) feel good but do not tell you whether the business is better off. Prefer measures tied to goals: sign-ups, purchases, revenue, return visits."),
+        mistakes(["Collecting everything and asking no questions.", "Reporting visits as success without conversions.", "Changing the site and not measuring the effect."]),
+        tryIt("Which is a better success measure for a course website: total page views or enrolments?", "Enrolments: they are tied to the goal. Page views can rise while enrolments fall."),
+      ],
+      points: ["Analytics answers questions about acquisition, behaviour, conversion, audience and retention.", "Start from goals; prefer measures tied to outcomes over vanity metrics.", "Analytics works as a loop: measure, learn, change, measure again."],
+      check: [["A vanity metric is one that:", ["Always matters most", "Looks good but does not show whether goals are met", "Is hidden", "Is always zero"], 1, "Prefer outcome measures."], ["The best starting point for analytics is:", ["Installing every tag", "A goal and the questions it raises", "A colour scheme", "A bigger server"], 1, "Questions come before data."]],
+    }),
+    topic({
+      title: "The GA4 data model: events, parameters, users and sessions", slug: "data-model",
+      blocks: [
+        p("GA4 is **event-based**: every interaction is recorded as an **event** with a name and extra detail called **parameters**. A page view is an event. A scroll is an event. A purchase is an event. Reports are built by counting and grouping events."),
+        table("The building blocks", ["Concept", "Meaning", "Example"], [["Event", "Something a user did", "`page_view`, `scroll`, `purchase`"], ["Event parameter", "Detail about an event", "`page_location`, `value` and `currency` on a purchase"], ["User property", "A fact about the user that persists", "A plan type or a language"], ["Session", "A group of events from one visit; starts with a `session_start` event", "A visitor browsing for 8 minutes"], ["User", "A person (or browser or device) identified by an identifier", "Counted as 'users'"], ["Data stream", "A source of data sent to GA4 (a website or an app)", "Your website's web stream, with a measurement id like `G-XXXXXXXXXX`"]]),
+        p("The hierarchy in the product is **Account → Property → Data stream**. An account holds properties (usually one per business or site), and a property holds streams for each website or app."),
+        table("What changed from Universal Analytics", ["", "Universal Analytics (the old version)", "GA4"], [["Model", "Sessions and hit types (page views, events)", "Everything is an event"], ["Sessions", "Core unit of reporting", "Derived from events (`session_start`)"], ["Apps and web", "Separate", "One property can combine web and app streams"], ["Bounce rate", "Central metric", "Replaced mainly by engagement rate"], ["Status", "Standard Universal Analytics properties stopped processing new data in July 2023", "The current product"]]),
+        example("Reading a purchase as events", "A visitor lands on a product page and buys.", ["`session_start`, then `page_view` (the landing page).", "`view_item`, `add_to_cart`, `begin_checkout`.", "`purchase` with the parameters `value`, `currency` and the items bought."], "The whole journey is a short list of events; a funnel is just counting how many sessions reach each one."),
+        warn("**GA4 data is not instant or perfect.** Standard reports can take hours to complete, numbers differ from other tools (for example server logs or a payment system), and consent choices and ad blockers hide some visitors. Treat GA4 as a good estimate of behaviour, not an exact ledger."),
+        mistakes(["Expecting GA4's totals to match the payment system exactly.", "Thinking a 'user' is always one person: it is usually a browser or device.", "Comparing Universal Analytics history directly with GA4: definitions differ."]),
+        tryIt("What does GA4 record when someone scrolls down a page?", "An event (`scroll`, when enhanced measurement is on) with parameters such as the page location."),
+      ],
+      points: ["GA4 records every interaction as an event with parameters.", "Sessions and users are derived; the hierarchy is account, property, data stream.", "Numbers are estimates; they will not match other systems exactly."],
+      check: [["In GA4 a page view is:", ["A hit type only", "An event", "A property", "A report"], 1, "Everything is an event."], ["A session starts with:", ["A purchase", "A session_start event", "A report", "A cookie banner"], 1, "GA4 creates a session_start event."]],
+    }),
+    topic({
+      title: "Dimensions and metrics: users, sessions and engagement", slug: "dimensions-metrics",
+      blocks: [
+        p("Every GA4 report is **dimensions** (what you break the data down by) and **metrics** (the numbers). It is the same idea as Tableau's or SQL's: dimensions group, metrics count."),
+        table("Common dimensions and metrics", ["", "Examples"], [["Dimensions", "Date, Session default channel group, Session source / medium, Device category, Country, Landing page, Page path, Event name"], ["Metrics", "Users, New users, Sessions, Engaged sessions, Engagement rate, Average engagement time, Event count, Key events, Total revenue"]]),
+        def("Engaged session", "A session that lasted at least **10 seconds**, or had at least one **key event**, or had at least **two page or screen views**. **Engagement rate** is engaged sessions divided by sessions. **Bounce rate** in GA4 is the opposite: sessions that were not engaged, divided by sessions."),
+        formula("Engagement rate", "engagement rate = engaged sessions ÷ sessions", "A rate of 0.62 means 62% of sessions were engaged. Always compare rates at the same level (by channel, by device), not as an average of averages."),
+        vizPlay({ id: "ga-play-basics", title: "Build a report: sessions by channel", intro: "Sessions and Users are ready-made metrics. Put Channel on Columns and Sessions on Rows. Then try Device, Country or Landing Page, and swap in Users.", data: T, start: { columns: [{ field: "Channel" }], rows: [{ field: "Sessions" }] } }),
+        p("The metric **Users** needs care. GA4's reports show **Active users** by default: people who had an engaged session or the first-visit event. **Total users** counts everyone who triggered any event. The two differ, so say which you mean."),
+        example("Sessions are not users", "A learner visits on Monday and again on Wednesday.", ["Users: 1 (the same person).", "Sessions: 2 (two separate visits).", "A user with many sessions is a returning user, usually your most valuable audience."], "Always check whether a number counts people or visits."),
+        warn("**Metrics can be misread across dimensions.** Users are not additive: a person who visits on mobile and on desktop is counted once in total but once in each device row, so the device rows add up to more than the total. Never add up user counts across rows."),
+        mistakes(["Adding user counts across channels or devices.", "Mixing up sessions and users.", "Quoting an engagement rate without saying what was in the denominator."]),
+        tryIt("What makes a session 'engaged' in GA4?", "It lasted at least 10 seconds, had a key event, or had two or more page or screen views."),
+      ],
+      points: ["Dimensions group data; metrics are the numbers.", "Engagement rate = engaged sessions ÷ sessions; bounce rate is the opposite.", "Users are not additive across rows; sessions and users are different things."],
+      check: [["Which is a dimension?", ["Sessions", "Device category", "Engagement rate", "Key events"], 1, "It breaks the data down."], ["Engagement rate is:", ["Users ÷ sessions", "Engaged sessions ÷ sessions", "Events ÷ users", "Revenue ÷ users"], 1, "Share of sessions that were engaged."]],
+    }),
+    topic({
+      title: "A tour of GA4's reports and where numbers come from", slug: "tour",
+      blocks: [
+        p("GA4's interface has a handful of areas. Knowing what each is for saves a lot of searching."),
+        table("The main areas", ["Area", "What it is for"], [["Home", "A quick overview and shortcuts"], ["Reports", "Standard, ready-made reports: Reports snapshot, Realtime, Acquisition, Engagement, Monetization, Retention, and User attributes and Tech"], ["Explore", "Explorations: build your own analyses (free-form tables, funnels, paths, cohorts)"], ["Advertising", "Attribution and conversion paths across channels"], ["Admin", "Settings: data streams, events, key events, data retention, users and permissions, links to other products"]]),
+        flow("How a number reaches a report", ["A tag on the site sends an event", "GA4 receives and processes it", "Filters, consent and thresholds apply", "The event is counted in reports and explorations"]),
+        list("Habits when reading a report", ["Check the **date range** and the **comparison** (previous period or year).", "Check the **property and filters**: internal traffic excluded?", "Look at the **dimension** you are viewing by, and what **segment** or filter is applied.", "Be careful with the **latest day or two**: data may still be arriving.", "Ask what the number is a **share of** (sessions, users, events)."]),
+        example("A report that misleads", "The Acquisition report shows Direct as the largest channel.", ["Direct often includes visits GA4 could not attribute (a missing campaign tag, a link in a messaging app).", "If your emails are untagged, their visits fall into Direct.", "The honest reading: 'Direct includes unattributed traffic', and fix the tagging."], "Large 'Direct' numbers are often a tagging problem, not loyal visitors."),
+        warn(NOTE_RUN),
+        mistakes(["Reading the newest day as final.", "Treating Direct as only people who typed your address.", "Comparing periods of different length."]),
+        tryIt("Where would you build a custom funnel analysis in GA4?", "In Explore (an Exploration), using the Funnel exploration."),
+      ],
+      points: ["Reports are ready-made; Explore builds custom analyses; Admin holds settings.", "Check dates, comparisons, filters and what a number is a share of.", "Large 'Direct' often means unattributed traffic."],
+      check: [["Custom analyses such as funnels are built in:", ["Home", "Explore", "Admin only", "Realtime"], 1, "Explorations are the build-your-own area."], ["A very large Direct channel often means:", ["Loyal customers only", "Unattributed traffic, often from missing tags", "No traffic", "Bots only"], 1, "Check campaign tagging."]],
+    }),
+  ],
+  practical: { title: "Practical: read the traffic", intro: "Open the **Dimension or metric?** and **Sessions by channel** labs.", steps: ["Classify each GA4 term as a dimension or a metric.", "Build a report of sessions by channel, sorted from most to least.", "Say which channel brings the most sessions, and what you would check next."] },
+  terms: [["Event", "Something a user did, recorded with parameters."], ["Parameter", "Detail attached to an event."], ["Session", "A group of events from one visit."], ["Dimension", "What you break data down by."], ["Metric", "A number such as sessions or revenue."], ["Engaged session", "10 seconds, a key event, or two page views."], ["Data stream", "A website or app sending data to a property."]],
+  quiz: [
+    ["GA4 is mainly based on:", ["Hits", "Events", "Cookies only", "Page URLs only"], 1, "Everything is an event."],
+    ["Which is a metric?", ["Country", "Device category", "Sessions", "Landing page"], 2, "Sessions is a count, so it is a metric."],
+    ["Bounce rate in GA4 is:", ["The share of sessions that were not engaged", "The share of engaged sessions", "Users ÷ sessions", "Always zero"], 0, "The opposite of engagement rate."],
+    ["User counts across rows:", ["Should be added up", "Are not additive", "Are always equal", "Are sessions"], 1, "A person can appear in several rows."],
+    ["Standard Universal Analytics properties:", ["Still process data forever", "Stopped processing new data in July 2023", "Are the same as GA4", "Never existed"], 1, "GA4 replaced them."],
+    ["The place to build a funnel exploration is:", ["Explore", "Realtime", "Home", "Help"], 0, "Explorations."],
+    ["A vanity metric:", ["Ties directly to goals", "Looks good without showing goals are met", "Is a conversion", "Is revenue"], 1, "Prefer outcome measures."],
+    ["GA4 numbers compared with a payment system:", ["Always match exactly", "Can differ, so treat GA4 as an estimate", "Are always lower", "Are the same"], 1, "Consent, ad blockers and processing cause differences."],
+  ],
+});
+
+/* ------------------------------------------------------------------------------------------------ module 2 */
+export const M2 = module_({
+  slug: "collecting-data", title: "Collecting good data: events, tags and campaigns", hours: 4, level: "Building skills",
+  summary: "Choose and name events, send them with a tag and a data layer, tag campaigns with UTM parameters, and keep the data clean and consent-aware.",
+  outcome: "You can tell automatic, enhanced, recommended and custom events apart, describe how Google Tag Manager's tags, triggers, variables and data layer work, tag campaigns correctly, and list the settings and checks that keep data trustworthy.",
+  intro: "Reports are only as good as the data behind them, and the data is only as good as the tagging. Missing campaign tags push traffic into Direct; a misnamed event splits one action into three; a test visit by your own team inflates sessions. This module is about getting the collection right: which events to track, how a tag sends them, how to tag campaigns, and how to check and protect the data. " + NOTE_RUN,
+  topics: [
+    topic({
+      title: "Events: automatic, enhanced, recommended and custom", slug: "events",
+      blocks: [
+        p("GA4 gives you four kinds of events, from least to most work."),
+        table("Event types", ["Type", "What it is", "Examples"], [["Automatically collected", "Sent as soon as the tag is installed", "`first_visit`, `session_start`, `user_engagement`"], ["Enhanced measurement", "Optional events you switch on in the data stream settings", "`page_view`, `scroll`, outbound `click`, `file_download`, site search, video engagement, form interactions"], ["Recommended", "Events Google has defined names and parameters for, which you implement", "`login`, `sign_up`, `generate_lead`, and the ecommerce events `view_item`, `add_to_cart`, `begin_checkout`, `purchase`"], ["Custom", "Events you invent for your own needs", "`brochure_download`, `calculator_used`"]]),
+        sqlPlay({ id: "ga-play-events", title: "Count events and sessions", intro: "Seventeen events from five sessions. COUNT(*) counts events; COUNT(DISTINCT session_id) counts sessions. Which event do all sessions have?", tables: [ga_events], query: "SELECT event_name,\n       COUNT(*) AS events,\n       COUNT(DISTINCT session_id) AS sessions\nFROM ga_events\nGROUP BY event_name\nORDER BY sessions DESC, event_name;" }),
+        list("Naming and design rules", ["**Use recommended events and their names** where one exists: GA4's reports and integrations understand them.", "Name custom events in **lowercase with underscores** (`brochure_download`), and keep names consistent.", "**One event for one action**, with parameters for the detail (`item_name`, `link_url`), not a new event per detail.", "**Do not put personal data** (names, emails, phone numbers) in event names or parameters.", "Mind the **limits**: event names and parameter counts are limited, and custom dimensions must be registered before they appear in reports.", "Document every event in a **tracking plan**."]),
+        example("One event, not three", "A site tracks downloads of three brochures.", ["Poor: events `download_brochure_a`, `download_brochure_b`, `download_brochure_c`.", "Better: one event `brochure_download` with a parameter `brochure_name`.", "Now you can report downloads in total and by brochure, and adding a fourth brochure needs no change."], "Events name the action; parameters carry the detail."),
+        warn("Parameters you send are **not available in reports automatically**. To use a custom parameter in a report or an exploration you register it as a custom dimension or metric in Admin, and it only collects from then on, not backwards."),
+        mistakes(["A new event name for every variant of one action.", "Personal data in parameters.", "Sending a parameter and never registering it."]),
+        tryIt("Which type of event is `purchase`?", "A recommended event (one of the ecommerce events Google defines)."),
+      ],
+      points: ["Events are automatic, enhanced, recommended or custom; use recommended names where they exist.", "One event per action, with parameters for the detail; no personal data.", "Register custom parameters as custom dimensions or metrics to use them in reports."],
+      check: [["Which is an enhanced measurement event?", ["purchase", "scroll", "brochure_download", "login"], 1, "Scroll tracking is an enhanced measurement option."], ["Custom parameters appear in reports after you:", ["Do nothing", "Register them as custom dimensions or metrics", "Rename the site", "Restart GA4"], 1, "Registration is required, and is not retroactive."]],
+    }),
+    topic({
+      title: "Tags, triggers and the data layer", slug: "tag-manager",
+      blocks: [
+        p("A **tag** is a small piece of code on your site that sends data. You can add the Google tag directly, but most teams use **Google Tag Manager (GTM)**: a container on the site where marketers manage tags without editing the website's code each time."),
+        table("GTM's building blocks", ["Piece", "Meaning", "Example"], [["Tag", "What to send and where", "A GA4 event tag that sends `brochure_download`"], ["Trigger", "When to send it", "A click on a link ending in `.pdf`"], ["Variable", "A value a tag or trigger can use", "The clicked link's URL, or a value from the data layer"], ["Data layer", "A structured object the site fills with information for GTM to read", "The order total and items at checkout"], ["Container", "The package of all tags, triggers and variables", "One container per site"]]),
+        code("JavaScript", "// the website tells the data layer what just happened\nwindow.dataLayer = window.dataLayer || [];\nwindow.dataLayer.push({\n  event: \"purchase\",\n  ecommerce: {\n    transaction_id: \"T-1001\",\n    value: 1499,\n    currency: \"INR\",\n    items: [{ item_id: \"C-12\", item_name: \"SQL for Data\", price: 1499, quantity: 1 }]\n  }\n});", "A data layer push for a purchase (shown, not run here)"),
+        flow("How a purchase reaches GA4", ["The site pushes a purchase to the data layer", "A trigger in GTM fires on that event", "The GA4 event tag reads the values from the data layer", "The Google tag sends the event to GA4"]),
+        list("Working safely with tags", ["Use **Preview mode** in GTM and **DebugView** in GA4 to watch events arrive before publishing.", "Work in a **workspace** and publish **versions** with notes, so a change can be rolled back.", "Give tags, triggers and variables clear names (`GA4 - brochure_download`).", "Keep the data layer's names stable: the site team and the analytics team must agree on them.", "Restrict who can publish: a wrong tag can break the site or collect personal data."]),
+        example("Debugging a missing event", "Purchases are not appearing in GA4.", ["In GTM Preview, confirm the data layer push happened and the trigger fired.", "If the tag did not fire, check the trigger's conditions (a typo in the event name).", "If it fired, open DebugView and check the event arrives with its parameters."], "Test each link in the chain: site, data layer, trigger, tag, GA4."),
+        warn("**Tags can collect personal data by accident**: a form field's text, an email in a URL, a name in a parameter. Review what each tag sends, and keep personal data out of GA4."),
+        mistakes(["Publishing changes without Preview.", "Many people with publish rights and no change notes.", "Hard-coding the tracking in the page and again in GTM, so events are counted twice."]),
+        tryIt("What is the data layer for?", "A structured place where the site puts information (such as a purchase's value and items) for the tag manager to read and send."),
+      ],
+      points: ["GTM manages tags, triggers and variables in a container; the data layer carries structured information from the site.", "Test with Preview and DebugView before publishing; use versions and clear names.", "Review what tags send to avoid collecting personal data."],
+      check: [["A trigger decides:", ["What to send", "When a tag fires", "Which colour to use", "Who can see the report"], 1, "It is the condition for firing."], ["The data layer is:", ["A report", "A structured object the site fills for GTM to read", "A password", "A chart"], 1, "It carries values from the site to GTM."]],
+    }),
+    topic({
+      title: "Campaign tagging: UTM parameters and channels", slug: "utm",
+      blocks: [
+        p("GA4 learns where a visit came from from the **referrer** and from **UTM parameters** you add to the links of your campaigns. Without them, much of your marketing traffic lands in Direct."),
+        table("The UTM parameters", ["Parameter", "Meaning", "Example"], [["`utm_source`", "Where the link was placed", "`newsletter`, `instagram`"], ["`utm_medium`", "The type of channel", "`email`, `cpc`, `social`"], ["`utm_campaign`", "The campaign name", "`spring_sale_2025`"], ["`utm_term`", "A paid search keyword (optional)", "`sql course`"], ["`utm_content`", "Which version of an ad or link (optional)", "`blue_button`"]]),
+        code("URL", "https://kiranlearning.in/courses?utm_source=newsletter&utm_medium=email&utm_campaign=spring_sale_2025", "A correctly tagged email link"),
+        p("GA4 groups traffic into **default channel groups** using rules on source and medium: for example a medium of `email` gives **Email**, `cpc` or `ppc` gives **Paid Search** (when the source is a search engine), `organic` from a search engine gives **Organic Search**, `social` gives **Organic Social**, and no source at all is **Direct**."),
+        table("Source / medium to channel", ["Source / medium", "Default channel group"], [["google / organic", "Organic Search"], ["google / cpc", "Paid Search"], ["newsletter / email", "Email"], ["instagram / social", "Organic Social"], ["partner-blog.in / referral", "Referral"], ["(direct) / (none)", "Direct"]]),
+        list("Tagging discipline", ["Agree **naming conventions**: all lowercase, no spaces, consistent source and medium names.", "**Never tag internal links** on your own site with UTMs: it starts a new session and hides the real source.", "Use a **shared spreadsheet or builder** so everyone tags the same way.", "Tag **every** campaign link: emails, ads, social posts, QR codes, partner links.", "Do not put **personal data** in UTM values: URLs are stored and shared."]),
+        example("A broken tag", "An email link uses `utm_medium=Email` in one campaign and `utm_medium=e-mail` in another.", ["GA4 treats `Email`, `email` and `e-mail` as different values.", "`e-mail` may not match the Email channel rule, so those visits land in Unassigned.", "Fix the convention and re-tag future links."], "Inconsistent tags fragment channels; consistent lowercase names keep them whole."),
+        warn("UTM values are **case sensitive** in reports: `Newsletter` and `newsletter` are two sources. Choose one style, such as all lowercase, and stick to it."),
+        mistakes(["Tagging internal links.", "Mixed capital letters and spellings.", "Leaving paid links untagged and relying on auto-tagging alone without checking the link between ad and analytics accounts."]),
+        tryIt("Which medium would an email newsletter link use?", "`email` (so GA4 groups it as the Email channel)."),
+      ],
+      points: ["UTM parameters tell GA4 the source, medium and campaign of a link.", "Default channel groups are assigned from source and medium; consistent lowercase naming keeps channels clean.", "Tag every campaign link, never internal links, and keep personal data out."],
+      check: [["A medium of `email` groups traffic as:", ["Paid Search", "Email", "Direct", "Referral"], 1, "The Email channel rule."], ["Why avoid tagging internal links?", ["It is slow", "It starts a new session and hides the real source", "It deletes data", "It is illegal"], 1, "Internal UTMs overwrite the source."]],
+    }),
+    topic({
+      title: "Data quality, consent and privacy basics", slug: "quality-consent",
+      blocks: [
+        p("Collecting data responsibly means it is **clean** and **lawful**."),
+        table("Keeping data clean", ["Problem", "Fix"], [["Your own team's visits inflate sessions", "Define **internal traffic** (IP addresses) and activate the internal traffic data filter"], ["Payment or login sites appear as referrals and break sessions", "Add them to the **unwanted referrals** list"], ["Duplicate events (a hard-coded tag and a GTM tag)", "Keep one implementation; test in DebugView"], ["Bots and spam", "GA4 filters known bots automatically; watch for unusual spikes"], ["Cross-domain journeys split into two users", "Configure **cross-domain measurement**"], ["Test data in the production property", "Use a separate test property or filter test traffic"]]),
+        list("Consent and privacy", ["Many laws (such as the EU's GDPR and India's DPDP Act, 2023) set rules on consent and personal data; the details depend on where you and your visitors are.", "A **consent banner** asks visitors' permission before analytics or advertising cookies are set.", "**Consent Mode** lets Google tags adjust their behaviour based on the visitor's consent choices, so a visitor who declines is not tracked in the usual way.", "GA4 does not store full IP addresses, and offers **data retention** settings (for example 2 or 14 months for user-level event data) and controls for data deletion.", "Do **not** send personal data to GA4 (names, emails, phone numbers), and do not rely on tools to anonymise it later."]),
+        example("Why the numbers drop after a banner", "A site adds a consent banner and sees traffic in reports fall 30%.", ["Visitors who decline analytics are no longer measured in the usual way.", "Reports now undercount real visits; trends before and after are not comparable.", "Note the change on a timeline annotation and compare like with like."], "Lawful collection can reduce your measured numbers. That is expected: record when it happened."),
+        warn("This is general information, not legal advice. Ask your organisation's privacy or legal team what consent and retention rules apply to your site and audience."),
+        mistakes(["No internal traffic filter.", "Collecting data before consent where consent is required.", "Treating a drop after a consent change as a real fall in demand."]),
+        tryIt("Why exclude internal traffic?", "Visits from your own staff and testing are not customers; they inflate sessions and distort conversion rates."),
+      ],
+      points: ["Clean data needs internal-traffic filters, referral exclusions, one tag implementation and cross-domain setup.", "Consent rules and Consent Mode affect what is measured; keep personal data out of GA4.", "Annotate changes that break comparability."],
+      check: [["An internal traffic filter removes:", ["Your own team's visits", "All mobile visits", "Revenue", "Events"], 0, "Staff visits are not customer behaviour."], ["Personal data such as emails in event parameters:", ["Is fine", "Should not be sent to GA4", "Improves reports", "Is required"], 1, "Keep it out."]],
+    }),
+  ],
+  practical: { title: "Practical: tag it right", intro: "Open the **Which kind of event?**, **Which channel group?**, **Is the campaign tag correct?** and **Which GTM piece?** activities.", steps: ["Classify each event as automatic, enhanced, recommended or custom.", "Assign each source and medium to its default channel group.", "Spot the faulty UTM tags and say why they fragment channels."] },
+  terms: [["Recommended event", "An event Google has defined names and parameters for."], ["Custom event", "An event you define."], ["GTM", "Google Tag Manager."], ["Data layer", "A structured object the site fills for GTM."], ["UTM parameter", "A tag on a link naming source, medium and campaign."], ["Channel group", "A grouping of traffic based on source and medium."], ["Consent Mode", "Tags adjust behaviour to visitor consent."]],
+  quiz: [
+    ["Which event is automatically collected?", ["purchase", "session_start", "brochure_download", "add_to_cart"], 1, "session_start is sent automatically."],
+    ["One event with parameters is better than:", ["Many events for variants of one action", "A single event", "A recommended event", "A data layer"], 0, "Events name the action; parameters carry the detail."],
+    ["A GTM trigger:", ["Says when a tag fires", "Says what to send", "Is a report", "Is a password"], 0, "It is the firing condition."],
+    ["utm_medium for an email newsletter should be:", ["email", "cpc", "social", "referral"], 0, "It maps to the Email channel."],
+    ["UTM values are:", ["Case sensitive", "Case insensitive", "Ignored", "Encrypted"], 0, "Use one consistent style."],
+    ["Internal traffic should be:", ["Counted as customers", "Excluded with a data filter", "Doubled", "Renamed"], 1, "Exclude your own visits."],
+    ["A consent banner can cause:", ["Higher traffic always", "A drop in measured numbers", "Faster pages", "No change ever"], 1, "Declined visitors are not tracked in the usual way."],
+    ["Which belongs in event parameters?", ["A customer's email", "A brochure name", "A password", "A phone number"], 1, "Never personal data."],
+  ],
+});
+
+/* ------------------------------------------------------------------------------------------------ module 3 */
+export const M3 = module_({
+  slug: "acquisition-and-engagement", title: "Acquisition and engagement analysis", hours: 5, level: "Intermediate",
+  summary: "Find where visitors come from, how engaged they are, and what differs by channel, device, country and page, then build the rates that make channels comparable.",
+  outcome: "You can read acquisition and engagement reports, build charts of sessions and users by dimension, create calculated rates such as engagement rate and conversion rate, and avoid the traps of averaging rates and adding users.",
+  intro: "Once data is flowing, the real work is comparison: which channel brings engaged visitors, which device converts, which page loses people. This module teaches the analysis, using a practice report builder on the traffic of a small learning site. The builder works like GA4's Explorations: you choose dimensions and metrics, filter, and build your own calculated metrics. The numbers are invented, but the patterns (and the mistakes people make reading them) are real.",
+  topics: [
+    topic({
+      title: "Acquisition: where visits come from", slug: "acquisition",
+      blocks: [
+        p("**Acquisition** reports answer 'where do visitors come from?' GA4 separates two views."),
+        table("User acquisition and traffic acquisition", ["", "User acquisition", "Traffic acquisition"], [["Looks at", "How a user was first acquired", "What brought each session"], ["Credit goes to", "The first source of the user", "The source of that session"], ["Use for", "Which channels bring **new** people", "Which channels bring **visits** now"]]),
+        vizPlay({ id: "ga-play-channels", title: "Sessions by channel, and what each is worth", intro: "Put Channel on Columns and Sessions on Rows, then sort high to low. Next add Revenue or Users. A big channel is not always a valuable one.", data: T, start: { columns: [{ field: "Channel" }], rows: [{ field: "Sessions" }], sort: { dir: "desc" } } }),
+        table("Reading a channel table", ["Channel", "Question to ask"], [["Organic Search", "Which queries and pages bring people? Is it growing?"], ["Paid Search", "Are we paying for visitors who then do nothing?"], ["Direct", "How much is genuine direct traffic, and how much is untagged?"], ["Email", "Do subscribers engage and convert more than average?"], ["Organic Social", "Is it brand awareness (many visits, few conversions) or driving action?"], ["Referral", "Which partners send good traffic?"]]),
+        example("Volume is not value", "Organic Search brings the most sessions, Email far fewer.", ["Sessions say who is largest.", "Engagement and conversion say who is best: Email visitors engage and buy at higher rates.", "Decision: grow the email list, as well as keeping search healthy."], "Rank channels by volume **and** quality, never volume alone."),
+        warn("**Source / medium is more detailed than channel.** 'Referral' hides which partner; 'Paid Search' hides which campaign. Drill down before concluding, and always say which level you reported."),
+        mistakes(["Ranking channels by sessions only.", "Ignoring that Direct often hides untagged campaigns.", "Reporting a channel's share without the time period."]),
+        tryIt("Why compare engagement and conversion across channels, not just sessions?", "Sessions show volume only; engagement and conversion show how valuable the visitors are."),
+      ],
+      points: ["User acquisition credits the first source of a user; traffic acquisition credits the source of each session.", "Rank channels by volume and quality (engagement, conversion, revenue).", "Drill from channel to source / medium and campaign."],
+      check: [["Traffic acquisition credits:", ["The user's first source", "The source of each session", "The device", "The country"], 1, "It looks at sessions."], ["A channel with many sessions but few conversions is:", ["Always the best", "Large but low in value", "Broken", "Direct"], 1, "Volume is not value."]],
+    }),
+    topic({
+      title: "Engagement: what visitors do", slug: "engagement",
+      blocks: [
+        p("Engagement tells you whether visits were meaningful. The key measures:"),
+        table("Engagement measures", ["Measure", "What it tells you", "Watch out"], [["Engaged sessions and engagement rate", "How many visits were more than a glance", "A landing page that answers the question in 5 seconds can have a low rate and still succeed"], ["Average engagement time", "How long the page or app was in the foreground", "Per user or session; skewed by a few long visits"], ["Views (page and screen views) per session", "How deep visits go", "More is not always better: lost visitors browse more"], ["Event count and key events", "What they did", "Check they are the events you care about"]]),
+        formula("A calculated rate: engagement rate by channel", "Engagement Rate = SUM([Engaged]) / COUNTD([Session ID])", "Total engaged sessions divided by total sessions for each mark. In the builder, create it with the Create a calculated field box."),
+        vizPlay({ id: "ga-play-engagement", title: "Build an engagement rate", intro: "Create Engagement Rate = SUM([Engaged]) / COUNTD([Session ID]), put it on Rows with Channel on Columns, and sort. Which channels hold attention?", data: T, start: { columns: [{ field: "Channel" }], rows: [{ field: "Sessions" }] }, allowCalcs: true }),
+        example("The averages trap", "Mobile engagement is 40% on 100 sessions and desktop 80% on 20 sessions.", ["Average of the two rates: 60%.", "Ratio of the totals: (40 + 16) / 120 = 46.7%.", "Most sessions are on mobile, so the true overall rate is closer to 40%."], "Always divide total engaged by total sessions. Averaging rates ignores the sizes of the groups."),
+        warn("**Do not add rates or averages across rows.** The overall engagement rate is total engaged sessions over total sessions, not the average of the rows' rates."),
+        mistakes(["Averaging engagement rates across channels.", "Judging a page by engagement time alone.", "Comparing engagement rates across very different page types."]),
+        tryIt("Mobile: 40 engaged of 100 sessions. Desktop: 16 engaged of 20. What is the overall engagement rate?", "(40 + 16) / (100 + 20) = 56 / 120 = 46.7%."),
+      ],
+      points: ["Engagement rate, engagement time, views per session and key events describe what visitors do.", "Calculate rates as total over total, not as an average of rates.", "Judge a page against its purpose."],
+      check: [["Overall engagement rate across groups is:", ["The average of group rates", "Total engaged sessions ÷ total sessions", "The highest rate", "The median"], 1, "Add numerators and denominators first."], ["A page that answers a question quickly may show:", ["A low engagement rate but still succeed", "Always high engagement", "No sessions", "A broken tag"], 0, "Judge a page by its purpose."]],
+    }),
+    topic({
+      title: "Audience and technology: device, country, landing page", slug: "audience",
+      blocks: [
+        p("Breaking traffic down by **who** and **how** often explains why numbers differ."),
+        table("Useful breakdowns", ["Dimension", "Questions it answers"], [["Device category", "Do mobile visitors engage and convert as well as desktop?"], ["Country / city", "Where are visitors, and where do they convert?"], ["New vs returning", "Do returning visitors convert more?"], ["Landing page", "Which entry pages attract and keep people?"], ["Browser / operating system", "Is a bug hurting one browser?"]]),
+        vizPlay({ id: "ga-play-heat", title: "Channel by device: a heat map", intro: "Channel down the side, device across the top, colour for Sessions. Switch the colour to Revenue. Where do the sessions and the money differ?", data: T, start: { mark: "square", columns: [{ field: "Device" }], rows: [{ field: "Channel" }], color: { field: "Sessions" } } }),
+        example("Mobile traffic that does not convert", "Most visits are on mobile, but nearly all purchases are on desktop.", ["That points to a mobile experience problem (a hard checkout, slow pages) or to people researching on phones and buying later on a computer.", "Check mobile page speed and checkout steps, and look at cross-device journeys.", "Do not assume the visitors are low quality: the **device** may be the cause."], "A dimension is a place to look for causes, not a verdict on the visitors."),
+        warn("**Small groups mislead.** A conversion rate of 50% from 4 sessions is not a finding. Show the number of sessions beside every rate, and be cautious with groups under a few dozen."),
+        mistakes(["Concluding from tiny segments.", "Treating device as the cause without testing.", "Comparing countries without allowing for audience size."]),
+        tryIt("What should you show beside a conversion rate for a small segment?", "The number of sessions it is based on, so readers can judge how reliable it is."),
+      ],
+      points: ["Break traffic down by device, location, new versus returning, landing page and browser.", "A dimension suggests where to look for causes; test before concluding.", "Show the base next to every rate and be careful with small groups."],
+      check: [["Which breakdown suggests a mobile experience problem?", ["Country", "Device category", "Month", "Event name"], 1, "Compare device rates."], ["A rate from 4 sessions is:", ["Reliable", "Too small to trust", "Perfect", "Always 100%"], 1, "Small samples mislead."]],
+    }),
+    topic({
+      title: "Calculated metrics and building a story", slug: "calculated-metrics",
+      blocks: [
+        p("GA4 lets you create **calculated metrics** (formulas from existing metrics) in Admin, and Explorations let you segment and filter. The idea is the same as the calculated fields you build here: ratios of totals, per-session and per-user measures."),
+        table("Useful ratios", ["Measure", "Formula", "What it answers"], [["Engagement rate", "Engaged sessions ÷ sessions", "Do visits matter?"], ["Conversion rate (session key event rate)", "Sessions with a key event ÷ sessions", "Do visits lead to action?"], ["Revenue per session", "Revenue ÷ sessions", "What is a visit worth?"], ["Average order value", "Revenue ÷ purchases", "How big are orders?"], ["Pages per session", "Page views ÷ sessions", "How deep do visits go?"]]),
+        vizPlay({ id: "ga-play-conv", title: "Conversion rate by device", intro: "Create Conversion Rate = SUM([Converted]) / COUNTD([Session ID]). Put Device on Columns and the rate on Rows. Then add Sessions to Label so each rate shows its base.", data: T, start: { columns: [{ field: "Device" }], rows: [{ field: "Sessions" }] }, allowCalcs: true }),
+        flow("From analysis to a story", ["Start with a question", "Choose the metric and the breakdown", "Compare (period, channel, device)", "State the finding and the base", "Recommend a test or action"]),
+        example("A finding written well", "Conversion by device.", ["Headline: Mobile visitors convert far less than desktop, on most of the traffic.", "Evidence: mobile is 105 of 160 sessions but 4 of the 16 conversions; desktop is 51 sessions and 10 conversions.", "Limit: this is six months of one small site; the tablet group is only 4 sessions.", "Action: test a simpler mobile checkout, then compare mobile conversion in a month."], "Lead with the answer, give the numbers with their bases, say what limits it, and propose a test."),
+        warn("Correlation is not cause. Mobile visitors converting less does not prove mobile is the problem: perhaps they are at an earlier stage of their decision. Say what you tested and what you did not."),
+        mistakes(["A finding with no base numbers.", "A recommendation that is not a testable change.", "Presenting segments of a few sessions as results."]),
+        tryIt("Write the formula for revenue per session.", "Total revenue ÷ total sessions (SUM([Revenue]) / COUNTD([Session ID]) in the builder)."),
+      ],
+      points: ["Calculated metrics are ratios of totals: engagement rate, conversion rate, revenue per session, average order value.", "A good finding states the answer, the numbers with their bases, the limits and a test.", "Correlation is not cause."],
+      check: [["Revenue per session is:", ["Revenue ÷ users", "Revenue ÷ sessions", "Sessions ÷ revenue", "Revenue × sessions"], 1, "Total revenue over total sessions."], ["A good recommendation is:", ["Vague", "A testable change", "A guess", "A colour"], 1, "Test and measure."]],
+    }),
+  ],
+  practical: { title: "Practical: compare the channels", intro: "Open the **Sessions by month**, **Engagement rate by channel**, **Conversion rate by device**, **Channel by device** and **Revenue by landing page** labs.", steps: ["Build each report with the right dimension and metric.", "Create the rates as calculated fields: total over total.", "Look at the number of sessions behind each rate.", "Press Check my work."] },
+  terms: [["User acquisition", "Credits a user's first source."], ["Traffic acquisition", "Credits each session's source."], ["Engagement rate", "Engaged sessions ÷ sessions."], ["Conversion rate", "Sessions with a key event ÷ sessions."], ["Revenue per session", "Total revenue ÷ sessions."], ["Calculated metric", "A formula built from existing metrics."], ["Base", "The number of sessions behind a rate."]],
+  quiz: [
+    ["Traffic acquisition credits:", ["The first source of the user", "The source of each session", "Only paid channels", "Nothing"], 1, "It is about sessions."],
+    ["Overall conversion rate across groups is:", ["The average of group rates", "Total conversions ÷ total sessions", "The highest group", "Zero"], 1, "Add first, then divide."],
+    ["A channel with many sessions but few conversions is:", ["Large but low value", "The best channel", "Broken", "Hidden"], 0, "Volume is not value."],
+    ["Mobile converting less than desktop suggests:", ["A place to look for causes, to test", "Mobile visitors are bad", "Nothing", "A broken tag"], 0, "Do not conclude without testing."],
+    ["A rate from a very small group is:", ["Reliable", "Not reliable: show the base", "Always high", "Always low"], 1, "Small samples mislead."],
+    ["Revenue per session uses:", ["Revenue and sessions", "Users and events", "Events only", "Pages only"], 0, "Total revenue ÷ total sessions."],
+    ["Large Direct traffic can mean:", ["Untagged campaigns", "Only typed addresses", "No traffic", "A good thing always"], 0, "Check tagging."],
+    ["Users across rows:", ["Can be added", "Are not additive", "Equal sessions", "Are revenue"], 1, "A person can appear in several rows."],
+  ],
+});
+
+export { NOTE_RUN, T };

@@ -67,6 +67,8 @@ export const chainLab = (spec) => widgetHtml({ type: "chainlab", ...spec });
 export const merkle = (spec) => widgetHtml({ type: "merkle", ...spec });
 /** A code listing students can copy into a free tool such as Remix or Node. lang is shown as a label; source is escaped. */
 export const code = (lang, source, caption) => `<figure class="cw-code"><figcaption><span class="cw-label">${esc(lang)}</span>${caption ? ` ${esc(caption)}` : ""}</figcaption><pre><code>${esc(String(source).trim())}</code></pre></figure>`;
+/** A live SQL window in a lesson. tables is [[name, [columns], [[row], ...]], ...]; query is what starts in the editor (it must run). */
+export const sqlPlay = ({ id, title, intro, tables, query }) => widgetHtml({ type: "sqlplay", id, title, ...(intro ? { intro } : {}), tables: tables.map(([name, columns, rows]) => ({ name, columns, rows })), query });
 export const flashcards = (id, title, cards) => widgetHtml({ type: "flashcards", id, title, cards: cards.map(([front, back]) => ({ front, back })) });
 /** Move the correct option to a chosen position (swap), so answers are spread over A to D instead of piling up on one letter. */
 function place(options, correct, target) {
@@ -201,5 +203,65 @@ export function course(c) {
     },
     solutions: Object.fromEntries(labs.map((l) => [l.activity.id, l.solution])),
     catalogue: c.catalogue,
+  };
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- SQL practice */
+export const Q = {
+  runs: () => ({ k: "sql.runs" }),
+  /** The student's result must equal what this model query returns on the same tables (row order only matters when ordered is true). */
+  result: (solution, o = {}) => ({ k: "sql.result", solution, ...(o.ordered ? { ordered: true } : {}) }),
+  /** The query text must contain this pattern (a regular expression string); what is how the check names it to the student. */
+  uses: (re, what) => ({ k: "sql.uses", re, what }),
+};
+/** A small repeatable pseudo-random generator, so authored sample data is the same every build. */
+export function rng(seed = 7) {
+  let s = seed >>> 0;
+  const next = () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296);
+  return { next, int: (a, b) => a + Math.floor(next() * (b - a + 1)), pick: (arr) => arr[Math.floor(next() * arr.length)], money: (a, b) => Math.round((a + next() * (b - a)) * 100) / 100 };
+}
+/** Viz builder checks. V.shelf(shelf, field, {agg, date, quick}), V.kind(kinds, what), V.data(solutionSpec, {calcs, ordered}), V.sorted(dir), V.filter(field, {values, min}), V.top(n), V.hasCalc(name), V.uses(regex, what), V.runs(). */
+export const V = {
+  runs: () => ({ k: "viz.runs" }),
+  shelf: (shelf, field, o = {}) => ({ k: "viz.shelf", shelf, field, ...o }),
+  kind: (kinds, what) => ({ k: "viz.kind", kinds, what }),
+  data: (solution, o = {}) => ({ k: "viz.data", solution, ...(o.calcs ? { calcs: o.calcs } : {}), ...(o.ordered ? { ordered: true } : {}) }),
+  sorted: (dir) => ({ k: "viz.sorted", dir }),
+  filter: (field, o = {}) => ({ k: "viz.filter", field, ...o }),
+  top: (n) => ({ k: "viz.top", n }),
+  hasCalc: (name) => ({ k: "viz.hasCalc", name }),
+  uses: (re, what) => ({ k: "viz.uses", re, what }),
+};
+/** Viz builder lab. data is { fields: [{name, role, type}], rows, calcs? }; start is the view on the canvas at first; solution is { spec, calcs } used by the tests. */
+export function vizLab(o) {
+  return {
+    activity: { ...base(o, "viz"), viz: { data: o.data, start: o.start ?? { columns: [], rows: [] }, allowCalcs: o.allowCalcs ?? false } },
+    solution: { spec: o.solution.spec, calcs: o.solution.calcs ?? {} },
+  };
+}
+/** A live viz window in a lesson (see lib/learn/widgets/types.ts). */
+export const vizPlay = ({ id, title, intro, data, start, allowCalcs }) => widgetHtml({ type: "vizplay", id, title, ...(intro ? { intro } : {}), data, start, allowCalcs: !!allowCalcs });
+
+/** DAX checks: X.runs() (the formulas run), X.measure(name, solution) (the same matrices as the model measure in every visual), X.uses(regex, what). */
+export const X = {
+  runs: () => ({ k: "dax.runs" }),
+  measure: (name, solution) => ({ k: "dax.measure", name, solution }),
+  uses: (re, what) => ({ k: "dax.uses", re, what }),
+};
+/** DAX lab. model is { tables: [{name, columns, rows} or {name, calendar: {from, to}}], relationships: [{many, one}], measures: {Name: "formula"}, dateTable }; visuals are [{label, rows: ["Table[Col]"], cols?}]; show is the measure to display. */
+export function daxLab(o) {
+  return {
+    activity: { ...base(o, "dax"), dax: { model: o.model, starter: o.starter ?? "// Write your measure below, then press Run\n", visuals: o.visuals, show: o.show } },
+    solution: { code: o.solution },
+  };
+}
+/** A live DAX window in a lesson (see lib/learn/widgets/types.ts). */
+export const daxPlay = ({ id, title, intro, model, code, visuals, show }) => widgetHtml({ type: "daxplay", id, title, ...(intro ? { intro } : {}), model, code, visuals, show });
+
+/** SQL lab. tables is [[name, [columns], [[row], ...]], ...]; solution is the model query used by the tests. */
+export function sqlLab(o) {
+  return {
+    activity: { ...base(o, "sql"), sql: { tables: o.tables.map(([name, columns, rows]) => ({ name, columns, rows })), starter: o.starter ?? "-- Write your query below, then press Run query\n" } },
+    solution: { query: o.solution },
   };
 }

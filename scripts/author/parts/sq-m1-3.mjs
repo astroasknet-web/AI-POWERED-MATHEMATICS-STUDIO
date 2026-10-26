@@ -1,0 +1,242 @@
+import { code, def, example, explorer, flow, formula, list, miniQuiz, mistakes, module_, p, sqlPlay, table, tip, topic, tryIt, warn } from "../kit.mjs";
+import { sales } from "./sql-mini.mjs";
+
+const S = [sales];
+
+/* ------------------------------------------------------------------------------------------------ module 1 */
+export const M1 = module_({
+  slug: "meet-the-database", title: "Meet the database: tables, SELECT and WHERE", hours: 3, level: "Getting started",
+  summary: "Learn how data is stored in tables, ask your first questions with SELECT, and pull out exactly the rows you need with WHERE, ORDER BY and LIMIT.",
+  outcome: "You can read a table, write queries that choose columns and rows, sort and limit a result, and explain what a NULL is.",
+  intro: "Almost every company keeps its sales, customers, tickets and website visits in a database, and almost every analyst job asks the same first question: can you get the data out? SQL (usually said 'sequel') is the language for that. It reads like a short English request, and the same ideas work in MySQL, PostgreSQL, SQL Server, Oracle, SQLite and the warehouses behind dashboards. In this module you meet the table, then learn the three clauses you will write every day: SELECT, FROM and WHERE. Every lesson has a live SQL window, so you can change a query and see the answer at once, with nothing to install.",
+  topics: [
+    topic({
+      title: "Tables, rows, columns and keys", slug: "tables-rows-columns",
+      blocks: [
+        p("A **database** is an organised collection of data, and most business databases are **relational**: the data is split into **tables**, and tables are connected by shared values. A table looks like a spreadsheet tab. Each **row** is one thing (one order, one customer). Each **column** is one fact about that thing (the amount, the city). Unlike a spreadsheet, every column has a fixed type, such as whole numbers, text or dates, and every row has the same columns."),
+        table("The sales table used in this module", ["id", "customer", "city", "amount", "status", "order_date"], [["1", "Asha", "Pune", "500", "paid", "2025-01-05"], ["2", "Bilal", "Delhi", "700", "paid", "2025-01-18"], ["3", "Chitra", "Pune", "200", "refunded", "2025-02-02"], ["4", "Dev", "Mumbai", "450", "paid", "2025-02-14"]]),
+        def("Primary key", "A column (or set of columns) whose value is different in every row, so it can name one row for certain. In the table above, `id` is the primary key: two customers may share a city, but no two orders share an `id`."),
+        def("Foreign key", "A column that holds the primary key of a row in another table. An `orders.customer_id` of 7 means 'the customer whose `customers.id` is 7'. Foreign keys are how tables are joined later in this course."),
+        p("Why split data into tables at all? Because a customer's name and city would otherwise be repeated on every one of their orders. Fix a typo once and it is fixed everywhere; store a price once and every order uses the same price. This habit of storing each fact once is called **normalisation**, and it is why real queries almost always involve more than one table."),
+        flow("From a business question to an answer", ["A question: which city sells most?", "Find the table that holds it", "Write the SQL query", "Read and check the result"]),
+        warn("Rows in a table have **no built-in order**. If you need a particular order, you must ask for it with ORDER BY, which you meet in lesson 4. Never rely on 'the first row' unless you sorted."),
+        tryIt("In a table of 500 orders, which column would you use to find one particular order for certain?", "The primary key, for example `order_id`. A column such as `customer` or `city` repeats, so it cannot identify one order."),
+      ],
+      points: ["A table is rows (things) and columns (facts about them); every column has a type.", "A primary key identifies a row; a foreign key points at a row in another table.", "Data is split into tables so each fact is stored once."],
+      check: [["What is one row in an orders table?", ["All the orders in a city", "A single order", "A fact such as amount", "The table's name"], 1, "A row is one thing, here one order. A column is one fact about every row."], ["What does a foreign key do?", ["Makes the table faster", "Holds the primary key of a row in another table", "Deletes duplicates", "Sorts the rows"], 1, "It links a row to a row in another table, which is how tables are connected."]],
+    }),
+    topic({
+      title: "Your first query: SELECT and FROM", slug: "select-and-from",
+      blocks: [
+        p("A query that reads data has two essential parts: **FROM** says which table to read, and **SELECT** says which columns to show. The shortest useful query is:"),
+        code("SQL", "SELECT customer, amount\nFROM sales;", "Show two columns for every row"),
+        p("Three small rules cover most beginner mistakes. Keywords such as SELECT and FROM are not case sensitive, and the semicolon at the end is optional in this course. Column names are separated by commas, with **no comma after the last one**. And `SELECT *` means 'every column', which is fine for a quick look but a poor habit in real work, because the table may gain hundreds of columns."),
+        def("Alias", "A temporary name given to a column or table with AS, for example `amount AS order_value`. It changes only the heading of the result, never the table."),
+        sqlPlay({ id: "sq-play-select", title: "Run your first queries", intro: "Press Run query. Then change the columns, add `city`, or swap in `*`, and run again.", tables: S, query: "SELECT customer, amount AS order_value\nFROM sales;" }),
+        example("Answering a plain question", "Your manager asks: 'Send me every customer's name and city.'", ["The table is `sales`; the facts are `customer` and `city`.", "Write `SELECT customer, city FROM sales`.", "Run it and check the row count matches the table (8 rows here)."], "A query is a precise way of writing the question. Say the question in words first, then translate it.") ,
+        mistakes(["Writing `SELECT customer, FROM sales`: a comma before FROM is an error. Remove it.", "Typing `FORM` for `FROM`. The practice window points this out, but real databases only say 'syntax error'.", "Forgetting that text values need quotes later in WHERE: `'Pune'`, not `Pune`."]),
+        tip("Read your query out loud as an English sentence: 'Show the customer and the amount from the sales table.' If it does not make sense when spoken, it probably will not run."),
+      ],
+      points: ["SELECT chooses columns; FROM chooses the table.", "Separate columns with commas and put none after the last one.", "AS gives a column a new heading without changing the table."],
+      check: [["Which query shows only the city column of sales?", ["SELECT sales FROM city", "SELECT city FROM sales", "FROM sales SELECT city", "SELECT city, FROM sales"], 1, "SELECT lists the columns and FROM names the table, in that order."], ["What does `SELECT *` do?", ["Selects the first row", "Selects every column", "Counts the rows", "Deletes the table"], 1, "The star stands for all columns."]],
+    }),
+    topic({
+      title: "Choosing rows with WHERE", slug: "where",
+      blocks: [
+        p("SELECT picks columns; **WHERE** picks rows. After FROM, add a condition, and only the rows where it is true are kept. Conditions compare a column with a value using `=`, `<>` (not equal), `<`, `<=`, `>`, `>=`. Text and dates go in single quotes; numbers do not."),
+        sqlPlay({ id: "sq-play-where", title: "Filter the rows", intro: "Run it, then change 'Pune' to 'Delhi', or the status to 'refunded'.", tables: S, query: "SELECT customer, city, amount\nFROM sales\nWHERE city = 'Pune';" }),
+        table("Ways to build a condition", ["Write", "Meaning", "Example"], [["`AND`", "Both must be true", "`status = 'paid' AND amount >= 500`"], ["`OR`", "At least one is true", "`city = 'Pune' OR city = 'Delhi'`"], ["`NOT`", "Reverses a condition", "`NOT status = 'paid'`"], ["`IN (...)`", "Matches any in a list", "`city IN ('Pune', 'Delhi')`"], ["`BETWEEN a AND b`", "In a range, ends included", "`amount BETWEEN 300 AND 600`"], ["`LIKE`", "Text pattern; % = any text, _ = one character", "`customer LIKE 'A%'`"]]),
+        example("Paid orders of 500 or more", "Which paid orders were at least 500, and who placed them?", ["Both conditions must hold, so join them with AND.", "`SELECT customer, amount FROM sales WHERE status = 'paid' AND amount >= 500`", "Add `ORDER BY amount DESC` to read the largest first."], "Four rows: Gita 900, Bilal 700, Harsh 600 and Asha 500."),
+        warn("**AND is applied before OR.** `a OR b AND c` means `a OR (b AND c)`. When you mix them, add brackets to say what you mean: `(city = 'Pune' OR city = 'Delhi') AND status = 'paid'`."),
+        mistakes(["Using `==` or `=` with a double quote: SQL uses a single `=` and single quotes.", "Writing `WHERE city = Pune` without quotes. SQL then looks for a column called Pune.", "Filtering text with different capitals: some databases treat 'pune' and 'Pune' as different. Check how yours behaves, or use LOWER() on both sides."]),
+        tryIt("Write a condition for orders between 300 and 600 that are not cancelled.", "`WHERE amount BETWEEN 300 AND 600 AND status <> 'cancelled'`. BETWEEN includes both ends."),
+      ],
+      points: ["WHERE keeps only the rows where the condition is true.", "Combine conditions with AND, OR and NOT, and use brackets when mixing them.", "Text and dates are in single quotes; IN, BETWEEN and LIKE shorten common conditions."],
+      check: [["Which condition finds orders from Pune or Delhi?", ["city = 'Pune' AND 'Delhi'", "city IN ('Pune', 'Delhi')", "city BETWEEN 'Pune' AND 'Delhi'", "city LIKE Pune, Delhi"], 1, "IN matches any value in a list."], ["Which is evaluated first, AND or OR?", ["OR", "AND", "Whichever is on the left", "Neither: they are equal"], 1, "AND binds tighter than OR, so use brackets to be clear."]],
+    }),
+    topic({
+      title: "Sorting, limiting and NULL", slug: "sort-limit-null",
+      blocks: [
+        p("**ORDER BY** sorts the result: ascending (`ASC`, the default) or descending (`DESC`). **LIMIT n** keeps only the first n rows. Together they answer 'top 3' questions. **DISTINCT** removes repeated rows, so `SELECT DISTINCT city FROM sales` lists each city once."),
+        sqlPlay({ id: "sq-play-sort", title: "Top three orders", intro: "Sorted largest first, then cut to three rows. Try ASC, or LIMIT 5.", tables: S, query: "SELECT customer, amount\nFROM sales\nORDER BY amount DESC\nLIMIT 3;" }),
+        def("NULL", "A marker for 'no value': unknown, missing or not applicable. It is not zero and not an empty string. In the sales table, Esha has no city, so her city is NULL."),
+        p("NULL needs special care because **anything compared with NULL is neither true nor false but unknown**, and WHERE keeps only the rows that are true. So `city = NULL` returns nothing, and `city <> 'Pune'` quietly leaves out Esha, whose city is unknown. To test for it, write `IS NULL` or `IS NOT NULL`."),
+        sqlPlay({ id: "sq-play-null", title: "Where did Esha go?", intro: "Run it: four customers appear and Esha is missing. Then try `WHERE city IS NULL`.", tables: S, query: "SELECT customer, city\nFROM sales\nWHERE city <> 'Pune';" }),
+        table("Three-valued logic in one picture", ["Comparison", "Result for Esha (city is NULL)"], [["`city = 'Pune'`", "unknown, so the row is dropped"], ["`city <> 'Pune'`", "unknown, so the row is dropped"], ["`city IS NULL`", "true, so the row is kept"]]),
+        mistakes(["Writing `WHERE city = NULL`. It never matches. Use `IS NULL`.", "Assuming `<> 'Pune'` means 'everything that is not Pune'. It also hides the NULLs. Add `OR city IS NULL` if you want them.", "Putting LIMIT without ORDER BY and treating the rows as 'the top'. Without a sort they are just any rows."]),
+        tip("Whenever a number in a report looks too small, ask: are some rows hidden by NULL? Missing data is the most common reason a total does not match."),
+      ],
+      points: ["ORDER BY sorts (DESC for largest first); LIMIT keeps the first n rows; DISTINCT removes repeats.", "NULL means no value; compare with IS NULL / IS NOT NULL, never with =.", "Conditions on a NULL are unknown, so those rows are dropped by WHERE."],
+      check: [["Which query returns the three smallest amounts?", ["ORDER BY amount DESC LIMIT 3", "ORDER BY amount LIMIT 3", "LIMIT 3 ORDER BY amount", "WHERE amount = 3"], 1, "Ascending is the default, so the smallest come first."], ["How do you find rows with no city?", ["WHERE city = ''", "WHERE city = NULL", "WHERE city IS NULL", "WHERE city = 0"], 2, "Only IS NULL tests for a missing value."]],
+    }),
+  ],
+  practical: { title: "Practical: interview a table", intro: "Open the **Interview the store** lab and use only SELECT, FROM, WHERE, ORDER BY and LIMIT to answer five questions about an online store's customers and orders.", steps: ["Run `SELECT * FROM customers LIMIT 5` to see the columns before you write anything else.", "Answer each question in your head first, in plain English, then translate it into SQL.", "Press Run query and compare the row count with what you expected.", "Press Check my work; read any message carefully, since it tells you whether the problem is the rows, the columns or the order."] },
+  terms: [["Table", "Rows and columns holding one kind of thing, such as orders."], ["Row", "One record: a single order or customer."], ["Column", "One fact about every row, with a fixed type."], ["Primary key", "The column whose value identifies one row for certain."], ["Foreign key", "A column holding another table's primary key."], ["SELECT", "Chooses which columns to show."], ["WHERE", "Keeps only rows where a condition is true."], ["NULL", "No value: unknown or missing. Test it with IS NULL."]],
+  quiz: [
+    ["What is the primary purpose of splitting data into several tables?", ["To make queries slower", "To store each fact once and avoid repeating it", "To hide data from users", "To make column names shorter"], 1, "Storing each fact once avoids contradictions and keeps updates simple."],
+    ["Which clause chooses the table to read?", ["SELECT", "WHERE", "FROM", "LIMIT"], 2, "FROM names the table."],
+    ["Which query returns customer names for orders of at least 500?", ["SELECT customer FROM sales WHERE amount >= 500", "SELECT customer WHERE amount >= 500", "SELECT amount FROM customer", "FROM sales WHERE amount >= 500"], 0, "SELECT lists columns, FROM names the table, WHERE filters rows."],
+    ["`WHERE a = 1 OR b = 2 AND c = 3` is read as:", ["(a = 1 OR b = 2) AND c = 3", "a = 1 OR (b = 2 AND c = 3)", "Left to right, one at a time", "It is not valid SQL"], 1, "AND is applied before OR."],
+    ["Which returns rows where the city is missing?", ["WHERE city = NULL", "WHERE city = ''", "WHERE city IS NULL", "WHERE NOT city"], 2, "IS NULL is the only correct test."],
+    ["What does `ORDER BY amount DESC LIMIT 5` return?", ["The five smallest amounts", "The five largest amounts", "Any five rows", "Five columns"], 1, "DESC sorts largest first and LIMIT keeps five."],
+    ["`WHERE city <> 'Pune'` is run on a table where one city is NULL. That row is:", ["Included", "Excluded", "Shown as 0", "An error"], 1, "A comparison with NULL is unknown, so WHERE drops the row."],
+  ],
+});
+
+/* ------------------------------------------------------------------------------------------------ module 2 */
+export const M2 = module_({
+  slug: "shape-the-data", title: "Shape the data: expressions, CASE and dates", hours: 3, level: "Building skills",
+  summary: "Calculate new columns, turn numbers into labels with CASE, work with text and dates, and handle missing values safely.",
+  outcome: "You can compute new values in a query, group values into bands, extract parts of a date, and replace or flag missing data.",
+  intro: "Raw columns rarely answer a business question directly. You want revenue (price times quantity), an order size band, the month an order happened, a cleaned-up city name. SQL can compute all of these as the query runs, without touching the stored data. This module gives you the tools analysts use most: expressions, functions, CASE for if-then logic, date parts, and a safe approach to NULL.",
+  topics: [
+    topic({
+      title: "Calculated columns and functions", slug: "expressions-functions",
+      blocks: [
+        p("Any column in a SELECT can be an **expression**: a calculation made from columns, numbers and functions. Use `+ - * /` and brackets as in a spreadsheet, and give the result a name with AS. A **function** takes values in brackets and returns a value."),
+        sqlPlay({ id: "sq-play-calc", title: "Add a GST column", intro: "Run it, then change 0.18 to 0.05, or add `amount + amount * 0.18 AS total`.", tables: S, query: "SELECT customer, amount, amount * 0.18 AS gst\nFROM sales\nWHERE id <= 3;" }),
+        table("Everyday functions (supported in this course's practice window)", ["Function", "What it does", "Example → result"], [["`ROUND(x, n)`", "Round to n decimals", "`ROUND(578.333, 2)` → 578.33"], ["`UPPER(t)`, `LOWER(t)`", "Change case", "`UPPER('pune')` → PUNE"], ["`LENGTH(t)`", "Number of characters", "`LENGTH('Asha')` → 4"], ["`SUBSTR(t, start, n)`", "Part of a text (start counts from 1)", "`SUBSTR('2025-03-09', 1, 7)` → 2025-03"], ["`TRIM(t)`", "Remove spaces at both ends", "`TRIM('  Pune ')` → Pune"], ["`REPLACE(t, a, b)`", "Swap text", "`REPLACE('a-b', '-', ' ')` → a b"], ["`a || b` or `CONCAT(a, b)`", "Join text", "`'Pune' || '-01'` → Pune-01"]]),
+        warn("**Integer division.** In several databases (PostgreSQL, SQL Server) `7 / 2` is 3 because both numbers are whole. Multiply by `1.0` or write `7 / 2.0` to get 3.5. Always check how your database divides before reporting a percentage."),
+        example("Revenue with tax", "An order is 500 before tax and GST is 18%. Show the tax and the total rounded to the nearest rupee.", ["Tax: `amount * 0.18` gives 90.", "Total: `amount * 1.18` gives 590.", "Wrap each in `ROUND(..., 0)` so the report shows whole rupees."], "`SELECT amount, ROUND(amount * 0.18, 0) AS gst, ROUND(amount * 1.18, 0) AS total FROM sales`."),
+        mistakes(["Rounding too early: round only the final number you show, not the steps inside a calculation.", "Mixing text and numbers: `'5' + 3` may fail or behave differently across databases. Convert with CAST first.", "Forgetting brackets: `a + b * c` multiplies first, as in maths."]),
+        tryIt("Write an expression for a 10% discount price of `amount`, rounded to 0 decimals.", "`ROUND(amount * 0.90, 0)`"),
+      ],
+      points: ["Expressions compute new values in the result without changing the table.", "Name them with AS; round only the final figure.", "Use text functions to clean and slice values, and beware of integer division."],
+      check: [["Which expression shows 18% of amount?", ["amount + 18", "amount * 0.18", "amount / 18", "amount % 18"], 1, "18% is 0.18 times the amount."], ["`SUBSTR('2025-03-09', 1, 7)` returns:", ["2025", "03", "2025-03", "09"], 2, "It takes 7 characters starting at position 1."]],
+    }),
+    topic({
+      title: "CASE: if-then logic in SQL", slug: "case",
+      blocks: [
+        p("**CASE** turns values into labels. It checks conditions in order and returns the result of the first one that is true; ELSE covers everything else. It is how analysts build bands (small, medium, large), flags (yes, no), and cleaned categories."),
+        sqlPlay({ id: "sq-play-case", title: "Band the orders", intro: "Change the thresholds (600, 300) and the labels, then run again.", tables: S, query: "SELECT customer, amount,\n  CASE\n    WHEN amount >= 600 THEN 'large'\n    WHEN amount >= 300 THEN 'medium'\n    ELSE 'small'\n  END AS size\nFROM sales\nORDER BY id;" }),
+        table("Result for the eight orders", ["customer", "amount", "size"], [["Asha", "500", "medium"], ["Bilal", "700", "large"], ["Chitra", "200", "small"], ["Dev", "450", "medium"], ["Esha", "320", "medium"], ["Farhan", "150", "small"], ["Gita", "900", "large"], ["Harsh", "600", "large"]]),
+        p("Order matters. Harsh's 600 is 'large' because the `>= 600` test comes first; if you had tested `>= 300` first, every order of 300 or more, including 900, would be 'medium'. Always put the **most specific (or highest) condition first**."),
+        list("Where CASE is used in real work", ["Bucketing ages, amounts or response times into bands.", "Turning codes into readable labels (`1` → 'Active').", "Flags such as `CASE WHEN amount > 500 THEN 1 ELSE 0 END`, which can be added up later.", "Fixing messy categories: 'Delhi', 'New Delhi' and 'NCR' all become 'Delhi'."]),
+        mistakes(["Forgetting END. Every CASE must be closed.", "Leaving out ELSE. Rows that match nothing then become NULL, which can silently drop them from later steps.", "Putting overlapping tests in the wrong order, so the broad one catches rows meant for a narrower one."]),
+        tryIt("Write a CASE that labels paid orders 'ok' and everything else 'check'.", "`CASE WHEN status = 'paid' THEN 'ok' ELSE 'check' END`"),
+      ],
+      points: ["CASE checks conditions in order and returns the first match; ELSE catches the rest.", "Put the most specific condition first.", "A CASE that returns 1 or 0 makes a flag you can add up."],
+      check: [["What does a CASE return when no WHEN matches and there is no ELSE?", ["0", "An error", "NULL", "The first value"], 2, "Without ELSE, unmatched rows become NULL."], ["Which keyword closes a CASE expression?", ["STOP", "END", "CLOSE", "DONE"], 1, "CASE ... END."]],
+    }),
+    topic({
+      title: "Dates and times", slug: "dates",
+      blocks: [
+        p("Dates drive almost every business report: sales by month, tickets per week, days since signup. In this course's practice window, dates are written as text in the ISO form `YYYY-MM-DD` (year, month, day), which sorts correctly and is understood by every database. Compare them like any other value: `order_date >= '2025-02-01'`."),
+        table("Date tools that work in the practice window", ["Tool", "Result", "Example"], [["`YEAR(d)`, `MONTH(d)`, `DAY(d)`", "A part as a number", "`MONTH('2025-03-09')` → 3"], ["`SUBSTR(d, 1, 7)`", "The month as text", "`'2025-03'`"], ["`DATE_TRUNC('month', d)`", "First day of the month", "`'2025-03-01'`"], ["`DATEDIFF(a, b)`", "Days from b to a", "`DATEDIFF('2025-03-09','2025-03-01')` → 8"]]),
+        sqlPlay({ id: "sq-play-dates", title: "Orders in February", intro: "Try `MONTH(order_date) = 3`, or add `DATEDIFF('2025-04-01', order_date) AS days_ago`.", tables: S, query: "SELECT customer, order_date, MONTH(order_date) AS month\nFROM sales\nWHERE order_date >= '2025-02-01'\n  AND order_date < '2025-03-01';" }),
+        warn("**Dialects differ here more than anywhere else.** The idea (extract a part, add days, truncate to a month) is the same, but the names change: MySQL has `DATE_FORMAT` and `DATE_ADD`, PostgreSQL has `DATE_TRUNC`, `EXTRACT` and `+ INTERVAL`, SQL Server has `DATEPART`, `DATEADD` and `DATEDIFF`. When you move databases, look up the date functions first."),
+        p("A reliable way to select 'all of February' is a **half-open range**: `>= '2025-02-01' AND < '2025-03-01'`. It works whether the column holds dates or timestamps, because it never has to guess what the last second of the month is. Avoid `BETWEEN '2025-02-01' AND '2025-02-28'`, which drops 29-31 in other months and misses timestamps late on the last day."),
+        mistakes(["Writing dates in a local style such as 03/09/2025. It is ambiguous (March 9th or 3rd of September?). Use ISO dates.", "Using BETWEEN with a timestamp column and an end date, which silently excludes the whole last day.", "Comparing a date with text in the wrong format, which sorts alphabetically and gives wrong answers."]),
+        tryIt("Select orders from the first quarter of 2025 using a half-open range.", "`WHERE order_date >= '2025-01-01' AND order_date < '2025-04-01'`"),
+      ],
+      points: ["Use ISO dates (YYYY-MM-DD); they compare and sort correctly.", "Extract parts with YEAR, MONTH, DAY or DATE_TRUNC; the function names vary by database.", "Select a period with a half-open range: >= start and < next start."],
+      check: [["Which is the safest way to select all of March 2025?", ["BETWEEN '2025-03-01' AND '2025-03-31'", ">= '2025-03-01' AND < '2025-04-01'", "= '2025-03'", "LIKE '03'"], 1, "A half-open range never misses the end of the month."], ["Why use ISO date format?", ["It looks nicer", "It compares and sorts correctly and is unambiguous", "It is faster to type", "Databases require two digits"], 1, "Year-month-day text sorts in time order and cannot be misread."]],
+    }),
+    topic({
+      title: "Handling missing and messy values", slug: "null-handling",
+      blocks: [
+        p("Real data is untidy: blanks, inconsistent spellings, numbers stored as text. Before you analyse, decide what each problem means. **COALESCE(a, b, ...)** returns the first value that is not NULL, so `COALESCE(city, 'Unknown')` gives every row a label. **NULLIF(a, b)** returns NULL when a equals b, which turns a placeholder such as 'N/A' back into a true missing value, and also avoids dividing by zero: `x / NULLIF(y, 0)`."),
+        sqlPlay({ id: "sq-play-coalesce", title: "Give every order a city", intro: "Esha's city is missing. See what COALESCE does, then try NULLIF(city, 'Pune').", tables: S, query: "SELECT customer, COALESCE(city, 'Unknown') AS city\nFROM sales\nORDER BY id;" }),
+        table("Choosing a treatment", ["Situation", "Reasonable choice", "Risk"], [["City is missing in a report", "Show 'Unknown'", "Hides how much is missing; report the count too"], ["A numeric column is missing", "Leave NULL, or fill with 0 only if 'none' is truly zero", "Zero pulls averages down"], ["'N/A' written as text", "`NULLIF(col, 'N/A')`", "Other placeholders such as '-' may remain"], ["Possible divide by zero", "`x / NULLIF(y, 0)`", "The result is NULL, not an error; say so"]]),
+        example("Share of paid orders without crashing", "Compute amount divided by the number of items, but some orders have 0 items.", ["Dividing by 0 is an error in many databases.", "Wrap the divisor: `amount / NULLIF(items, 0)`.", "Rows with 0 items now return NULL, which you can show or filter."], "NULLIF makes a risky division safe and keeps the problem visible."),
+        warn("Filling gaps is a **decision, not a clean-up trick**. Filling a missing amount with 0 changes your averages. Write down what you did, and keep a count of how many rows were affected."),
+        mistakes(["Replacing NULL with 0 everywhere, then averaging: the zeros are invented data.", "Using COALESCE on a column inside WHERE without realising it makes the query slower on big tables.", "Forgetting that `COUNT(city)` skips NULLs while `COUNT(*)` counts rows (module 3)."]),
+        tryIt("Write an expression that shows 'Unknown' for a missing city and leaves other cities as they are.", "`COALESCE(city, 'Unknown')`"),
+      ],
+      points: ["COALESCE returns the first non-NULL value; NULLIF returns NULL when two values match.", "x / NULLIF(y, 0) avoids dividing by zero.", "Filling missing values is a decision; record what you did and how many rows it touched."],
+      check: [["What does `COALESCE(NULL, NULL, 'x')` return?", ["NULL", "'x'", "An error", "0"], 1, "It returns the first value that is not NULL."], ["Why write `x / NULLIF(y, 0)`?", ["To round the result", "To avoid an error when y is 0", "To sort the result", "To make x text"], 1, "NULLIF turns a zero divisor into NULL, so the division returns NULL instead of failing."]],
+    }),
+  ],
+  practical: { title: "Practical: clean a messy report", intro: "Open the **Tidy the order list** lab. You will add a total with tax, band orders into sizes, pull the month out of a date and give every order a city.", steps: ["Write each requirement as a sentence before writing SQL.", "Build the query one column at a time and run it after every column.", "When a number looks wrong, read the result for NULLs and for rows that fell into the wrong CASE branch.", "Press Check my work and use the hint if a check fails."] },
+  terms: [["Expression", "A calculation made from columns, values and functions."], ["Alias", "A name given to a result column with AS."], ["CASE", "If-then logic that returns the first matching result."], ["COALESCE", "Returns the first value that is not NULL."], ["NULLIF", "Returns NULL if two values are equal; protects divisions."], ["ISO date", "YYYY-MM-DD: sorts and compares correctly."], ["Half-open range", ">= start AND < next start; never misses the end of a period."]],
+  quiz: [
+    ["Which gives an order total with 18% tax added?", ["amount + 0.18", "amount * 1.18", "amount / 1.18", "amount * 18"], 1, "Multiply by 1.18 to add 18%."],
+    ["In a CASE, which condition should usually come first?", ["The broadest", "The most specific or highest", "The shortest", "Any, order is irrelevant"], 1, "CASE stops at the first true condition."],
+    ["Which keyword ends every CASE expression?", ["END", "STOP", "DONE", "ESAC"], 0, "CASE ... END."],
+    ["What is the safest filter for all rows in April 2025?", ["BETWEEN '2025-04-01' AND '2025-04-30'", ">= '2025-04-01' AND < '2025-05-01'", "= 'April'", "LIKE '%04%'"], 1, "A half-open range works for dates and timestamps."],
+    ["`COALESCE(city, 'Unknown')` does what?", ["Deletes rows with no city", "Replaces a NULL city with 'Unknown' in the result", "Changes the stored table", "Sorts by city"], 1, "It only changes what the query returns."],
+    ["Why can `7 / 2` give 3 in some databases?", ["A bug", "Both numbers are integers, so it is integer division", "Rounding mode", "The semicolon"], 1, "Whole-number division drops the fraction. Use 2.0 to get 3.5."],
+    ["A CASE with no ELSE and no matching WHEN returns:", ["0", "An empty string", "NULL", "An error"], 2, "Unmatched rows become NULL."],
+    ["Which function takes a part of a text value?", ["SUBSTR", "ROUND", "DATEDIFF", "NULLIF"], 0, "SUBSTR(text, start, length)."],
+  ],
+});
+
+/* ------------------------------------------------------------------------------------------------ module 3 */
+export const M3 = module_({
+  slug: "aggregate-and-group", title: "Summarise: aggregates, GROUP BY and HAVING", hours: 3, level: "Building skills",
+  summary: "Turn thousands of rows into the handful of numbers a manager needs: counts, totals, averages, and the same figures by group.",
+  outcome: "You can count, sum and average, break results down by one or more columns, filter groups with HAVING, and build conditional totals.",
+  intro: "Nobody reads 10,000 rows. Decisions come from summaries: how many orders, how much revenue, which city sells most, what share was returned. SQL does this with aggregate functions and GROUP BY. This is the most important module for analysts, and the place where the most subtle mistakes happen, so we go slowly and test each idea on small tables first.",
+  topics: [
+    topic({
+      title: "Aggregate functions: COUNT, SUM, AVG, MIN, MAX", slug: "aggregates",
+      blocks: [
+        p("An **aggregate function** reads many rows and returns one value. The five you will use every day are COUNT (how many), SUM (total), AVG (average), MIN and MAX."),
+        sqlPlay({ id: "sq-play-aggregate", title: "Summarise all paid orders", intro: "Run it, then remove the WHERE to see the totals for all orders.", tables: S, query: "SELECT COUNT(*) AS orders,\n       SUM(amount) AS revenue,\n       ROUND(AVG(amount), 2) AS average,\n       MIN(amount) AS smallest,\n       MAX(amount) AS largest\nFROM sales\nWHERE status = 'paid';" }),
+        table("What each one counts", ["Call", "Meaning", "NULLs"], [["`COUNT(*)`", "Number of rows", "Counts every row"], ["`COUNT(city)`", "Rows where city has a value", "Skips NULL"], ["`COUNT(DISTINCT city)`", "Number of different cities", "Skips NULL"], ["`SUM(amount)`, `AVG(amount)`", "Total and mean", "Skip NULL"], ["`MIN`, `MAX`", "Smallest and largest", "Skip NULL"]]),
+        warn("**AVG ignores NULL, it does not treat it as 0.** If four of five orders have a discount value and one is NULL, the average is over four. That may be what you want, or it may overstate the typical discount. Check how many rows were actually averaged with `COUNT(discount)`."),
+        example("Counting the same table three ways", "In the sales table (8 rows), one city is NULL and three customers are in Pune.", ["`COUNT(*)` → 8, one for every row.", "`COUNT(city)` → 7, because Esha's city is NULL.", "`COUNT(DISTINCT city)` → 3 (Pune, Delhi, Mumbai), each city once."], "Three different answers from the same column: choose the one that matches the question."),
+        mistakes(["Mixing a plain column with an aggregate and no GROUP BY (`SELECT city, SUM(amount)`): the database cannot show one city next to one total. Lesson 2 shows the fix.", "Putting an aggregate in WHERE (`WHERE SUM(amount) > 100`). Use HAVING.", "Treating `COUNT(column)` as a row count when the column has NULLs."]),
+        tryIt("How would you count the number of different customers who ordered?", "`COUNT(DISTINCT customer_id)`. COUNT alone would count orders, not customers."),
+      ],
+      points: ["Aggregates reduce many rows to one value: COUNT, SUM, AVG, MIN, MAX.", "COUNT(*) counts rows; COUNT(column) skips NULLs; COUNT(DISTINCT x) counts different values.", "SUM and AVG ignore NULL."],
+      check: [["Which counts the number of different cities?", ["COUNT(city)", "COUNT(*)", "COUNT(DISTINCT city)", "SUM(city)"], 2, "DISTINCT inside COUNT counts each value once."], ["`AVG(x)` where one x is NULL averages over:", ["All rows, treating NULL as 0", "Only rows with a value", "It fails", "The first row"], 1, "NULL values are skipped, so the average is over fewer rows."]],
+    }),
+    topic({
+      title: "GROUP BY: one result per group", slug: "group-by",
+      blocks: [
+        p("**GROUP BY** splits the rows into groups that share a value, then runs the aggregates once per group. 'Total by city' becomes `SELECT city, SUM(amount) ... GROUP BY city`. Every column in SELECT must be either **in the GROUP BY list or inside an aggregate**; otherwise the database cannot know which value to show."),
+        sqlPlay({ id: "sq-play-group", title: "Orders and revenue by status", intro: "Then try `GROUP BY city`, or group by two columns: `GROUP BY city, status`.", tables: S, query: "SELECT status,\n       COUNT(*) AS orders,\n       SUM(amount) AS revenue\nFROM sales\nGROUP BY status;" }),
+        table("Result", ["status", "orders", "revenue"], [["paid", "6", "3470"], ["refunded", "1", "200"], ["cancelled", "1", "150"]]),
+        flow("The order in which SQL works, step by step", ["FROM: pick the table", "WHERE: keep matching rows", "GROUP BY: make groups", "SELECT, then ORDER BY"]),
+        p("That flow explains a lot: WHERE runs **before** groups exist, so it filters rows, never totals. It also explains why NULL city forms its own group: every NULL ends up together, in one row of the result."),
+        example("Revenue by city for paid orders only", "Filter first, then group.", ["Keep paid orders: `WHERE status = 'paid'`.", "Group the remaining rows: `GROUP BY city`.", "Sum in each group: `SUM(amount)`. Pune = 500 + 900, Mumbai = 450 + 600, Delhi = 700, and Esha's missing city forms a NULL group of 320."], "Four rows: Pune 1400, Mumbai 1050, Delhi 700 and NULL 320."),
+        mistakes(["Selecting a column that is not grouped: the practice window explains this rule; real databases may just say 'must appear in the GROUP BY clause'.", "Grouping by the wrong level, such as by customer name when two customers share a name. Group by the id.", "Forgetting that a NULL group exists. Label it with COALESCE if the report is shown to others."]),
+        tip("Before you write a GROUP BY, finish the sentence: 'I want one row per ___'. That blank is exactly your GROUP BY list."),
+      ],
+      points: ["GROUP BY makes one row per group and aggregates run inside each group.", "Every non-aggregate column in SELECT must also be in GROUP BY.", "WHERE filters rows before grouping; NULLs form their own group."],
+      check: [["You want one row per city. Which clause do you need?", ["ORDER BY city", "GROUP BY city", "WHERE city", "LIMIT city"], 1, "GROUP BY makes the groups."], ["Which runs first?", ["GROUP BY", "WHERE", "HAVING", "SELECT"], 1, "WHERE filters rows before groups are built."]],
+    }),
+    topic({
+      title: "HAVING: filtering groups", slug: "having",
+      blocks: [
+        p("WHERE cannot see totals, because the totals do not exist yet when it runs. To keep or drop **groups** by their total or count, use **HAVING** after GROUP BY. A useful rule: **WHERE for rows, HAVING for groups.**"),
+        sqlPlay({ id: "sq-play-having", title: "Cities with more than 1,000 in paid orders", intro: "Change 1000, or filter with `HAVING COUNT(*) >= 2`.", tables: S, query: "SELECT city, SUM(amount) AS revenue\nFROM sales\nWHERE status = 'paid'\nGROUP BY city\nHAVING SUM(amount) > 1000;" }),
+        table("WHERE or HAVING?", ["Question", "Use", "Why"], [["Only paid orders", "WHERE", "A property of each row"], ["Only cities with revenue over 1,000", "HAVING", "A property of a group's total"], ["Only orders in 2025", "WHERE", "A property of each row"], ["Only customers with at least 3 orders", "HAVING", "A property of a group's count"]]),
+        warn("Putting a row-level condition in HAVING works but is slower and harder to read, because the database groups everything and then throws groups away. Filter rows in WHERE whenever you can."),
+        example("Frequent customers", "Which customers placed at least two orders?", ["Group by customer: `GROUP BY customer`.", "Count each group: `COUNT(*)`.", "Keep groups with 2 or more: `HAVING COUNT(*) >= 2`."], "Always check the count with a plain GROUP BY first, then add HAVING."),
+        mistakes(["Using an alias in HAVING (`HAVING revenue > 1000`). Some databases allow it; many do not. Repeat the expression to be safe.", "Writing HAVING without GROUP BY. It is valid, but it treats the whole table as one group.", "Forgetting that HAVING is evaluated after WHERE, so the totals only include rows that passed WHERE."]),
+        tryIt("Write the clause that keeps only statuses with at least 3 orders.", "`GROUP BY status HAVING COUNT(*) >= 3`"),
+      ],
+      points: ["WHERE filters rows; HAVING filters groups by an aggregate.", "Use WHERE whenever a condition applies to rows.", "HAVING runs after the groups are formed."],
+      check: [["Which keeps only groups whose total is over 1000?", ["WHERE SUM(amount) > 1000", "HAVING SUM(amount) > 1000", "GROUP BY SUM(amount) > 1000", "ORDER BY SUM(amount) > 1000"], 1, "Aggregates can only be tested in HAVING."], ["Where should `status = 'paid'` go?", ["HAVING", "WHERE", "SELECT", "LIMIT"], 1, "It is a row condition, so WHERE."]],
+    }),
+    topic({
+      title: "Conditional totals and rates", slug: "conditional-aggregates",
+      blocks: [
+        p("Often one report needs several totals side by side: paid revenue, refunded revenue and the refund rate. Instead of three queries, put a **CASE inside an aggregate**: `SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END)` adds only the paid rows. This pattern, called **conditional aggregation** or a manual pivot, is one of the most valuable in analytics."),
+        sqlPlay({ id: "sq-play-conditional", title: "Paid and refunded side by side", intro: "Add a third column for cancelled orders, or change it to count rows with `COUNT(CASE WHEN ... THEN 1 END)`.", tables: S, query: "SELECT COUNT(*) AS orders,\n       SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS paid_revenue,\n       SUM(CASE WHEN status = 'refunded' THEN amount ELSE 0 END) AS refunded,\n       ROUND(100.0 * SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) / COUNT(*), 1) AS paid_pct\nFROM sales;" }),
+        formula("A rate", "rate = part / whole", "Multiply by 100.0 (with a decimal) to avoid whole-number division, and divide by the right whole."),
+        example("Paid share of orders", "Six of the eight orders are paid.", ["Count paid rows: `SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END)` gives 6.", "Divide by all rows: `COUNT(*)` gives 8.", "`100.0 * 6 / 8` = 75.0."], "`paid_pct` is 75.0. Always be clear what the denominator is: all orders, or only completed ones."),
+        mistakes(["Dividing by the wrong total, for example by revenue instead of by order count.", "Writing `100 * a / b` with whole numbers and getting a truncated result. Use `100.0`.", "Using `COUNT(CASE WHEN ... THEN 1 ELSE 0 END)`: COUNT counts zeros as well. Use SUM, or leave out the ELSE."]),
+        tip("A rate with a small denominator is noise. 'Refund rate 50%' on 2 orders says nothing. Show the count next to the percentage."),
+        explorer({ id: "sq-rate-explorer", title: "How refunds move the rate", intro: "A store has some paid orders and some refunds. See how the refund rate responds, and how weak a rate on few orders is.", inputs: [{ id: "paid", label: "Paid orders", min: 1, max: 200, step: 1, value: 6 }, { id: "refunded", label: "Refunded orders", min: 0, max: 50, step: 1, value: 1 }], outputs: [{ label: "Refund rate", expr: "100 * refunded / (paid + refunded)", unit: "pct" }, { label: "Total orders", expr: "paid + refunded", unit: "n" }] }),
+      ],
+      points: ["CASE inside SUM or COUNT gives several conditional totals in one query.", "A rate is part divided by whole; use 100.0 to avoid integer division.", "Always show the denominator beside a percentage."],
+      check: [["Which adds up only paid amounts?", ["SUM(amount) WHERE paid", "SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END)", "COUNT(paid)", "AVG(amount)"], 1, "A CASE inside SUM adds only matching rows."], ["Why write `100.0 * a / b` instead of `100 * a / b`?", ["It looks neater", "To avoid whole-number division truncating the result", "It runs faster", "SQL requires it"], 1, "A decimal in the expression forces decimal division."]],
+    }),
+  ],
+  practical: { title: "Practical: the weekly sales report", intro: "Open the **Weekly sales report** lab and produce the figures a manager asks for each Monday: totals, a breakdown by channel, groups that pass a threshold, and a refund rate.", steps: ["For each question, write 'one row per ___' first, to find your GROUP BY.", "Decide which conditions are for rows (WHERE) and which are for groups (HAVING).", "Check totals against a simple query: the grand total of your groups must equal the total of the table.", "Press Check my work and read any message about row counts."] },
+  terms: [["Aggregate function", "Reduces many rows to one value: COUNT, SUM, AVG, MIN, MAX."], ["GROUP BY", "Makes one result row per distinct value or combination."], ["HAVING", "Filters groups using an aggregate."], ["COUNT(*) vs COUNT(x)", "All rows versus rows where x is not NULL."], ["Conditional aggregation", "A CASE inside an aggregate, for side-by-side totals."], ["Denominator", "The whole in part / whole; state it with every rate."]],
+  quiz: [
+    ["`COUNT(*)` on a table of 40 rows returns:", ["The number of columns", "40", "The number of NULLs", "The number of distinct rows"], 1, "COUNT(*) counts rows."],
+    ["Which clause filters groups by a total?", ["WHERE", "HAVING", "ORDER BY", "LIMIT"], 1, "HAVING is evaluated after grouping."],
+    ["A query selects `city` and `SUM(amount)` and groups by nothing. What happens?", ["It works", "It is an error: city is neither grouped nor aggregated", "City is ignored", "It sums per city automatically"], 1, "Non-aggregated columns must be in GROUP BY."],
+    ["Which counts each customer once?", ["COUNT(customer_id)", "COUNT(DISTINCT customer_id)", "SUM(customer_id)", "MAX(customer_id)"], 1, "DISTINCT inside COUNT removes repeats."],
+    ["Why does `SELECT 100 * paid / total` risk a wrong answer in some databases?", ["It is too long", "Whole-number division can truncate", "paid is text", "Percentages are not allowed"], 1, "Use 100.0 to force decimals."],
+    ["After `WHERE status = 'paid'`, a GROUP BY by city sums:", ["All orders", "Only paid orders", "Only refunded orders", "Nothing"], 1, "WHERE removes rows before they are grouped."],
+    ["What does `SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END)` give?", ["Total paid revenue", "The number of paid rows", "The number of statuses", "An error"], 1, "It adds 1 for each paid row, which counts them."],
+    ["A refund rate of 50% is based on 2 orders. What should you do?", ["Report it as a crisis", "Show the count beside it, because the sample is tiny", "Ignore refunds", "Round it to 100%"], 1, "Small denominators make rates unreliable."],
+  ],
+});
+
