@@ -3,9 +3,9 @@ import { ABROAD_PACKAGES, MATRIX, priceLabel } from "@/lib/abroad/packages";
 import "./packages.css";
 
 /** Every service against every level, so a family can see exactly where one package ends and the next begins. */
-export default function PackageMatrix() {
+export default function PackageMatrix({ tone = "dark" }: { tone?: "dark" | "light" }) {
   return (
-    <div className="ap-matrix-wrap">
+    <div className={`ap-matrix-wrap ${tone === "light" ? "ap-matrix-light" : ""}`}>
       <table className="ap-matrix">
         <caption className="sr-only">What each overseas education package includes</caption>
         <thead>
