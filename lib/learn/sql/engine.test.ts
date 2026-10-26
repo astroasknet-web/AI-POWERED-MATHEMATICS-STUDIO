@@ -162,3 +162,13 @@ describe("sql: INTERSECT and EXCEPT", () => {
     expect(q("SELECT id FROM customers EXCEPT SELECT customer_id FROM orders ORDER BY 1")).toEqual([[4], [5]]);
   });
 });
+
+describe("sql: GROUP BY a position or an alias", () => {
+  it("works like MySQL and PostgreSQL", () => {
+    expect(q("SELECT city, COUNT(*) FROM customers WHERE city IS NOT NULL GROUP BY 1 ORDER BY 1")).toEqual([["Delhi", 1], ["Mumbai", 1], ["Pune", 2]]);
+    expect(q("SELECT SUBSTR(joined, 1, 7) AS month, COUNT(*) AS n FROM customers GROUP BY month ORDER BY 1")).toEqual([["2025-01", 1], ["2025-02", 1], ["2025-03", 2], ["2025-04", 1]]);
+    expect(q("SELECT status, FLOOR(amount / 100) AS h, COUNT(*) FROM orders GROUP BY 1, 2 ORDER BY 1, 2").length).toBeGreaterThan(2);
+    expect(err("SELECT city, COUNT(*) FROM customers GROUP BY 3")).toMatch(/only 2/);
+    expect(err("SELECT city, COUNT(*) FROM customers GROUP BY 2")).toMatch(/aggregate/);
+  });
+});

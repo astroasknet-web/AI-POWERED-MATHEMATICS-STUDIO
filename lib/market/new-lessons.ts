@@ -48,4 +48,6 @@ export const NEW_LESSONS: Record<string, () => unknown> = {
   "data-analytics-python-sql": () => require("./data/lessons/data-analytics-python-sql.json"),
   "business-analytics-power-bi": () => require("./data/lessons/business-analytics-power-bi.json"),
   "data-visualization-tableau": () => require("./data/lessons/data-visualization-tableau.json"),
+  "data-engineering-fundamentals": () => require("./data/lessons/data-engineering-fundamentals.json"),
+  "google-analytics-4": () => require("./data/lessons/google-analytics-4.json"),
 };

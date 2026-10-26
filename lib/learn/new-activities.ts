@@ -48,4 +48,6 @@ export const NEW_ACTIVITIES: Record<string, () => unknown> = {
   "data-analytics-python-sql": () => require("./data/data-analytics-python-sql.activities.json"),
   "business-analytics-power-bi": () => require("./data/business-analytics-power-bi.activities.json"),
   "data-visualization-tableau": () => require("./data/data-visualization-tableau.activities.json"),
+  "data-engineering-fundamentals": () => require("./data/data-engineering-fundamentals.activities.json"),
+  "google-analytics-4": () => require("./data/google-analytics-4.activities.json"),
 };

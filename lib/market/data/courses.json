@@ -488,24 +488,24 @@
       "tags": [
         "Mid"
       ],
-      "hours": "~55 hrs",
+      "hours": "~26 hrs",
       "modules": 6,
-      "weeks": "~10 weeks",
-      "pace": "6 hrs/wk",
+      "weeks": "~6 weeks",
+      "pace": "4-5 hrs/wk",
       "badge": "Data Engineer",
       "prereq": "Python and SQL.",
       "bestFor": "Analysts/developers moving into high-paying data-engineering roles.",
-      "brief": "Pipelines, ETL/ELT, warehouses, and Spark — a fast-rising 2026 specialization.",
+      "brief": "Model, transform, test and run data pipelines: star schemas, slowly changing dimensions, deduplication, incremental loads, quality tests, orchestration and governance, with live SQL labs.",
       "learn": [
-        "Data architecture — lakes, warehouses, and lakehouses",
-        "Batch vs streaming and the ETL/ELT paradigm",
-        "Building pipelines and orchestration (Airflow concepts)",
-        "Distributed processing with Apache Spark",
-        "Working with cloud warehouses (BigQuery/Redshift/Snowflake concepts)",
-        "Data quality, partitioning, and cost/performance basics"
+        "Roles, OLTP and OLAP, warehouses, lakes, file formats, batch and streaming",
+        "Star schemas, grain and slowly changing dimensions (type 2 with SQL)",
+        "Raw, staging and mart layers, deduplication and the latest record",
+        "Incremental, idempotent loads and SQL data-quality tests",
+        "DAGs, retries, backfills, monitoring, testing and deployment",
+        "Partitions, streaming ideas, privacy, cost and a pipeline design document"
       ],
-      "handsOn": "Build an ETL pipeline that ingests, transforms, and loads data into a warehouse table.",
-      "outcome": "Target Data Engineer roles with a strong salary premium.",
+      "handsOn": "Prototype a delivered-revenue-by-city pipeline on raw shop data, then write its design document.",
+      "outcome": "Design, build and document a reliable pipeline from raw data to a trusted, business-ready table.",
       "icon": "server"
     },
     {
@@ -518,24 +518,24 @@
         "Fresher",
         "Founder"
       ],
-      "hours": "~20 hrs",
+      "hours": "~22 hrs",
       "modules": 6,
-      "weeks": "~4 weeks",
-      "pace": "5 hrs/wk",
-      "badge": "Web Analytics",
+      "weeks": "~5 weeks",
+      "pace": "4-5 hrs/wk",
+      "badge": "GA4 Analyst",
       "prereq": "Basic web familiarity.",
       "bestFor": "Marketers, founders, and product folks measuring digital growth.",
-      "brief": "Event tracking, funnels, and attribution to measure and grow digital products.",
+      "brief": "Understand GA4's event model, plan collection, read acquisition, engagement and conversion, build funnels with SQL and use data responsibly, with live report and SQL labs.",
       "learn": [
-        "The GA4 event-based model vs Universal Analytics",
-        "Setting up properties, data streams, and events",
-        "Key reports — acquisition, engagement, retention, monetization",
-        "Conversions, funnels, and exploration reports",
-        "Audiences, segments, and attribution models",
-        "Connecting GA4 with Google Ads and Search Console"
+        "Events, parameters, users, sessions, dimensions and metrics",
+        "The tag, Google Tag Manager, event types, UTM tagging and channel groups",
+        "Engagement rate, conversion rate and rates built from totals",
+        "Ecommerce events, funnels and attribution models",
+        "Explorations, audiences and event data in SQL",
+        "Consent, thresholds, sampling, privacy and a measurement plan"
       ],
-      "handsOn": "Instrument a sample site and build a conversion funnel report.",
-      "outcome": "Measure and improve any website; pairs with SEO and Performance Marketing.",
+      "handsOn": "Build the channel conversion view for a learning site and write the measurement plan and recommendation.",
+      "outcome": "Plan measurement, read GA4 reports with care and recommend where to spend the budget.",
       "icon": "trendingUp"
     },
     {

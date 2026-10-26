@@ -193,20 +193,34 @@ class Runner {
         for (const c of tcols) items.push({ e: { t: "col", table: c.t, name: c.n }, name: c.n, text: c.n });
       } else items.push({ e: it.e, name: it.alias ?? (it.e.t === "col" ? it.e.name : it.text), text: it.text });
     }
-    const grouped = s.groupBy.length > 0 || items.some((i) => hasAgg(i.e)) || (s.having !== undefined);
+    // GROUP BY 1 and GROUP BY alias refer to the select list, as in MySQL and PostgreSQL
+    const groupBy: Expr[] = s.groupBy.map((g) => {
+      if (g.t === "lit" && typeof g.v === "number" && Number.isInteger(g.v)) {
+        const it = items[g.v - 1];
+        if (!it) throw new SqlError(`GROUP BY ${g.v} refers to column ${g.v} of the SELECT list, but there are only ${items.length}.`);
+        if (hasAgg(it.e)) throw new SqlError(`GROUP BY ${g.v} points at an aggregate (${it.text}), which cannot be grouped on.`);
+        return it.e;
+      }
+      if (g.t === "col" && !g.table && !rel.cols.some((c) => lc(c.n) === lc(g.name))) {
+        const it = items.find((x) => lc(x.name) === lc(g.name));
+        if (it && !hasAgg(it.e)) return it.e;
+      }
+      return g;
+    });
+    const grouped = groupBy.length > 0 || items.some((i) => hasAgg(i.e)) || (s.having !== undefined);
     // 4. build the "units" the select list is evaluated on (rows, or groups of rows)
     let units: Scope[];
     if (grouped) {
       const gmap = new Map<string, SqlValue[][]>();
-      const keyOf = (vals: SqlValue[]) => s.groupBy.map((g) => key(this.ev(g, { cols: rel.cols, vals, outer }))).join("\u0001");
+      const keyOf = (vals: SqlValue[]) => groupBy.map((g) => key(this.ev(g, { cols: rel.cols, vals, outer }))).join("\u0001");
       for (const vals of rows) { const k = keyOf(vals); const g = gmap.get(k); if (g) g.push(vals); else gmap.set(k, [vals]); }
-      if (!s.groupBy.length && !gmap.size) gmap.set("", []); // an aggregate over no rows still gives one row
+      if (!groupBy.length && !gmap.size) gmap.set("", []); // an aggregate over no rows still gives one row
       units = [...gmap.values()].map((g) => ({ cols: rel.cols, vals: g[0] ?? new Array<SqlValue>(rel.cols.length).fill(null), group: g, outer }));
       const checkGrouped = (e: Expr, where: string): void => {
-        if (s.groupBy.some((g) => same(g, e))) return;
+        if (groupBy.some((g) => same(g, e))) return;
         switch (e.t) {
           case "col": {
-            if (s.groupBy.some((g) => g.t === "col" && lc(g.name) === lc(e.name) && (!e.table || !g.table || lc(g.table) === lc(e.table)))) return;
+            if (groupBy.some((g) => g.t === "col" && lc(g.name) === lc(e.name) && (!e.table || !g.table || lc(g.table) === lc(e.table)))) return;
             if (this.resolve(rel.cols, e.table, e.name, false) < 0) return; // a column from an outer query
             throw new SqlError(`The column "${e.name}" in ${where} must appear in GROUP BY or be used inside an aggregate function such as SUM or COUNT.`, `Either add ${e.name} to GROUP BY, or wrap it, for example MAX(${e.name}).`);
           }
