@@ -15,6 +15,11 @@ import SlideStudio from "./SlideStudio";
 import WordPad from "./WordPad";
 import AssistantPanel from "./AssistantPanel";
 
+/** Lab text marks emphasis with **double asterisks**; show it as bold instead of printing the asterisks. */
+function bold(s: string) {
+  return s.split(/\*\*(.+?)\*\*/g).map((part, i) => (i % 2 ? <strong key={i}>{part}</strong> : part));
+}
+
 /**
  * Runs one activity: shows the task, the right playground, the checks, hints that are asked for (not pushed), and records the result.
  * The checks run here for instant feedback and again on the server for the result that counts.
@@ -75,12 +80,12 @@ export default function ActivityRunner({ slug, activity, initial, signedIn, aiEn
           {activity.required ? <span className="rounded-full bg-orange-light px-2.5 py-1 font-semibold text-orange-deep">Counts toward the module</span> : null}
         </p>
         <h1 className="mt-2 text-[26px] font-bold leading-tight text-ink sm:text-[32px]">{activity.title}</h1>
-        <p className="mt-2 max-w-3xl text-[16px] text-ink-2">{activity.scenario}</p>
+        <p className="mt-2 max-w-3xl text-[16px] text-ink-2">{bold(activity.scenario)}</p>
       </header>
 
       <section aria-labelledby="goal-h" className="grid gap-4 rounded-2xl border border-black/[0.09] bg-white p-4 sm:grid-cols-[1fr_1fr] sm:p-5">
-        <div><h2 id="goal-h" className="text-[14px] font-semibold uppercase tracking-wide text-ink-3">Your goal</h2><p className="mt-1 text-[15px] text-ink">{activity.objective}</p></div>
-        <div><h2 className="text-[14px] font-semibold uppercase tracking-wide text-ink-3">Steps</h2><ol className="mt-1 list-decimal space-y-1 pl-5 text-[14.5px] text-ink-2">{activity.steps.map((s, i) => <li key={i}>{s}</li>)}</ol></div>
+        <div><h2 id="goal-h" className="text-[14px] font-semibold uppercase tracking-wide text-ink-3">Your goal</h2><p className="mt-1 text-[15px] text-ink">{bold(activity.objective)}</p></div>
+        <div><h2 className="text-[14px] font-semibold uppercase tracking-wide text-ink-3">Steps</h2><ol className="mt-1 list-decimal space-y-1 pl-5 text-[14.5px] text-ink-2">{activity.steps.map((s, i) => <li key={i}>{bold(s)}</li>)}</ol></div>
       </section>
 
       <section aria-label="Workspace" key={version}>
