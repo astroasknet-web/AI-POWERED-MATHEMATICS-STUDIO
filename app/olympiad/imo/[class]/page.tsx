@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarketShell } from "@/components/market/shell";
+import ImoThumb from "@/components/lms/ImoThumb";
 import ImoPaywall from "@/components/lms/ImoPaywall";
 import { imoAccess } from "@/lib/lms/imo-access";
 import { CLASSES, IMO_SECTIONS, classNumber, isClass, sectionLabel, subject } from "@/lib/lms/school";
@@ -32,8 +33,10 @@ export default async function ImoClass({ params }: P) {
       <nav aria-label="Breadcrumb" className="mb-4 text-[13px] text-ink-3"><Link href="/exam-prep" className="underline">Exam prep</Link> / <Link href="/olympiad/imo" className="underline">Maths Olympiad</Link> / Class {classNumber(c)}</nav>
       <h1 className="text-[26px] font-bold leading-tight tracking-tight text-ink sm:text-[34px]">Class {classNumber(c)} Maths Olympiad</h1>
       <p className="mt-2 max-w-3xl text-[16px] text-ink-3">{s.chapters.length} chapters with lessons and tests, and full-syllabus mock tests.</p>
-
-      {!open ? <div className="mt-6"><ImoPaywall cls={classNumber(c)} access={access} chapters={s.chapters.length} minutes={s.fullTest?.time_limit_minutes} /></div> : null}
+      <div className="mt-5 grid items-start gap-6 lg:grid-cols-[minmax(0,480px)_minmax(0,1fr)]">
+        <ImoThumb cls={classNumber(c)} priority full className="aspect-video w-full rounded-2xl shadow-card" />
+        {!open ? <ImoPaywall cls={classNumber(c)} access={access} chapters={s.chapters.length} minutes={s.fullTest?.time_limit_minutes} /> : null}
+      </div>
 
       <section className="mt-6 rounded-2xl border border-black/[0.08] bg-white p-5 shadow-card" aria-label="Full mock test">
         <h2 className="text-[19px] font-bold text-ink">Full-syllabus mock test</h2>

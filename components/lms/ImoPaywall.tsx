@@ -26,7 +26,6 @@ export default function ImoPaywall({ cls, access, chapters, minutes }: { cls: nu
         )}
         {!access.signedIn ? <Link href={`/login?next=${encodeURIComponent(`/olympiad/imo/class-${cls}`)}`} className="inline-flex min-h-[48px] items-center rounded-lg border border-black/[0.15] px-6 font-semibold text-ink hover:bg-cream-2">Already bought? Log in</Link> : null}
       </div>
-      <p className="mt-4 text-[13px] text-ink-4">Each class is bought separately. Class 1 to 5 {rs(499)}, Class 6 to 8 {rs(599)}, Class 9 to 12 {rs(799)}.</p>
     </section>
   );
 }
