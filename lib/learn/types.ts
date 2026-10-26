@@ -1,12 +1,13 @@
 import type { SheetState } from "./sheet/engine";
 import type { Deck } from "./slides";
 import type { SqlTable } from "./sql/engine";
+import type { DaxModel, DaxVisual } from "./dax/engine";
 
 /**
  * Reusable learning-activity model. A course lists activities as data (lib/learn/data/<course>.activities.json); the interactive
  * components render them and lib/learn/checks.ts judges them. New courses add JSON, not code, unless they need a new playground.
  */
-export type ActivityKind = "word" | "sheet" | "slides" | "classify" | "sql";
+export type ActivityKind = "word" | "sheet" | "slides" | "classify" | "sql" | "dax";
 export type Level = "beginner" | "intermediate" | "challenge";
 
 export type CheckSpec =
@@ -42,6 +43,10 @@ export type CheckSpec =
   | { k: "sql.runs" }
   | { k: "sql.result"; /** The model query. It runs on the activity's own tables to give the expected result. */ solution: string; /** Rows must also come back in the same order. */ ordered?: boolean }
   | { k: "sql.uses"; re: string; what: string }
+  // DAX practice: the measure must run, must give the same matrix as the model measure in every visual, or must use certain words
+  | { k: "dax.runs" }
+  | { k: "dax.measure"; /** The measure the student must define. */ name: string; /** The model measure (one or more definitions). It runs on the activity's own model to give the expected matrices. */ solution: string }
+  | { k: "dax.uses"; re: string; what: string }
   // Classify
   | { k: "classify.item"; item: string };
 
@@ -76,6 +81,8 @@ export interface Activity {
   classify?: ClassifyData;
   /** SQL only: the tables the student queries and the text that starts in the editor. */
   sql?: { tables: SqlTable[]; starter: string };
+  /** DAX only: the model, the starting text, the visuals (matrices) the measure is shown in, and the measure to show. */
+  dax?: { model: DaxModel; starter: string; visuals: DaxVisual[]; show: string };
   /** Spreadsheet only: the grid area to show and which columns are headers. */
   view?: { cols: number; rows: number };
 }
@@ -85,7 +92,8 @@ export type ActivityState =
   | { kind: "sheet"; sheet: SheetState }
   | { kind: "slides"; deck: Deck }
   | { kind: "classify"; answers: Record<string, string> }
-  | { kind: "sql"; query: string };
+  | { kind: "sql"; query: string }
+  | { kind: "dax"; code: string };
 
 export interface CheckResult { id: string; label: string; passed: boolean; message: string; hint: string; explain: string }
 export interface RunResult { results: CheckResult[]; passed: number; total: number; score: number; allPassed: boolean }

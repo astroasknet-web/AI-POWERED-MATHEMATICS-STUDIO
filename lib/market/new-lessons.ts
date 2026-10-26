@@ -45,4 +45,6 @@ export const NEW_LESSONS: Record<string, () => unknown> = {
   "excel-macros-vba": () => require("./data/lessons/excel-macros-vba.json"),
   "sql-for-data-business": () => require("./data/lessons/sql-for-data-business.json"),
   "advanced-excel-data-analysis": () => require("./data/lessons/advanced-excel-data-analysis.json"),
+  "data-analytics-python-sql": () => require("./data/lessons/data-analytics-python-sql.json"),
+  "business-analytics-power-bi": () => require("./data/lessons/business-analytics-power-bi.json"),
 };

@@ -29,6 +29,7 @@ export function describeWork(state: ActivityState): string {
       return raw.startsWith("=") ? `${k}: ${raw} -> ${formatValue(calc.value(k))}` : `${k}: ${raw}`;
     }).join("\n");
   } else if (state.kind === "sql") out = state.query;
+  else if (state.kind === "dax") out = state.code;
   else out = Object.entries(state.answers).map(([k, v]) => `${k}: ${v}`).join("\n");
   return out.slice(0, MAX_WORK_CHARS);
 }

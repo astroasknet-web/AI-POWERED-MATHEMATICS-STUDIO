@@ -220,6 +220,22 @@ export function rng(seed = 7) {
   const next = () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296);
   return { next, int: (a, b) => a + Math.floor(next() * (b - a + 1)), pick: (arr) => arr[Math.floor(next() * arr.length)], money: (a, b) => Math.round((a + next() * (b - a)) * 100) / 100 };
 }
+/** DAX checks: X.runs() (the formulas run), X.measure(name, solution) (the same matrices as the model measure in every visual), X.uses(regex, what). */
+export const X = {
+  runs: () => ({ k: "dax.runs" }),
+  measure: (name, solution) => ({ k: "dax.measure", name, solution }),
+  uses: (re, what) => ({ k: "dax.uses", re, what }),
+};
+/** DAX lab. model is { tables: [{name, columns, rows} or {name, calendar: {from, to}}], relationships: [{many, one}], measures: {Name: "formula"}, dateTable }; visuals are [{label, rows: ["Table[Col]"], cols?}]; show is the measure to display. */
+export function daxLab(o) {
+  return {
+    activity: { ...base(o, "dax"), dax: { model: o.model, starter: o.starter ?? "// Write your measure below, then press Run\n", visuals: o.visuals, show: o.show } },
+    solution: { code: o.solution },
+  };
+}
+/** A live DAX window in a lesson (see lib/learn/widgets/types.ts). */
+export const daxPlay = ({ id, title, intro, model, code, visuals, show }) => widgetHtml({ type: "daxplay", id, title, ...(intro ? { intro } : {}), model, code, visuals, show });
+
 /** SQL lab. tables is [[name, [columns], [[row], ...]], ...]; solution is the model query used by the tests. */
 export function sqlLab(o) {
   return {

@@ -18,7 +18,7 @@ type Built = {
   slug: string;
   lesson: ReturnType<typeof nativeCourse> & object;
   activities: { skills: Array<{ id: string }>; badges: Array<{ when: { all?: string[]; any?: string[] } }>; activities: Activity[]; landing: { hero: unknown; outcomes: unknown[]; projects: unknown[]; faq: unknown[] } };
-  solutions: Record<string, { cells?: Record<string, string>; formats?: Record<string, object>; charts?: object[]; html?: string; deck?: object; answers?: Record<string, string>; query?: string }>;
+  solutions: Record<string, { cells?: Record<string, string>; formats?: Record<string, object>; charts?: object[]; html?: string; deck?: object; answers?: Record<string, string>; query?: string; code?: string }>;
   catalogue: Record<string, unknown>;
 };
 const root = path.resolve(__dirname, "../..");
@@ -28,6 +28,7 @@ const words = (html: string): number => html.replace(/<[^>]+>/g, " ").replace(/&
 
 function solve(a: Activity, sol: Built["solutions"][string]): ActivityState {
   if (a.kind === "classify") return { kind: "classify", answers: sol.answers ?? {} };
+  if (a.kind === "dax") return { kind: "dax", code: sol.code ?? "" };
   if (a.kind === "sql") return { kind: "sql", query: sol.query ?? "" };
   if (a.kind === "word") return { kind: "word", html: sol.html ?? "" };
   if (a.kind === "slides") return { kind: "slides", deck: sol.deck as never };
@@ -125,7 +126,7 @@ describe("new interactive courses", () => {
           expect(new Set(a.checks.map((x) => x.id)).size, `${a.id} check ids`).toBe(a.checks.length);
           expect(a.steps.length, a.id).toBeGreaterThan(0);
           expect(c.activities.skills.some((s) => a.skills.includes(s.id)), `${a.id} skill`).toBe(true);
-          const prefix = { word: "doc.", sheet: "sheet.", slides: "slides.", classify: "classify.", sql: "sql." }[a.kind];
+          const prefix = { word: "doc.", sheet: "sheet.", slides: "slides.", classify: "classify.", sql: "sql.", dax: "dax." }[a.kind];
           for (const x of a.checks) {
             expect(x.spec.k.startsWith(prefix), `${a.id}/${x.id}`).toBe(true);
             expect(x.hint.length, `${a.id}/${x.id} hint`).toBeGreaterThan(5);

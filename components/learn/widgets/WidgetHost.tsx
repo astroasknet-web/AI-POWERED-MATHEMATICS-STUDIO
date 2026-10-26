@@ -14,6 +14,7 @@ import { JournalWidget } from "./JournalWidget";
 import { MerkleWidget } from "./MerkleWidget";
 import { ProgressDock } from "./ProgressDock";
 import { SqlPlayWidget } from "./SqlPlayWidget";
+import { DaxPlayWidget } from "./DaxPlayWidget";
 import { QuizWidget } from "./QuizWidget";
 
 interface Mount { el: Element; spec: WidgetSpec }
@@ -30,6 +31,7 @@ function render(spec: WidgetSpec, slug: string) {
     case "chainlab": return <ChainLabWidget spec={spec} slug={slug} />;
     case "merkle": return <MerkleWidget spec={spec} slug={slug} />;
     case "sqlplay": return <SqlPlayWidget spec={spec} slug={slug} />;
+    case "daxplay": return <DaxPlayWidget spec={spec} slug={slug} />;
   }
 }
 

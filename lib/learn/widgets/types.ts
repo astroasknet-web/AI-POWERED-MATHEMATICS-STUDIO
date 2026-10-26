@@ -39,5 +39,8 @@ export interface MerkleSpec { type: "merkle"; id: string; title: string; intro?:
 /** A live SQL window inside a lesson: the student edits the query and runs it on small sample tables. Nothing leaves the browser. */
 export interface SqlPlaySpec { type: "sqlplay"; id: string; title: string; intro?: string; tables: Array<{ name: string; columns: string[]; rows: Array<Array<number | string | boolean | null>> }>; query: string }
 
-export type WidgetSpec = QuizSpec | JournalSpec | EquationSpec | ExplorerSpec | FlashcardSpec | CompleteSpec | HashLabSpec | ChainLabSpec | MerkleSpec | SqlPlaySpec;
-export const WIDGET_TYPES = ["quiz", "journal", "equation", "explorer", "flashcards", "complete", "hashlab", "chainlab", "merkle", "sqlplay"] as const;
+/** A live DAX window inside a lesson: the student edits measures and sees them in a matrix. Nothing leaves the browser. */
+export interface DaxPlaySpec { type: "daxplay"; id: string; title: string; intro?: string; model: import("../dax/engine").DaxModel; code: string; visuals: import("../dax/engine").DaxVisual[]; show: string }
+
+export type WidgetSpec = QuizSpec | JournalSpec | EquationSpec | ExplorerSpec | FlashcardSpec | CompleteSpec | HashLabSpec | ChainLabSpec | MerkleSpec | SqlPlaySpec | DaxPlaySpec;
+export const WIDGET_TYPES = ["quiz", "journal", "equation", "explorer", "flashcards", "complete", "hashlab", "chainlab", "merkle", "sqlplay", "daxplay"] as const;

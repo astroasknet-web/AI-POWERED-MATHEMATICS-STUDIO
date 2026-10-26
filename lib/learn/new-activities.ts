@@ -45,4 +45,6 @@ export const NEW_ACTIVITIES: Record<string, () => unknown> = {
   "excel-macros-vba": () => require("./data/excel-macros-vba.activities.json"),
   "sql-for-data-business": () => require("./data/sql-for-data-business.activities.json"),
   "advanced-excel-data-analysis": () => require("./data/advanced-excel-data-analysis.activities.json"),
+  "data-analytics-python-sql": () => require("./data/data-analytics-python-sql.activities.json"),
+  "business-analytics-power-bi": () => require("./data/business-analytics-power-bi.activities.json"),
 };

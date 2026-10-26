@@ -36,7 +36,7 @@ describe("BBA Financial Accounting activities", () => {
       expect([a.objective, a.scenario, a.title].every((s) => s.length > 8), a.id).toBe(true);
       expect(a.steps.length, a.id).toBeGreaterThan(0);
       for (const c of a.checks) { expect(c.hint.length, `${a.id}/${c.id} hint`).toBeGreaterThan(5); expect(c.explain.length, `${a.id}/${c.id} explain`).toBeGreaterThan(5); }
-      const prefix = { word: "doc.", sheet: "sheet.", slides: "slides.", classify: "classify.", sql: "sql." }[a.kind];
+      const prefix = { word: "doc.", sheet: "sheet.", slides: "slides.", classify: "classify.", sql: "sql.", dax: "dax." }[a.kind];
       for (const c of a.checks) expect(c.spec.k.startsWith(prefix), `${a.id}/${c.id} uses ${c.spec.k}`).toBe(true);
       expect(course.skills.some((s) => a.skills.includes(s.id)), a.id).toBe(true);
     }

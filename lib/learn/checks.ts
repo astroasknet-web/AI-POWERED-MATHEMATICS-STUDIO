@@ -2,6 +2,7 @@ import { analyzeDoc } from "./doc";
 import { analyse, Calculator, chartData, expandRange, formatValue, isErr, parseFormula, parseRef, refName, type SheetState, type Value } from "./sheet/engine";
 import { bullets, deckText, sanitizeDeck, themeOf, type Deck } from "./slides";
 import { runSqlFull, type SqlValue } from "./sql/engine";
+import { Dax, DaxError, parseDefinitions, type DaxMatrix, type DaxValue } from "./dax/engine";
 import type { Activity, ActivityState, Check, CheckResult, CheckSpec, RunResult } from "./types";
 
 /**
@@ -199,11 +200,59 @@ function sqlCheck(spec: CheckSpec, query: string, a: Activity): Out {
   return same([...a1].sort(), [...b1].sort()) ? yes() : no("The right number of rows, but some values are not what the task asks for. Re-read the task and compare your first row.");
 }
 
+const same = (x: DaxValue, y: DaxValue): boolean => (x === null || y === null ? x === y : typeof x === "number" && typeof y === "number" ? Math.abs(x - y) <= 1e-6 * Math.max(1, Math.abs(y)) : x === y);
+const showV = (v: DaxValue): string => (v === null ? "blank" : String(v));
+
+function daxCheck(spec: CheckSpec, code: string, a: Activity): Out {
+  const d = a.dax;
+  if (!d) return no("This exercise has no model.");
+  if (spec.k === "dax.uses") {
+    let re: RegExp;
+    try { re = new RegExp(spec.re, "i"); } catch { return no("This check is misconfigured."); }
+    return re.test(code) ? yes() : no(`Your measure should use ${spec.what}.`);
+  }
+  if (spec.k !== "dax.runs" && spec.k !== "dax.measure") return no("Unknown check.");
+  let mine: Dax;
+  try {
+    const defs = parseDefinitions(code);
+    if (!defs.length) return no("Write your measure in the editor, starting with its name and an equals sign, like Total Sales = SUM(Sales[Amount]).");
+    mine = new Dax(d.model, defs);
+    for (const def of defs) for (const v of d.visuals) mine.matrix(v, def.name);
+    if (spec.k === "dax.runs") return yes();
+  } catch (e) {
+    if (e instanceof DaxError) return no(`Your formula did not run: ${e.message}${e.hint ? " " + e.hint : ""}`);
+    return no("Your formula could not be calculated.");
+  }
+  if (spec.k !== "dax.measure") return no("Unknown check.");
+  if (!mine.measureNames().some((n) => n.toLowerCase() === spec.name.toLowerCase())) return no(`Define a measure called ${spec.name}. Start the line with its name, then an equals sign.`);
+  let got: DaxMatrix[], want: DaxMatrix[];
+  try {
+    const ref = new Dax(d.model, parseDefinitions(!/^\s*(VAR|RETURN)\b/i.test(spec.solution) && /^\s*[A-Za-z_][\w %.]*\s*:?=/.test(spec.solution) ? spec.solution : `${spec.name} = ${spec.solution}`));
+    got = d.visuals.map((v) => mine.matrix(v, spec.name));
+    want = d.visuals.map((v) => ref.matrix(v, spec.name));
+  } catch (e) {
+    return no(e instanceof DaxError ? `Your measure did not run: ${e.message}${e.hint ? " " + e.hint : ""}` : "This check could not be prepared. Please report it.");
+  }
+  for (let i = 0; i < want.length; i++) {
+    const g = got[i], w = want[i];
+    if (g.rows.length !== w.rows.length) return no(`In the visual "${w.label}" your measure shows ${g.rows.length} row${g.rows.length === 1 ? "" : "s"} with a value, but ${w.rows.length} ${w.rows.length === 1 ? "is" : "are"} expected. Look at which rows are blank.`);
+    for (let r = 0; r < w.rows.length; r++) {
+      if (w.rows[r].header.join("|") !== g.rows[r].header.join("|")) return no(`In the visual "${w.label}" the rows that have a value are not the expected ones (see ${showV(g.rows[r].header[0])}).`);
+      for (let c = 0; c < w.rows[r].cells.length; c++) {
+        if (!same(g.rows[r].cells[c], w.rows[r].cells[c])) return no(`In the visual "${w.label}" the value for ${w.rows[r].header.map(showV).join(" / ")}${w.headers.length > 1 ? ` in the ${w.headers[c]} column` : ""} is ${showV(g.rows[r].cells[c])}, which is not the expected value. Think about what filters apply in that cell.`);
+      }
+    }
+    for (let c = 0; c < w.total.length; c++) if (!same(g.total[c], w.total[c])) return no(`In the visual "${w.label}" the total row differs (it shows ${showV(g.total[c])}). Check how your measure behaves when no row is selected.`);
+  }
+  return yes();
+}
+
 function runOne(c: Check, state: ActivityState, a: Activity): CheckResult {
   let o: Out;
   const k = c.spec.k;
   if (k.startsWith("doc.")) o = state.kind === "word" ? wordCheck(c.spec, state.html) : no("Wrong kind of work.");
   else if (k.startsWith("sheet.")) o = state.kind === "sheet" ? sheetCheck(c.spec, state.sheet) : no("Wrong kind of work.");
+  else if (k.startsWith("dax.")) o = state.kind === "dax" ? daxCheck(c.spec, state.code, a) : no("Wrong kind of work.");
   else if (k.startsWith("sql.")) o = state.kind === "sql" ? sqlCheck(c.spec, state.query, a) : no("Wrong kind of work.");
   else if (k.startsWith("slides.")) o = state.kind === "slides" ? slidesCheck(c.spec, sanitizeDeck(state.deck)) : no("Wrong kind of work.");
   else if (c.spec.k === "classify.item") {
