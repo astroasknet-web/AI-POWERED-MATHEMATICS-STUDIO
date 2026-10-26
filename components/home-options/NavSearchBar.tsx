@@ -55,7 +55,7 @@ export default function NavSearchBar() {
   const empty = phrase.length >= 2 && !busy && rows.every((r) => r.kind === "all");
   let lastSection = "";
   return (
-    <div ref={wrap} className="relative hidden min-w-0 flex-1 min-[1360px]:block min-[1360px]:max-w-[420px] min-[1560px]:max-w-[480px]" role="search">
+    <div ref={wrap} className="relative hidden min-w-0 flex-1 min-[1440px]:block min-[1440px]:max-w-[420px] min-[1560px]:max-w-[480px]" role="search">
       <div className={`flex h-[44px] items-center gap-2 rounded-full border bg-white px-4 transition ${open ? "border-ink shadow-[0_8px_30px_-12px_rgba(26,26,26,0.35)]" : "border-black/10 hover:border-black/25"}`}>
         <Search className="h-[18px] w-[18px] shrink-0 text-ink-3" aria-hidden />
         <input

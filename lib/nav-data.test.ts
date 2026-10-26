@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import catalogue from "@/lib/market/data/courses.json";
 import abroad from "@/lib/abroad/data/study-abroad.json";
-import { ACCOUNT_LINKS, ALL_LINKS, FIELD_SHORTCUTS, INDEX, MENUS } from "@/components/home-options/nav-data";
+import { ACCOUNT_LINKS, ALL_LINKS, FIELD_SHORTCUTS, INDEX, MENUS, SUPPORT_LINK } from "@/components/home-options/nav-data";
 
 const appDir = path.join(process.cwd(), "app");
 
@@ -87,5 +87,13 @@ describe("navigation: structure", () => {
   it("no staff or admin route is offered in any menu", () => {
     const all = [...ALL_LINKS.map((l) => l.href), ...Object.values(ACCOUNT_LINKS).flat().map((l) => l.href)];
     for (const h of all) expect(h, h).not.toMatch(/^\/(admin|console|crm|counselor)/);
+  });
+
+  it("Support lives beside the search bar, so the two Resources columns are the same length", () => {
+    expect(ALL_LINKS.some((l) => l.href === "/support")).toBe(false);
+    expect(SUPPORT_LINK.href).toBe("/support");
+    expect(INDEX.some((h) => h.href === "/support")).toBe(true); // still found by search
+    const res = MENUS.find((m) => m.id === "resources")!;
+    expect(res.groups.map((g) => g.links.length)).toEqual([4, 4]);
   });
 });

@@ -5,14 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowRight, ChevronDown, LogOut, Menu, Search, X } from "lucide-react";
+import { ArrowRight, ChevronDown, LifeBuoy, LogOut, Menu, Search, X } from "lucide-react";
 import { useAuthFlag } from "@/lib/useAuthFlag";
 import { usePortalUser } from "@/lib/usePortalUser";
 import { useIsLive } from "@/components/layout/CurrencyProvider";
 import { useSeekerWaitlist } from "@/components/seeker/SeekerWaitlistModal";
 import { logoutAction } from "@/app/(portal)/actions";
 import { trackNav } from "@/lib/analytics";
-import { ACCOUNT_LINKS, MENUS, type NavLink, type NavMenu } from "./nav-data";
+import { ACCOUNT_LINKS, MENUS, SUPPORT_LINK, type NavLink, type NavMenu } from "./nav-data";
 import { Group, Row, focusRing, isCurrent, useFocusTrap, useOutside, ICONS } from "./NavParts";
 import NavSearch from "./NavSearch";
 import NavSearchBar from "./NavSearchBar";
@@ -125,7 +125,7 @@ export default function HomeNav() {
   }, []);
   useEffect(() => { document.body.style.overflow = drawer || search ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [drawer, search]);
   // A desktop-sized window never keeps the phone menu open.
-  useEffect(() => { const mq = window.matchMedia("(min-width: 1024px)"); const f = () => { if (mq.matches) setDrawer(false); }; mq.addEventListener("change", f); return () => mq.removeEventListener("change", f); }, []);
+  useEffect(() => { const mq = window.matchMedia("(min-width: 1180px)"); const f = () => { if (mq.matches) setDrawer(false); }; mq.addEventListener("change", f); return () => mq.removeEventListener("change", f); }, []);
 
   const cta = loggedIn
     ? { label: "Dashboard", onClick: () => window.location.assign("https://app.growqr.ai/home") }
@@ -144,14 +144,14 @@ export default function HomeNav() {
             className={`relative mx-auto flex h-[60px] max-w-[1440px] items-center gap-2 2xl:max-w-[1560px] rounded-[22px] border px-3 transition-[background-color,box-shadow,border-color] duration-200 md:h-[64px] md:px-4 ${scrolled || open || drawer ? "border-black/[0.08] bg-white/95 shadow-[0_10px_40px_-18px_rgba(26,26,26,0.35)] backdrop-blur-xl" : "border-transparent bg-white/70 backdrop-blur-md"}`}>
             <Link href="/" aria-label="GrowQR home" className={`mr-1 flex shrink-0 items-center rounded-lg md:mr-4 ${focusRing}`}><Image src="/growqr-logo.png" alt="GrowQR" width={400} height={200} priority className="h-[32px] w-auto select-none md:h-[36px]" /></Link>
 
-            <ul className="hidden items-center gap-0.5 lg:flex">
+            <ul className="hidden items-center gap-0.5 min-[1180px]:flex">
               {MENUS.map((m) => {
                 const isOpen = open === m.id;
                 const here = menuHasCurrent(m, pathname);
                 return (
                   <li key={m.id} onPointerEnter={(e) => { if (e.pointerType === "mouse") show(m.id); }}>
                     <button ref={(el) => { triggers.current[m.id] = el; }} type="button" aria-expanded={isOpen} aria-controls={`menu-${m.id}`} onClick={() => (isOpen ? setOpen(null) : show(m.id))}
-                      className={`relative flex min-h-[44px] items-center gap-1 whitespace-nowrap rounded-full px-3.5 text-[0.92rem] font-semibold transition ${isOpen ? "bg-orange-light text-orange-deep" : "text-ink-2 hover:bg-black/[0.04]"} ${focusRing}`}>
+                      className={`relative flex min-h-[44px] items-center gap-1 whitespace-nowrap rounded-full px-2.5 text-[0.92rem] font-semibold transition xl:px-3.5 ${isOpen ? "bg-orange-light text-orange-deep" : "text-ink-2 hover:bg-black/[0.04]"} ${focusRing}`}>
                       {m.label}<ChevronDown className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`} aria-hidden />
                       {here && <><span aria-hidden className="absolute inset-x-4 -bottom-0.5 h-[3px] rounded-full bg-orange" /><span className="sr-only">(current section)</span></>}
                     </button>
@@ -168,10 +168,11 @@ export default function HomeNav() {
             <NavSearchBar />
 
             <div className="ml-auto flex items-center gap-1.5 md:gap-2">
-              <button type="button" onClick={() => openSearch("button")} aria-label="Search the site" className={`hidden min-h-[44px] items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 text-[0.84rem] text-ink-3 transition hover:bg-white md:inline-flex min-[1360px]:hidden ${focusRing}`}>
-                <Search className="h-4 w-4" aria-hidden /><span className="hidden xl:inline">Search</span><kbd className="ml-1 hidden items-center rounded-md border border-black/10 bg-white px-1.5 py-0.5 text-[0.66rem] font-semibold xl:inline-flex">Ctrl K</kbd>
+              <button type="button" onClick={() => openSearch("button")} aria-label="Search the site" className={`hidden min-h-[44px] items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 text-[0.84rem] text-ink-3 transition hover:bg-white md:inline-flex min-[1440px]:hidden ${focusRing}`}>
+                <Search className="h-4 w-4" aria-hidden />
               </button>
               <button type="button" onClick={() => openSearch("icon")} aria-label="Search the site" className={`grid h-11 w-11 place-items-center rounded-full border border-black/10 bg-white/70 md:hidden ${focusRing}`}><Search className="h-[18px] w-[18px]" aria-hidden /></button>
+              <Link href={SUPPORT_LINK.href} onClick={() => onNav(SUPPORT_LINK)} aria-label="Support: raise a ticket" title="Support: raise a ticket" className={`hidden min-h-[44px] items-center gap-2 whitespace-nowrap rounded-full border border-black/10 bg-white/70 px-3 text-[0.9rem] font-semibold text-ink-2 transition hover:border-ink hover:bg-white min-[1180px]:inline-flex ${focusRing}`}><LifeBuoy className="h-[18px] w-[18px]" aria-hidden /><span className="hidden min-[1500px]:inline">Support</span></Link>
               <CartLink />
               {portalUser === undefined ? (
                 <span aria-hidden className="hidden h-[44px] w-[230px] md:block" />
@@ -183,7 +184,7 @@ export default function HomeNav() {
                   <button type="button" onClick={runCta} className={`hidden min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-full bg-orange px-4 text-[0.9rem] font-bold text-white shadow-[0_10px_24px_-10px_rgba(255,106,47,0.7)] transition hover:bg-orange-dark md:inline-flex ${focusRing}`}>{cta.label}<ArrowRight className="h-4 w-4" aria-hidden /></button>
                 </>
               )}
-              <button type="button" aria-label={drawer ? "Close menu" : "Open menu"} aria-expanded={drawer} aria-controls="mobile-nav" onClick={() => setDrawer((d) => { if (!d) trackNav("nav_mobile_open"); return !d; })} className={`grid h-11 w-11 place-items-center rounded-full border border-black/10 bg-white/70 lg:hidden ${focusRing}`}>{drawer ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}</button>
+              <button type="button" aria-label={drawer ? "Close menu" : "Open menu"} aria-expanded={drawer} aria-controls="mobile-nav" onClick={() => setDrawer((d) => { if (!d) trackNav("nav_mobile_open"); return !d; })} className={`grid h-11 w-11 place-items-center rounded-full border border-black/10 bg-white/70 min-[1180px]:hidden ${focusRing}`}>{drawer ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}</button>
             </div>
           </nav>
         </div>
@@ -191,9 +192,10 @@ export default function HomeNav() {
 
       {/* phone and tablet menu */}
       {drawer && (
-        <div id="mobile-nav" ref={drawerRef} role="dialog" aria-modal="true" aria-label="Menu" className="fixed inset-0 z-[49] overflow-y-auto overscroll-contain bg-cream pt-[84px] lg:hidden">
+        <div id="mobile-nav" ref={drawerRef} role="dialog" aria-modal="true" aria-label="Menu" className="fixed inset-0 z-[49] overflow-y-auto overscroll-contain bg-cream pt-[84px] min-[1180px]:hidden">
           <div className="mx-auto max-w-[640px] px-5 pb-40 pt-3">
             <button type="button" onClick={() => { setDrawer(false); openSearch("drawer"); }} className={`mb-4 flex min-h-[52px] w-full items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 text-left text-[0.95rem] text-ink-3 ${focusRing}`}><Search className="h-5 w-5" aria-hidden />Search courses, tests, internships…</button>
+            <Link href={SUPPORT_LINK.href} onClick={() => onNav(SUPPORT_LINK)} className={`mb-4 flex min-h-[52px] w-full items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 text-left text-[0.95rem] font-semibold text-ink ${focusRing}`}><LifeBuoy className="h-5 w-5" aria-hidden />Support<span className="ml-auto text-[0.82rem] font-normal text-ink-3">Raise a ticket</span></Link>
             {MENUS.map((m) => {
               const isOpen = mAcc === m.id;
               return (
