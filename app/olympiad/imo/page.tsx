@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketShell } from "@/components/market/shell";
 import { CLASSES, IMO_SECTIONS, classNumber, subject } from "@/lib/lms/school";
+import ImoThumb from "@/components/lms/ImoThumb";
 import { imoFeeRupees } from "@/lib/pay/course-fees";
 
 export const metadata: Metadata = {
@@ -30,10 +31,13 @@ export default function ImoHome() {
           const s = subject(c, "imo");
           return (
             <li key={c}>
-              <Link href={`/olympiad/imo/${c}`} className="block h-full rounded-2xl border border-black/[0.08] bg-white p-5 shadow-card transition hover:-translate-y-1 hover:shadow-glow">
+              <Link href={`/olympiad/imo/${c}`} className="block h-full overflow-hidden rounded-2xl border border-black/[0.08] bg-white shadow-card transition hover:-translate-y-1 hover:shadow-glow">
+                <ImoThumb cls={classNumber(c)} className="aspect-video w-full" />
+                <div className="p-5">
                 <h2 className="text-[1.15rem] font-semibold text-ink">Class {classNumber(c)}</h2>
                 <p className="mt-2 text-[0.85rem] text-ink-3">{s ? `${s.chapters.length} chapters · full mock tests` : "Coming soon"}</p>
                 {s ? <p className="mt-3 text-[1.1rem] font-bold text-ink">{rs(imoFeeRupees(classNumber(c)))}</p> : null}
+                </div>
               </Link>
             </li>
           );
