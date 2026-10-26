@@ -222,24 +222,24 @@
       "tags": [
         "All"
       ],
-      "hours": "~12 hrs",
+      "hours": "~11.5 hrs",
       "modules": 6,
       "weeks": "~3 weeks",
-      "pace": "4 hrs/wk",
-      "badge": "Workspace Collaborator",
+      "pace": "3 to 4 hrs/wk",
+      "badge": "Workspace Ready",
       "prereq": "Basic computer familiarity.",
       "bestFor": "Students, startups, and remote teams that collaborate online.",
-      "brief": "Cloud collaboration and Forms surveys.",
+      "brief": "Drive, Docs, Sheets, Slides, Forms and safe teamwork, with a practice lab in every module.",
       "learn": [
-        "Google Drive — storage, sharing, permissions, and version history",
-        "Docs — collaborative writing, comments, suggestions, and templates",
-        "Sheets — formulas, sharing, and basic charts (with Excel differences)",
-        "Slides — quick decks and real-time co-editing",
-        "Forms — building surveys/quizzes and reading responses in Sheets",
-        "Google Meet & Calendar basics for team coordination"
+        "Organising and sharing files in Drive with the right access",
+        "Writing structured Docs with styles, lists, tables and comments",
+        "Tracking data in Sheets with formulas, drop-downs and charts",
+        "Planning and presenting with Slides",
+        "Designing Forms and reading the results",
+        "A team way of working, Calendar, Meet and account safety"
       ],
-      "handsOn": "Run a live feedback survey with Forms and auto-summarise responses in Sheets.",
-      "outcome": "Collaborate smoothly in any modern workplace.",
+      "handsOn": "Write a one-page team project plan with a task table, a sharing plan and next steps.",
+      "outcome": "Run a small team project from one shared folder, confidently and safely.",
       "icon": "grid"
     },
     {

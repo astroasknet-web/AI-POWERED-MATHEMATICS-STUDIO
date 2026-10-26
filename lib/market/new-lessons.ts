@@ -40,4 +40,5 @@ export const NEW_LESSONS: Record<string, () => unknown> = {
   "token-development-erc-standards": () => require("./data/lessons/token-development-erc-standards.json"),
   "web3-development-javascript-nodejs": () => require("./data/lessons/web3-development-javascript-nodejs.json"),
   "advanced-excel": () => require("./data/lessons/advanced-excel.json"),
+  "google-workspace": () => require("./data/lessons/google-workspace.json"),
 };
