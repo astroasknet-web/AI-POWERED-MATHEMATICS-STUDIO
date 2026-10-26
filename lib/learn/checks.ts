@@ -3,6 +3,7 @@ import { analyse, Calculator, chartData, expandRange, formatValue, isErr, parseF
 import { bullets, deckText, sanitizeDeck, themeOf, type Deck } from "./slides";
 import { runSqlFull, type SqlValue } from "./sql/engine";
 import { Dax, DaxError, parseDefinitions, type DaxMatrix, type DaxValue } from "./dax/engine";
+import { computeViz, type Cell, type Pill } from "./viz/engine";
 import type { Activity, ActivityState, Check, CheckResult, CheckSpec, RunResult } from "./types";
 
 /**
@@ -247,11 +248,87 @@ function daxCheck(spec: CheckSpec, code: string, a: Activity): Out {
   return yes();
 }
 
+const DEFAULT_AGG = "sum";
+function vizCheck(spec: CheckSpec, state: Extract<ActivityState, { kind: "viz" }>, a: Activity): Out {
+  const z = a.viz;
+  if (!z) return no("This exercise has no data.");
+  const data = { ...z.data, calcs: { ...(z.data.calcs ?? {}), ...state.calcs } };
+  const mine = computeViz(data, state.spec);
+  switch (spec.k) {
+    case "viz.runs": return mine.ok ? yes() : no(`Your view cannot be drawn: ${mine.error}${mine.hint ? " " + mine.hint : ""}`);
+    case "viz.shelf": {
+      const s = state.spec;
+      const pills: Pill[] = spec.shelf === "columns" || spec.shelf === "rows" ? s[spec.shelf] : spec.shelf === "detail" ? s.detail ?? [] : s[spec.shelf] ? [s[spec.shelf] as Pill] : [];
+      const on = pills.filter((p) => p.field.toLowerCase() === spec.field.toLowerCase());
+      const name = spec.shelf === "columns" ? "Columns" : spec.shelf === "rows" ? "Rows" : spec.shelf[0].toUpperCase() + spec.shelf.slice(1);
+      if (!on.length) return no(`Put ${spec.field} on ${name}.`);
+      const field = z.data.fields.find((f) => f.name.toLowerCase() === spec.field.toLowerCase());
+      const ok = on.some((p) => (!spec.agg || (p.agg ?? (field?.role === "measure" ? DEFAULT_AGG : "")) === spec.agg) && (!spec.date || (p.date ?? "year") === spec.date) && (!spec.quick || p.quick === spec.quick));
+      if (ok) return yes();
+      if (spec.agg) return no(`${spec.field} is on ${name}, but it should be aggregated as ${spec.agg === "avg" ? "an average" : spec.agg === "countd" ? "a distinct count" : spec.agg}. Change the aggregation in its menu.`);
+      if (spec.date) return no(`${spec.field} is on ${name}, but it should be shown by ${spec.date}. Change the date level in its menu.`);
+      return no(`${spec.field} is on ${name}, but it needs the table calculation ${spec.quick}. Choose it in its menu.`);
+    }
+    case "viz.kind": return !mine.ok ? no(`Your view cannot be drawn yet: ${mine.error}`) : spec.kinds.includes(mine.kind) ? yes() : no(`Your view is not ${spec.what} yet. Think about which fields go on Columns and which on Rows.`);
+    case "viz.sorted": {
+      if (!mine.ok) return no("Your view cannot be drawn yet.");
+      const axis = mine.axisDim;
+      if (axis === null || !mine.points.length) return no("Sorting needs a chart with a category along one axis.");
+      const order: string[] = [], tot = new Map<string, number>();
+      for (const p of mine.points) { const k = String(p.dims[axis]); if (!tot.has(k)) order.push(k); tot.set(k, (tot.get(k) ?? 0) + (typeof p.meas[0] === "number" ? p.meas[0] : 0)); }
+      const vals = order.map((k) => tot.get(k) ?? 0);
+      const ok = vals.every((v, i) => i === 0 || (spec.dir === "desc" ? vals[i - 1] >= v : vals[i - 1] <= v));
+      return ok && order.length > 1 ? yes() : no(spec.dir === "desc" ? "Sort the marks from high to low (use Sort: High to low)." : "Sort the marks from low to high (use Sort: Low to high).");
+    }
+    case "viz.filter": {
+      const f = (state.spec.filters ?? []).find((x) => x.field.toLowerCase() === spec.field.toLowerCase());
+      if (!f) return no(`Add a filter on ${spec.field}.`);
+      if (spec.values) {
+        const want = new Set(spec.values.map((v) => v.toLowerCase())), got = new Set((f.values ?? []).map((v) => v.toLowerCase()));
+        if (want.size !== got.size || [...want].some((v) => !got.has(v))) return no(`The filter on ${spec.field} should keep exactly: ${spec.values.join(", ")}.`);
+      }
+      if (spec.min !== undefined && !(typeof f.min === "number" && f.min >= spec.min)) return no(`The filter on ${spec.field} should start at ${spec.min} or more.`);
+      if (spec.max !== undefined && !(typeof f.max === "number" && f.max <= spec.max)) return no(`The filter on ${spec.field} should stop at ${spec.max} or less.`);
+      return yes();
+    }
+    case "viz.top": return state.spec.top === spec.n ? yes() : no(`Show only the top ${spec.n}.`);
+    case "viz.hasCalc": return Object.keys(state.calcs).some((n) => n.toLowerCase() === spec.name.toLowerCase()) ? yes() : no(`Create a calculated field called ${spec.name}.`);
+    case "viz.uses": {
+      let re: RegExp;
+      try { re = new RegExp(spec.re, "i"); } catch { return no("This check is misconfigured."); }
+      return re.test(Object.values(state.calcs).join("\n")) ? yes() : no(`Your calculated field should use ${spec.what}.`);
+    }
+    case "viz.data": {
+      if (!mine.ok) return no(`Your view cannot be drawn yet: ${mine.error}${mine.hint ? " " + mine.hint : ""}`);
+      const want = computeViz({ ...z.data, calcs: { ...(z.data.calcs ?? {}), ...(spec.calcs ?? {}) } }, spec.solution);
+      if (!want.ok) return no("This check could not be prepared. Please report it.");
+      if (mine.points.length !== want.points.length) return no(`Your view has ${mine.points.length} mark${mine.points.length === 1 ? "" : "s"}; this task needs ${want.points.length}. Check which fields split the marks, and the filters.`);
+      if (mine.measLabels.length < want.measLabels.length) return no("Your view is missing a measure the task asks for.");
+      const key = (p: { dims: Cell[]; meas: Cell[] }): string => JSON.stringify(p.dims);
+      const wm = new Map(want.points.map((p) => [key(p), p]));
+      const near = (x: Cell, y: Cell): boolean => (x === null || y === null ? x === y : typeof x === "number" && typeof y === "number" ? Math.abs(x - y) <= 1e-6 * Math.max(1, Math.abs(y)) : x === y);
+      for (const p of mine.points) {
+        const w = wm.get(key(p));
+        if (!w) return no(`Your view has a mark (${p.dims.join(" / ")}) that the task does not expect. Check the fields that split the marks.`);
+        // the measures the task asks for must appear among yours, in any order
+        for (let j = 0; j < w.meas.length; j++) if (!p.meas.some((m) => near(m, w.meas[j]))) return no(`The value of ${want.measLabels[j]} for ${p.dims.join(" / ") || "the mark"} is not what the task expects. Check the aggregation and the calculation.`);
+      }
+      if (spec.ordered) {
+        const mk = mine.points.map(key), wk = want.points.map(key);
+        if (mk.some((k, i) => k !== wk[i])) return no("The right marks, but not in the order the task asks for. Check the sort.");
+      }
+      return yes();
+    }
+    default: return no("Unknown check.");
+  }
+}
+
 function runOne(c: Check, state: ActivityState, a: Activity): CheckResult {
   let o: Out;
   const k = c.spec.k;
   if (k.startsWith("doc.")) o = state.kind === "word" ? wordCheck(c.spec, state.html) : no("Wrong kind of work.");
   else if (k.startsWith("sheet.")) o = state.kind === "sheet" ? sheetCheck(c.spec, state.sheet) : no("Wrong kind of work.");
+  else if (k.startsWith("viz.")) o = state.kind === "viz" ? vizCheck(c.spec, state, a) : no("Wrong kind of work.");
   else if (k.startsWith("dax.")) o = state.kind === "dax" ? daxCheck(c.spec, state.code, a) : no("Wrong kind of work.");
   else if (k.startsWith("sql.")) o = state.kind === "sql" ? sqlCheck(c.spec, state.query, a) : no("Wrong kind of work.");
   else if (k.startsWith("slides.")) o = state.kind === "slides" ? slidesCheck(c.spec, sanitizeDeck(state.deck)) : no("Wrong kind of work.");

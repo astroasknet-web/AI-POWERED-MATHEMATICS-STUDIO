@@ -47,4 +47,5 @@ export const NEW_ACTIVITIES: Record<string, () => unknown> = {
   "advanced-excel-data-analysis": () => require("./data/advanced-excel-data-analysis.activities.json"),
   "data-analytics-python-sql": () => require("./data/data-analytics-python-sql.activities.json"),
   "business-analytics-power-bi": () => require("./data/business-analytics-power-bi.activities.json"),
+  "data-visualization-tableau": () => require("./data/data-visualization-tableau.activities.json"),
 };

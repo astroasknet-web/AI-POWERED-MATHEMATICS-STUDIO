@@ -400,24 +400,24 @@
         "Fresher",
         "Mid"
       ],
-      "hours": "~30 hrs",
+      "hours": "~24 hrs",
       "modules": 6,
       "weeks": "~6 weeks",
-      "pace": "5 hrs/wk",
+      "pace": "4 hrs/wk",
       "badge": "Tableau Visualizer",
       "prereq": "None; basic data familiarity helps.",
       "bestFor": "Analysts and anyone presenting data to decision-makers.",
-      "brief": "Turning raw data into clear, decision-ready dashboards and stories.",
+      "brief": "Build charts the Tableau way in a live viz builder: shelves, marks, calculated fields, table calculations and LOD expressions, plus design, data preparation and publishing.",
       "learn": [
-        "Connecting data sources and understanding dimensions vs measures",
-        "Core chart types and when to use each",
-        "Calculated fields, parameters, and table calculations",
-        "Filters, groups, sets, and hierarchies",
-        "Dashboards, actions, and story points",
-        "Visual best practice — colour, labels, and avoiding chart junk"
+        "Dimensions, measures, shelves and the Marks card",
+        "Bars, lines, stacks, scatters and heat maps with filters, sorts and Top N",
+        "Calculated fields, quick table calculations and FIXED, INCLUDE and EXCLUDE",
+        "Visual encoding, honest charts, dashboards, actions and stories",
+        "Live versus extract, joins, unions, relationships and performance",
+        "Publishing, permissions, row-level security and governance"
       ],
-      "handsOn": "Create a multi-view dashboard and a guided data story.",
-      "outcome": "Communicate data visually; complements Power BI.",
+      "handsOn": "Build the profit scatter that shows which sub-categories sell a lot but lose money, then write the dashboard brief.",
+      "outcome": "Build, calculate, design and brief a dashboard that answers a real business question.",
       "icon": "chartPie"
     },
     {

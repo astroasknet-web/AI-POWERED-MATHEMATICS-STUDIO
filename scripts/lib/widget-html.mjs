@@ -20,6 +20,7 @@ const fallbacks = {
   merkle: (s) => `<h3>${esc(s.title)}</h3>${s.intro ? `<p>${esc(s.intro)}</p>` : ""}<p>${s.txs.length} transactions are hashed in pairs up to one Merkle root. Change one transaction and the root changes.</p>`,
   sqlplay: (s) => `<h3>${esc(s.title)}</h3>${s.intro ? `<p>${esc(s.intro)}</p>` : ""}<p>Tables: ${s.tables.map((t) => esc(t.name)).join(", ")}. Starting query:</p><pre><code>${esc(s.query)}</code></pre>`,
   daxplay: (s) => `<h3>${esc(s.title)}</h3>${s.intro ? `<p>${esc(s.intro)}</p>` : ""}<p>Tables: ${s.model.tables.map((t) => esc(t.name)).join(", ")}. Starting formula:</p><pre><code>${esc(s.code)}</code></pre>`,
+  vizplay: (s) => `<h3>${esc(s.title)}</h3>${s.intro ? `<p>${esc(s.intro)}</p>` : ""}<p>A live chart builder on a table with the fields: ${s.data.fields.map((f) => esc(f.name)).join(", ")}.</p>`,
   complete: () => "",
 };
 

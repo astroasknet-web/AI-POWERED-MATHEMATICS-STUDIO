@@ -47,4 +47,5 @@ export const NEW_LESSONS: Record<string, () => unknown> = {
   "advanced-excel-data-analysis": () => require("./data/lessons/advanced-excel-data-analysis.json"),
   "data-analytics-python-sql": () => require("./data/lessons/data-analytics-python-sql.json"),
   "business-analytics-power-bi": () => require("./data/lessons/business-analytics-power-bi.json"),
+  "data-visualization-tableau": () => require("./data/lessons/data-visualization-tableau.json"),
 };

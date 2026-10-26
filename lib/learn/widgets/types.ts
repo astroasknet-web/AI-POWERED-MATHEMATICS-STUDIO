@@ -42,5 +42,8 @@ export interface SqlPlaySpec { type: "sqlplay"; id: string; title: string; intro
 /** A live DAX window inside a lesson: the student edits measures and sees them in a matrix. Nothing leaves the browser. */
 export interface DaxPlaySpec { type: "daxplay"; id: string; title: string; intro?: string; model: import("../dax/engine").DaxModel; code: string; visuals: import("../dax/engine").DaxVisual[]; show: string }
 
-export type WidgetSpec = QuizSpec | JournalSpec | EquationSpec | ExplorerSpec | FlashcardSpec | CompleteSpec | HashLabSpec | ChainLabSpec | MerkleSpec | SqlPlaySpec | DaxPlaySpec;
-export const WIDGET_TYPES = ["quiz", "journal", "equation", "explorer", "flashcards", "complete", "hashlab", "chainlab", "merkle", "sqlplay", "daxplay"] as const;
+/** A live viz builder inside a lesson: the student puts fields on shelves and the chart redraws. Nothing leaves the browser. */
+export interface VizPlaySpec { type: "vizplay"; id: string; title: string; intro?: string; data: import("../viz/engine").VizData; start: import("../viz/engine").VizSpec; allowCalcs: boolean }
+
+export type WidgetSpec = QuizSpec | JournalSpec | EquationSpec | ExplorerSpec | FlashcardSpec | CompleteSpec | HashLabSpec | ChainLabSpec | MerkleSpec | SqlPlaySpec | DaxPlaySpec | VizPlaySpec;
+export const WIDGET_TYPES = ["quiz", "journal", "equation", "explorer", "flashcards", "complete", "hashlab", "chainlab", "merkle", "sqlplay", "daxplay", "vizplay"] as const;

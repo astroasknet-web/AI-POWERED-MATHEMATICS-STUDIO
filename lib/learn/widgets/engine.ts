@@ -1,6 +1,7 @@
 import { evaluate, names, ExprError } from "./expr";
 import { runSql } from "../sql/engine";
 import { runDax } from "../dax/engine";
+import { computeViz } from "../viz/engine";
 import type { EquationSpec, ExplorerSpec, JournalSpec, JournalTxn, Line, QuizSpec, WidgetSpec } from "./types";
 
 /* ------------------------------------------------------------------------------------------------------------------ spec transport */
@@ -185,6 +186,12 @@ export function validateSpec(spec: WidgetSpec): string[] {
       need(spec.model.tables.length >= 1 && spec.visuals.length >= 1, "daxplay needs a model and at least one visual");
       const r = runDax(spec.model, spec.code, spec.visuals, spec.show);
       need(r.ok, `daxplay starting formula does not run: ${r.ok ? "" : r.error}`);
+      break;
+    }
+    case "vizplay": {
+      need(spec.data.fields.length >= 2 && spec.data.rows.length >= 1 && spec.data.rows.length <= 400, "vizplay needs data with at least two fields and 1 to 400 rows");
+      const r = computeViz(spec.data, spec.start);
+      need(r.ok, `vizplay starting view does not draw: ${r.ok ? "" : r.error}`);
       break;
     }
     case "flashcards":

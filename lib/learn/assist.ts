@@ -30,6 +30,7 @@ export function describeWork(state: ActivityState): string {
     }).join("\n");
   } else if (state.kind === "sql") out = state.query;
   else if (state.kind === "dax") out = state.code;
+  else if (state.kind === "viz") out = JSON.stringify({ view: state.spec, calculatedFields: state.calcs });
   else out = Object.entries(state.answers).map(([k, v]) => `${k}: ${v}`).join("\n");
   return out.slice(0, MAX_WORK_CHARS);
 }
