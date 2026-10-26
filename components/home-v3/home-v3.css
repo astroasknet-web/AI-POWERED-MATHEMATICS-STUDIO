@@ -218,3 +218,13 @@
 @media (prefers-reduced-motion: reduce) { .hx .hx-ln-card, .hx .hx-way, .hx .hx-book, .hx .hx-ln-thumb img { transition: none; } .hx .hx-ln-card:hover, .hx .hx-way:hover { transform: none; } .hx .hx-ln-card:hover .hx-ln-thumb img { transform: none; } }
 @media (max-width: 520px) { .hx .hx-book-face span { display: none; } .hx .hx-book-face { padding: 10px 6px 12px 8px; } .hx .hx-book-face b { font-size: 0.68rem; overflow-wrap: anywhere; hyphens: auto; } .hx .hx-book-face svg { top: 10px; left: 8px; width: 18px; height: 18px; } .hx .hx-book-spine { width: 10px; } .hx .hx-book-face { inset: 0 0 0 10px; } }
 @media (max-width: 520px) { .hx .hx-book-face { justify-content: flex-start; align-items: center; padding-top: 38px; } .hx .hx-book-face b { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.8rem; overflow-wrap: normal; hyphens: manual; white-space: nowrap; max-height: calc(var(--h) - 52px); } }
+
+/* ---- Overseas education packages (home) ---- */
+.hx .hx-ovs { position: relative; overflow: hidden; background: linear-gradient(170deg, #060b1c 0%, #0c1a3d 45%, #14123a 100%); }
+.hx .hx-ovs::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 28px 28px; mask-image: radial-gradient(ellipse at 50% 30%, #000, transparent 75%); pointer-events: none; }
+.hx .hx-ovs-orb { position: absolute; border-radius: 50%; filter: blur(70px); pointer-events: none; }
+.hx .hx-ovs-orb-a { width: 460px; height: 460px; left: -140px; top: 8%; background: rgba(47, 211, 154, 0.28); }
+.hx .hx-ovs-orb-b { width: 520px; height: 520px; right: -160px; bottom: 4%; background: rgba(120, 87, 255, 0.3); }
+.hx .hx-ovs-grad { background: linear-gradient(110deg, #2fd39a 0%, #35d9ff 55%, #b39dff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hx .hx-ovs-cta { background: linear-gradient(110deg, #2fd39a, #35d9ff); color: #04201a; box-shadow: 0 16px 40px -14px rgba(47, 211, 154, 0.7); }
+.hx .hx-ovs-cta:hover { transform: translateY(-2px); box-shadow: 0 22px 50px -14px rgba(53, 217, 255, 0.7); }

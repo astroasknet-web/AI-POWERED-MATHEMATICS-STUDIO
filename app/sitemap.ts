@@ -97,6 +97,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Note: 'consultants' is intentionally excluded — /solutions/consultants is
   // still placeholder copy and noindexed (see app/solutions/consultants/page.tsx).
   // Add it back once real content ships.
+  const abroadPackagesPage: MetadataRoute.Sitemap = [{ url: `${baseUrl}/overseas-packages` }];
+
   const solutionPages: MetadataRoute.Sitemap = [
     'coaches',
     'enterprises',
@@ -173,5 +175,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     blogRoutes = [];
   }
 
-  return [...basicRoutes, ...learnRoutes, ...blogRoutes, ...aiToolRoutes, ...enterpriseAgentRoutes, ...solutionPages, ...expertRoutes, ...eventRoutes];
+  return [...basicRoutes, ...learnRoutes, ...blogRoutes, ...aiToolRoutes, ...enterpriseAgentRoutes, ...solutionPages, ...abroadPackagesPage, ...expertRoutes, ...eventRoutes];
 }

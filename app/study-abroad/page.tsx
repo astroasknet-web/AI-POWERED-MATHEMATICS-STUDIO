@@ -7,6 +7,7 @@ import { SA_DISCLAIMER } from "@/lib/abroad/options";
 import { CountryTile, inrRange, UniCard } from "@/components/abroad/parts";
 import { currentViewer, MarketShell } from "@/components/market/shell";
 import { SITE_URL } from "@/lib/seo";
+import PackagesBanner from "@/components/abroad/PackagesBanner";
 
 export const dynamic = "force-dynamic";
 type SP = Record<string, string | string[] | undefined>;
@@ -47,6 +48,7 @@ export default async function StudyAbroadPage({ searchParams }: { searchParams: 
     <MarketShell user={me} active="abroad">
       <h1 className="text-[28px] sm:text-[34px] font-bold text-ink tracking-tight">Study abroad, planned step by step</h1>
       <p className="text-[15px] text-ink-3 mt-1.5 mb-6 max-w-2xl">Compare {unis.length === await A.totalUniversities() ? unis.length : "the"} universities across {Object.keys(cs).length} countries with yearly costs in rupees. Add your profile to see Safe, Target and Reach options and apply with a counselor beside you.</p>
+      <PackagesBanner href="/overseas-packages" />
       <p className="mb-6 flex flex-wrap gap-3">
         {isStudent ? (
           <>

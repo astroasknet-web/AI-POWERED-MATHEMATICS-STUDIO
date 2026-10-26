@@ -26,7 +26,8 @@ export function groupsFor(role: string): NavGroup[] {
           { key: "classes", href: "/my-classes", label: "My classes", icon: "classes" },
         ] },
         { title: "Global", items: [
-          { key: "abroad", href: "/abroad", label: "Study abroad", icon: "abroad" },
+          { key: "abroad-packages", href: "/abroad/packages", label: "Overseas education", icon: "abroad" },
+          { key: "abroad", href: "/abroad", label: "My study-abroad journey", icon: "abroad" },
           { key: "share", href: "/passport/share", label: "Share my passport", icon: "share" },
         ] },
       ];

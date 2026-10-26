@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BookOpen, Calculator, CalendarDays, GraduationCap, PenLine, PlayCircle, Radio, Route as RouteIcon, Shapes, Sigma } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, Calculator, CalendarDays, GraduationCap, Globe2, PenLine, PlayCircle, Radio, Route as RouteIcon, Shapes, Sigma } from "lucide-react";
 import Globe from "@/components/home-options/Globe";
 import InternshipBoard from "@/components/home-options/InternshipBoard";
 import { COUNTRIES } from "@/components/home-options/data";
 import { EBOOKS_URL, LIBRARY_TOPICS, portal } from "./data";
 import { featuredCourses, staticCategories, staticCourses } from "@/lib/market/static-catalogue";
+import PackageShowcase from "@/components/abroad/PackageShowcase";
+import { ABROAD_PACKAGES, rs } from "@/lib/abroad/packages";
 import LearnShowcase, { type LearnTab } from "./LearnShowcase";
 
 const WRAP = "mx-auto max-w-[1180px]";
@@ -226,6 +228,29 @@ export function FinalCTA3() {
         <div data-rv className="mt-9 flex flex-wrap justify-center gap-3">
           <a href="https://app.growqr.ai/signup" className="hx-btn hx-btn-pri">Get Started <ArrowRight className="h-4 w-4" aria-hidden /></a>
           <a href="#pillars" className="hx-btn hx-btn-ghost">Explore the Platform</a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Overseas education packages on the home page. The buttons send people to the packages page, which knows whether they are signed in and shows the right action. */
+export function OverseasPackages() {
+  const ctas = Object.fromEntries(ABROAD_PACKAGES.map((p) => [p.key, { href: `/overseas-packages?pkg=${p.key}`, label: p.online ? `See ${p.name}` : "See this package", quote: !p.online }]));
+  return (
+    <section id="overseas-packages" className="hx-ovs scroll-mt-24 px-5 py-20 md:px-14 md:py-28" aria-labelledby="hx-ovs">
+      <span aria-hidden className="hx-ovs-orb hx-ovs-orb-a" />
+      <span aria-hidden className="hx-ovs-orb hx-ovs-orb-b" />
+      <div className={`${WRAP} relative`}>
+        <div className="mx-auto mb-10 max-w-[800px] text-center">
+          <p data-rv className="inline-flex items-center gap-2 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#8cf0c9]"><Globe2 className="h-4 w-4" aria-hidden /> Overseas education packages</p>
+          <h2 data-rv id="hx-ovs" className={`mt-3 ${H2} text-white`}>From first shortlist to <span className="hx-ovs-grad">first month abroad.</span></h2>
+          <p data-rv className="mt-4 text-[1.05rem] leading-relaxed text-white/75">Five levels of hands-on help from our counsellors, starting at {rs(ABROAD_PACKAGES[0].from)}. Pick where you are and see how far each package takes you.</p>
+        </div>
+        <div data-rv><PackageShowcase ctas={ctas} variant="home" initial="application-pro" /></div>
+        <div data-rv className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <Link href="/overseas-packages" className="hx-btn hx-ovs-cta">Compare every service <ArrowRight className="h-4 w-4" aria-hidden /></Link>
+          <Link href={portal("/study-abroad")} className="text-[0.95rem] font-semibold text-white/85 underline underline-offset-4 hover:text-white">Explore universities first</Link>
         </div>
       </div>
     </section>
