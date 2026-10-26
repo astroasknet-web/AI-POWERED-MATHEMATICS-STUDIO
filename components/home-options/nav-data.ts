@@ -127,7 +127,10 @@ export const MENUS: NavMenu[] = [
     groups: [
       {
         title: "Explore",
-        links: [{ label: "Find universities", desc: "Compare universities, costs and visas", href: "/study-abroad", icon: "globe" }],
+        links: [
+          { label: "Find universities", desc: "Compare universities, costs and visas", href: "/study-abroad", icon: "globe" },
+          { label: "Overseas packages", desc: "Expert help from shortlist to settling in", href: "/overseas-packages", icon: "spark", badge: "New" },
+        ],
       },
       {
         title: "Countries",

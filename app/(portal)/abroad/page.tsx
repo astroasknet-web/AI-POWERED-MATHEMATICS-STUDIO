@@ -8,6 +8,7 @@ import * as V from "@/lib/abroad/vault";
 import { answerOfferAction, submitAction, visaTickAction } from "@/app/abroad/actions";
 import { eraseAction } from "@/app/abroad/more-actions";
 import { Flash } from "@/components/abroad/parts";
+import PackagesBanner from "@/components/abroad/PackagesBanner";
 import { Card, PortalPage } from "@/components/portal/shell";
 import { Alert } from "@/components/portal/ui";
 import { ResendVerification } from "@/components/portal/forms";
@@ -39,6 +40,8 @@ export default async function AbroadDashboard() {
     <PortalPage user={me} active="abroad" title="My study-abroad journey" subtitle="Your profile, applications and documents in one place, with a counselor reviewing every step." wide="full">
       <Flash />
       {!isVerified(me) ? <><Alert kind="info">Confirm your email to save your profile, upload documents and start applications.</Alert><div className="mb-6"><ResendVerification /></div></> : null}
+
+      <PackagesBanner href="/abroad/packages" />
 
       <ol className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2 mb-6" aria-label="Your stage">
         {keys.map((k, i) => (

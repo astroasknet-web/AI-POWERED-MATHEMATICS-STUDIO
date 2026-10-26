@@ -22,6 +22,7 @@ export const KEYWORDS: Record<string, string> = {
   "/vedic-math": "vedic maths mental shortcuts",
   "/study-abroad": "abroad overseas university universities masters degree college",
   "/abroad": "application plan shortlist",
+  "/overseas-packages": "package packages counselling counsellor consultant consultancy admission help price fee shortlist visa settle",
   "/abroad/matches": "university match safe target reach",
   "/abroad/funds": "scholarship fund funding cost fees",
   "/abroad/loans": "loan finance education loan",
