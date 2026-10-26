@@ -6,6 +6,8 @@ import FAQ from "@/components/home/FAQ";
 import { EnterpriseContactProvider } from "@/components/enterprise/EnterpriseContactModal";
 import { planStacks } from "@/lib/pay/plan-value-prices";
 import { all as allTemplates } from "@/lib/studio/templates";
+import { staticCourses } from "@/lib/market/static-catalogue";
+import { COUNTRIES } from "@/components/home-options/data";
 import Reveal from "./Reveal";
 import Hero from "./Hero";
 import Pillars from "./Pillars";
@@ -29,7 +31,7 @@ export default function HomeV3() {
             <Hero />
             <Pillars />
             <HomePlans stacks={planStacks()} />
-            <Discovery />
+            <Discovery counts={{ courses: staticCourses().length, countries: COUNTRIES.length, templates: templateCount }} />
             <ResumeShowcase templateCount={templateCount} />
             <Abroad />
             <Opportunities />
