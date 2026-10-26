@@ -13,7 +13,7 @@ export interface PackageCta { href: string; label: string; quote: boolean }
  * the level you pick. Built to look different from the plan cards on purpose, since these are services from people, not an app subscription.
  * Prices, items and stages all come from lib/abroad/packages.ts; the buttons come from the page that places it (buy, quote, or sign in first).
  */
-export default function PackageShowcase({ ctas, owned = [], initial = "application-pro", variant = "page", headingLevel = 3 }: { ctas: Record<string, PackageCta>; owned?: string[]; initial?: AbroadPackage["key"]; variant?: "home" | "page"; headingLevel?: 2 | 3 }) {
+export default function PackageShowcase({ ctas, owned = [], initial = "application-pro", variant = "page", headingLevel = 3 }: { ctas: Record<string, PackageCta>; owned?: string[]; initial?: AbroadPackage["key"]; variant?: "home" | "page" | "public"; headingLevel?: 2 | 3 }) {
   const [key, setKey] = useState<AbroadPackage["key"]>(initial);
   const p = packageByKey(key)!;
   const cta = ctas[p.key];

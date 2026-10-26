@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: "Overseas Education Packages: From Shortlisting to Settling Abroad | GrowQR",
   description: `Five levels of expert help for studying abroad, from a university shortlist at ${rs(1999)} to arrival, housing and welfare support after you land. Compare every service.`,
   alternates: { canonical: `${SITE_URL}/overseas-packages` },
+  openGraph: { type: "website", url: `${SITE_URL}/overseas-packages`, siteName: "GrowQR", title: "Overseas Education Packages | GrowQR", description: `Five levels of expert help for studying abroad, from a university shortlist at ${rs(1999)} to arrival, housing and welfare support after you land.` },
 };
 
 const FAQ: Array<[string, string]> = [
@@ -31,22 +32,23 @@ export default async function OverseasPackagesPage({ searchParams }: { searchPar
   return (
     <MarketShell user={me} active="abroad">
       <nav aria-label="Breadcrumb" className="mb-4 text-[13px] text-ink-3"><Link href="/study-abroad" className="underline">Study abroad</Link> / Packages</nav>
-      <div className="rounded-[32px] bg-gradient-to-br from-[#0b1020] via-[#10204a] to-[#1b1740] p-5 text-white sm:p-10">
-        <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#8ff0ff]">Overseas education</p>
-        <h1 className="mt-3 max-w-[18em] text-[clamp(2rem,4.6vw,3.4rem)] font-semibold leading-[1.06] tracking-tight">From the first shortlist to your first month abroad.</h1>
-        <p className="mt-4 max-w-[44em] text-[1.05rem] leading-relaxed text-white/75">Five levels of hands-on help from GrowQR&apos;s counsellors. Each level includes everything in the one before it, so you can start where you are and go as far as you need. Prices run from {rs(ABROAD_PACKAGES[0].from)} to {rs(ABROAD_PACKAGES[4].from)}.</p>
-        <div className="mt-10"><PackageShowcase ctas={packageCtas(!!me)} initial={initial} variant="page" headingLevel={2} /></div>
-      </div>
+      <header className="max-w-3xl">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-brand-deep">Overseas education</p>
+        <h1 className="mt-3 text-[32px] font-bold leading-[1.1] text-ink sm:text-[44px]">From the first shortlist to your first month abroad.</h1>
+        <p className="mt-4 text-[16px] leading-relaxed text-ink-3 sm:text-[17px]">Five levels of hands-on help from GrowQR&apos;s counsellors. Each level includes everything in the one before it, so you can start where you are and go as far as you need. Prices run from {rs(ABROAD_PACKAGES[0].from)} to {rs(ABROAD_PACKAGES[4].from)}.</p>
+      </header>
 
-      <section className="mt-10 rounded-[32px] bg-[#0b1020] p-5 text-white sm:p-10" aria-labelledby="ap-compare">
-        <h2 id="ap-compare" className="text-[clamp(1.5rem,3vw,2.2rem)] font-semibold">Compare every service</h2>
-        <p className="mt-2 mb-6 max-w-[40em] text-white/70">A tick means the service is included from that level upward.</p>
-        <PackageMatrix />
+      <div className="mt-8 sm:mt-10"><PackageShowcase ctas={packageCtas(!!me)} initial={initial} variant="public" headingLevel={2} /></div>
+
+      <section className="mt-12 sm:mt-16" aria-labelledby="ap-compare">
+        <h2 id="ap-compare" className="text-[24px] font-bold text-ink sm:text-[30px]">Compare every service</h2>
+        <p className="mt-2 mb-5 max-w-[40em] text-[15px] text-ink-3">A tick means the service is included from that level upward.</p>
+        <PackageMatrix tone="light" />
       </section>
 
-      <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_1.2fr]" aria-labelledby="ap-faq">
+      <section className="mt-12 sm:mt-16 grid gap-6 lg:grid-cols-[1fr_1.2fr]" aria-labelledby="ap-faq">
         <div>
-          <h2 id="ap-faq" className="text-[clamp(1.5rem,3vw,2.2rem)] font-semibold text-ink">Questions families ask</h2>
+          <h2 id="ap-faq" className="text-[24px] font-bold text-ink sm:text-[30px]">Questions families ask</h2>
           <p className="mt-3 text-[14px] leading-relaxed text-ink-3">{PACKAGE_DISCLAIMER}</p>
           <p className="mt-5 flex flex-wrap gap-3">
             <Link href="/study-abroad" className="inline-flex min-h-[46px] items-center gap-2 rounded-full border border-black/[0.15] px-5 font-semibold text-ink hover:bg-cream-3">Explore universities <ArrowRight className="h-4 w-4" aria-hidden /></Link>
