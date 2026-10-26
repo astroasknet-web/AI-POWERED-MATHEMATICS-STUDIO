@@ -6,14 +6,14 @@ import { INDEX } from "@/components/home-options/nav-data";
 
 describe("overseas education packages", () => {
   it("has five levels at the prices the owner set, each building on the one before", () => {
-    expect(ABROAD_PACKAGES.map((p) => [p.level, p.from, p.to ?? null])).toEqual([[1, 1999, null], [2, 5999, null], [3, 14999, null], [4, 24999, 29999], [5, 49999, 59999]]);
+    expect(ABROAD_PACKAGES.map((p) => [p.level, p.from])).toEqual([[1, 1999], [2, 5999], [3, 14999], [4, 27999], [5, 55999]]);
     ABROAD_PACKAGES.forEach((p, i) => expect(p.builds).toBe(i === 0 ? undefined : ABROAD_PACKAGES[i - 1].name));
     expect(ABROAD_PACKAGES.map((p) => p.reaches)).toEqual([1, 2, 3, 4, 5]);
   });
-  it("sells levels 1 to 3 online at a fixed fee and quotes levels 4 and 5", () => {
-    expect(ONLINE_PACKAGES.map((p) => p.key)).toEqual(["discovery", "application-pro", "incubator"]);
-    expect(ABROAD_PACKAGES.filter((p) => !p.online).every((p) => p.to && p.to > p.from)).toBe(true);
-    expect(priceLabel(ABROAD_PACKAGES[3])).toBe("₹24,999 – ₹29,999");
+  it("sells every level online at one fixed fee", () => {
+    expect(ONLINE_PACKAGES.map((p) => p.key)).toEqual(["discovery", "application-pro", "incubator", "global-success", "global-guardian"]);
+    expect(priceLabel(ABROAD_PACKAGES[3])).toBe("₹27,999");
+    expect(priceLabel(ABROAD_PACKAGES[4])).toBe("₹55,999");
     expect(priceLabel(ABROAD_PACKAGES[0])).toBe("₹1,999");
     expect(packageSku("incubator")).toBe("abroad-incubator");
   });

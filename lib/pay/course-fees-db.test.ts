@@ -131,11 +131,13 @@ describe.skipIf(!DB)("course fees on a real database", () => {
     expect(await ACC.accessFor(bob, "imo-class-7")).toBeNull(); // so does someone else's account
   });
 
-  it("sells the three fixed-fee overseas education packages as staff-delivered products, and quotes the other two", async () => {
+  it("sells the five overseas education packages as staff-delivered products at fixed fees", async () => {
     const rows = await B.db.all<{ sku: string; kind: string; amount_minor: number; active: number }>("SELECT p.sku, p.kind, pr.amount_minor, p.active FROM pay_products p JOIN pay_prices pr ON pr.product_id = p.id AND pr.currency = 'INR' WHERE p.sku LIKE 'abroad-%'");
     expect(rows.map((r) => [r.sku, r.kind, r.amount_minor, Boolean(r.active)]).sort()).toEqual([
       ["abroad-application-pro", "consulting", 599900, true],
       ["abroad-discovery", "consulting", 199900, true],
+      ["abroad-global-guardian", "consulting", 5599900, true],
+      ["abroad-global-success", "consulting", 2799900, true],
       ["abroad-incubator", "consulting", 1499900, true],
     ]);
   });

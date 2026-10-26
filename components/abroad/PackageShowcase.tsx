@@ -60,7 +60,7 @@ export default function PackageShowcase({ ctas, owned = [], initial = "applicati
           </div>
           <div className="ap-buy">
             <p className="ap-price">{priceLabel(p)}</p>
-            <p className="ap-price-note">{p.online ? "One-time fee, paid online" : "Fee confirmed with a counsellor before you pay"}</p>
+            <p className="ap-price-note">One-time fee, paid online</p>
             {own ? <p className="ap-own">You already have this package</p> : (
               <Link href={cta.href} className="ap-cta">{cta.label}<ArrowRight className="h-4 w-4" aria-hidden /></Link>
             )}

@@ -236,7 +236,7 @@ export function FinalCTA3() {
 
 /** Overseas education packages on the home page. The buttons send people to the packages page, which knows whether they are signed in and shows the right action. */
 export function OverseasPackages() {
-  const ctas = Object.fromEntries(ABROAD_PACKAGES.map((p) => [p.key, { href: `/overseas-packages?pkg=${p.key}`, label: p.online ? `See ${p.name}` : "See this package", quote: !p.online }]));
+  const ctas = Object.fromEntries(ABROAD_PACKAGES.map((p) => [p.key, { href: `/overseas-packages?pkg=${p.key}`, label: `See ${p.name}`, quote: false }]));
   return (
     <section id="overseas-packages" className="hx-ovs scroll-mt-24 px-5 py-20 md:px-14 md:py-28" aria-labelledby="hx-ovs">
       <span aria-hidden className="hx-ovs-orb hx-ovs-orb-a" />

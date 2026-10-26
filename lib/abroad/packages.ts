@@ -2,8 +2,7 @@
  * Overseas education packages: five levels of hands-on help, from choosing universities to settling in the new country. One place for the names, prices and
  * what each level includes, so the home page, the public page, the dashboard and the shop all read the same numbers.
  *
- * Levels 1 to 3 are sold online at a fixed price (sku `abroad-<key>`, kind `consulting`, so a purchase alerts staff). Levels 4 and 5 are priced as a range that
- * depends on the destination and the scope, so they are not sold at a button: the student asks for a quote and a counsellor confirms the fee first.
+ * All five levels are sold online at a fixed price (sku `abroad-<key>`, kind `consulting`, so a purchase alerts staff).
  */
 export const ABROAD_STAGES = ["Plan", "Apply", "Prepare", "Visa and funding", "Settle in"] as const;
 export type AbroadStage = (typeof ABROAD_STAGES)[number];
@@ -15,11 +14,9 @@ export interface AbroadPackage {
   name: string;
   tagline: string;
   target: string;
-  /** Price in rupees; for a quoted package this is the bottom of the range. */
+  /** Price in rupees, paid once. */
   from: number;
-  /** Top of the range for a quoted package. */
-  to?: number;
-  /** Sold online at `from`. False for a quoted package. */
+  /** Sold online at `from`. */
   online: boolean;
   /** How many of the five journey stages this level reaches. */
   reaches: 1 | 2 | 3 | 4 | 5;
@@ -70,7 +67,7 @@ export const ABROAD_PACKAGES: AbroadPackage[] = [
   },
   {
     key: "global-success", level: 4, name: "End-to-End Global Success", tagline: "From first consultation to landing abroad.", target: "Families who want complete peace of mind across the whole journey, from the first consultation to the student landing abroad.",
-    from: 24999, to: 29999, online: false, reaches: 4, builds: "Academic & Admission Incubator", accent: "#ff8a4c", accent2: "#ffc36b",
+    from: 27999, online: true, reaches: 4, builds: "Academic & Admission Incubator", accent: "#ff8a4c", accent2: "#ffc36b",
     headline: ["1-on-1 mentorship", "Visa processing and mock visa interview", "Loan guidance and pre-departure support"],
     adds: [{ title: "Adds", items: [
       "Dedicated 1-on-1 mentorship: priority support and direct access to an admissions counsellor",
@@ -81,7 +78,7 @@ export const ABROAD_PACKAGES: AbroadPackage[] = [
   },
   {
     key: "global-guardian", level: 5, name: "Global Guardian & Settlement Plan", tagline: "Support that continues after you land.", target: "Families who want ongoing support well beyond enrolment, so the student is safely settled, legally compliant and financially independent over time.",
-    from: 49999, to: 59999, online: false, reaches: 5, builds: "End-to-End Global Success", accent: "#f2c14e", accent2: "#ffe29a",
+    from: 55999, online: true, reaches: 5, builds: "End-to-End Global Success", accent: "#f2c14e", accent2: "#ffe29a",
     headline: ["Arrival and ground support", "Housing, bank and legal setup", "Quarterly welfare check-ins"],
     adds: [
       { title: "Arrival and ground support", items: ["Coordination for airport pickup on landing", "Help with immediate essentials: activating a local SIM card, understanding local public transit and getting a transit card"] },
@@ -101,14 +98,14 @@ export const packageSku = (k: AbroadPackage["key"]): string => `abroad-${k}`;
 export const ONLINE_PACKAGES = ABROAD_PACKAGES.filter((p) => p.online);
 
 export const rs = (n: number): string => `₹${n.toLocaleString("en-IN")}`;
-export const priceLabel = (p: AbroadPackage): string => (p.to ? `${rs(p.from)} – ${rs(p.to)}` : rs(p.from));
+export const priceLabel = (p: AbroadPackage): string => rs(p.from);
 
 /** Everything a level includes, from level 1 up: each earlier level's items, then this level's. */
 export function cumulativeItems(p: AbroadPackage): number {
   return ABROAD_PACKAGES.filter((x) => x.level <= p.level).reduce((n, x) => n + x.adds.reduce((m, g) => m + g.items.length, 0), 0);
 }
 
-export const PACKAGE_DISCLAIMER = "GrowQR's counsellors and partners deliver these services. Admission, scholarship and visa decisions are made by universities and governments, so no package can guarantee an outcome. Fees for End-to-End Global Success and Global Guardian are confirmed with a counsellor before you pay.";
+export const PACKAGE_DISCLAIMER = "GrowQR's counsellors and partners deliver these services. Admission, scholarship and visa decisions are made by universities and governments, so no package can guarantee an outcome.";
 
 /** The comparison table: each row starts at a level and carries on up. `values` replaces the tick with text per level (for example, how many applications). */
 export const MATRIX: Array<{ label: string; level: 1 | 2 | 3 | 4 | 5; values?: Partial<Record<1 | 2 | 3 | 4 | 5, string>> }> = [

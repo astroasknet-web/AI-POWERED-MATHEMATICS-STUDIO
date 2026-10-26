@@ -5,7 +5,7 @@ import { currentViewer, MarketShell } from "@/components/market/shell";
 import PackageShowcase from "@/components/abroad/PackageShowcase";
 import PackageMatrix from "@/components/abroad/PackageMatrix";
 import { packageCtas } from "@/components/abroad/package-ctas";
-import { ABROAD_PACKAGES, PACKAGE_DISCLAIMER, packageByKey, priceLabel, rs } from "@/lib/abroad/packages";
+import { ABROAD_PACKAGES, PACKAGE_DISCLAIMER, packageByKey, rs } from "@/lib/abroad/packages";
 import { SITE_URL } from "@/lib/seo";
 import "@/components/abroad/packages.css";
 
@@ -20,9 +20,8 @@ export const metadata: Metadata = {
 const FAQ: Array<[string, string]> = [
   ["Which package should I start with?", "If you are still choosing where to apply, start with Discovery & Shortlisting. If you already know your course and universities, Application Pro covers the applications. Each level includes everything in the one before, so you can start small."],
   ["Can I move up to a higher package later?", "Yes. Tell your counsellor or raise a support ticket and we will work out what you have already covered."],
-  ["Why are the top two packages a price range?", "The work depends on the destination, the number of applications and how much support you want after landing. A counsellor confirms the exact fee with you before you pay anything."],
   ["Does any package guarantee admission or a visa?", "No. Universities and governments make those decisions. The packages improve how prepared and organised you are."],
-  ["How do I pay?", "Levels 1 to 3 are paid online at checkout. Levels 4 and 5 are paid once the fee is agreed with your counsellor."],
+  ["How do I pay?", "Every package is a one-time fee paid online at checkout, by card, UPI or net banking. You will receive a receipt, and your counsellor contacts you about the next steps."],
 ];
 
 export default async function OverseasPackagesPage({ searchParams }: { searchParams: Promise<{ pkg?: string }> }) {
@@ -35,7 +34,7 @@ export default async function OverseasPackagesPage({ searchParams }: { searchPar
       <div className="rounded-[32px] bg-gradient-to-br from-[#0b1020] via-[#10204a] to-[#1b1740] p-5 text-white sm:p-10">
         <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#8ff0ff]">Overseas education</p>
         <h1 className="mt-3 max-w-[18em] text-[clamp(2rem,4.6vw,3.4rem)] font-semibold leading-[1.06] tracking-tight">From the first shortlist to your first month abroad.</h1>
-        <p className="mt-4 max-w-[44em] text-[1.05rem] leading-relaxed text-white/75">Five levels of hands-on help from GrowQR&apos;s counsellors. Each level includes everything in the one before it, so you can start where you are and go as far as you need. Prices run from {rs(ABROAD_PACKAGES[0].from)} to {priceLabel(ABROAD_PACKAGES[4])}.</p>
+        <p className="mt-4 max-w-[44em] text-[1.05rem] leading-relaxed text-white/75">Five levels of hands-on help from GrowQR&apos;s counsellors. Each level includes everything in the one before it, so you can start where you are and go as far as you need. Prices run from {rs(ABROAD_PACKAGES[0].from)} to {rs(ABROAD_PACKAGES[4].from)}.</p>
         <div className="mt-10"><PackageShowcase ctas={packageCtas(!!me)} initial={initial} variant="page" headingLevel={2} /></div>
       </div>
 
