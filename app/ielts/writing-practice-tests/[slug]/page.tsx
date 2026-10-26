@@ -6,6 +6,11 @@ import { MarketShell } from "@/components/market/shell";
 import { WritingTestRunner } from "@/components/lms/IeltsWriting";
 import { render as renderVisual } from "@/lib/lms/ielts-visual";
 import { writingTest, writingTests } from "@/lib/lms/ielts";
+import ExamLocked from "@/components/lms/ExamLocked";
+import { lockedExam } from "@/lib/lms/exam-access";
+import { examForIelts } from "@/lib/lms/exam-products";
+
+export const dynamic = "force-dynamic"; // what the visitor can open depends on what they bought
 
 type P = { params: Promise<{ slug: string }> };
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -22,6 +27,8 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
 export default async function WritingTestPage({ params }: P) {
   const t = writingTest(clean((await params).slug));
   if (!t) notFound();
+  const lock = await lockedExam(examForIelts());
+  if (lock) return <ExamLocked access={lock} title={t.title} back={{ href: "/ielts/writing-practice-tests", label: "IELTS Writing practice tests" }} />;
   const visual: string = renderVisual(t.task1.visual, t.task1.format);
   const bc = t.bandCriteria ?? {};
   const guide = (

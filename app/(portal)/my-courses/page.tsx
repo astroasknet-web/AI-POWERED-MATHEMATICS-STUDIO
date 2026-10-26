@@ -5,6 +5,7 @@ import * as courses from "@/lib/market/courses";
 import * as learning from "@/lib/market/learning";
 import * as lessons from "@/lib/market/lessons";
 import PlanCard from "@/components/pay/PlanCard";
+import MyPrepCard from "@/components/pay/MyPrepCard";
 import { accessFor } from "@/lib/pay/course-access";
 import { CourseFlash, CourseTracker, Cover } from "@/components/market/course-parts";
 import { PortalPage } from "@/components/portal/shell";
@@ -26,6 +27,7 @@ export default async function MyCoursesPage({ searchParams }: { searchParams: Pr
     <PortalPage user={me} active="courses" title="My courses" subtitle="Track your progress. Completed courses with a certificate count toward your Skill Passport." wide="full">
       <CourseFlash c={sp.c} e={sp.e} />
       <div className="mb-6"><PlanCard userId={me.id} /></div>
+      <MyPrepCard userId={me.id} />
       <dl className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[["Enrolled", rows.length, "courses"], ["In progress", groups["In progress"].length + groups.Enrolled.length, "to finish"], ["Completed", groups.Completed.length, "courses"], ["Counting toward matches", counted, "with certificate or verified"]].map(([k, v, s]) => (
           <div key={String(k)} className="bg-white rounded-2xl border border-black/[0.08] shadow-card p-5"><dt className="text-[13px] text-ink-4">{k}</dt><dd className="text-[24px] font-bold text-ink">{v}</dd><dd className="text-[13px] text-ink-3">{s}</dd></div>

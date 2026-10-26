@@ -4,8 +4,8 @@ import { MarketShell } from "@/components/market/shell";
 import { speakingTests } from "@/lib/lms/ielts";
 
 export const metadata: Metadata = {
-  title: "IELTS Speaking Practice Tests: Free, with Cue Cards and Recorder | GrowQR",
-  description: "30 free IELTS Speaking practice tests with Part 1 questions, a Part 2 cue card with preparation and speaking timers, Part 3 discussion, band guidance and a voice recorder.",
+  title: "IELTS Speaking Practice Tests: with Cue Cards and Recorder | GrowQR",
+  description: "30 IELTS Speaking practice tests with Part 1 questions, a Part 2 cue card with preparation and speaking timers, Part 3 discussion, band guidance and a voice recorder.",
   alternates: { canonical: "/ielts/speaking-practice-tests" },
 };
 

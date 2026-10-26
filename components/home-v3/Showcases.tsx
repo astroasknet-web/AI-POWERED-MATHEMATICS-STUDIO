@@ -7,6 +7,7 @@ import { EBOOKS_URL, LIBRARY_TOPICS, portal } from "./data";
 import { featuredCourses, staticCategories, staticCourses } from "@/lib/market/static-catalogue";
 import PackageShowcase from "@/components/abroad/PackageShowcase";
 import { ABROAD_PACKAGES, rs } from "@/lib/abroad/packages";
+import { EXAM_PREP } from "@/lib/pay/course-fees";
 import LearnShowcase, { type LearnTab } from "./LearnShowcase";
 
 const WRAP = "mx-auto max-w-[1180px]";
@@ -57,7 +58,7 @@ const WAYS = [
   { icon: Calculator, t: "Maths Speed Studio", d: "15 levels that build speed and accuracy, with a placement check and daily review.", href: portal("/math-speed"), cta: "Take the placement check", tag: "Free placement check", v: "#ff8a4c", v2: "#ffc36b" },
   { icon: Sigma, t: "Vedic Mathematics", d: "30 modules of mental-maths shortcuts, with worked examples, in English and Hindi.", href: portal("/vedic-math"), cta: "Start Module 1", tag: "Module 1 free", v: "#2fd39a", v2: "#8cf0c9" },
   { icon: PenLine, t: "English Writing Studio", d: "IELTS, SAT, GRE and GMAT prompts, scored instantly on every criterion.", href: portal("/writing-clinic"), cta: "Write and get scored", tag: "Free checks every month", v: "#5eead4", v2: "#b6f5ea" },
-  { icon: RouteIcon, t: "Exam prep", d: "JEE, NEET, UPSC, SSC, CAT, SAT, GRE, GMAT and IELTS study material.", href: portal("/exam-prep"), cta: "See exams", tag: "Free study material", v: "#ff5f8f", v2: "#ffa3be" },
+  { icon: RouteIcon, t: "Exam prep", d: "JEE, NEET, UPSC, SSC, CAT, SAT, GRE, GMAT and IELTS notes, chapter tests and mock tests.", href: portal("/exam-prep"), cta: "See exams", tag: `From ${rs(Math.min(...EXAM_PREP.filter((e) => e.onSale).map((e) => e.rupees)))}`, v: "#ff5f8f", v2: "#ffa3be" },
   { icon: PlayCircle, t: "Practice tests", d: "IELTS and GRE practice, timed and marked instantly, with an explanation for every answer.", href: portal("/practice-tests"), cta: "Practise", tag: "Marked instantly", v: "#7857ff", v2: "#b39dff" },
   { icon: Radio, t: "Live sessions", d: "Workshops and events with experts you can join live.", href: portal("/events"), cta: "See sessions", tag: "Live with experts", v: "#f2c14e", v2: "#ffe29a" },
 ];
@@ -136,7 +137,7 @@ export function Library() {
             <p data-rv className="mt-4 max-w-[34em] text-[1.05rem] leading-relaxed text-white/75">Study guides and learning resources from our MathStudy library. Browsing, purchases and downloads happen on mathstudy.in.</p>
             <div data-rv className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               <a href={EBOOKS_URL} target="_blank" rel="noopener noreferrer" className="hx-btn hx-lib-cta">Explore the Library <ArrowUpRight className="h-4 w-4" aria-hidden /><span className="sr-only"> (opens mathstudy.in in a new tab)</span></a>
-              <Link href="/exam-prep" className="text-[0.95rem] font-semibold text-white/85 underline underline-offset-4 hover:text-white">Free study material on GrowQR</Link>
+              <Link href="/exam-prep" className="text-[0.95rem] font-semibold text-white/85 underline underline-offset-4 hover:text-white">Exam preparation on GrowQR</Link>
             </div>
           </div>
 

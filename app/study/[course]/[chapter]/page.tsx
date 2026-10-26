@@ -4,6 +4,11 @@ import { notFound } from "next/navigation";
 import { MarketShell } from "@/components/market/shell";
 import { Flashcards, PracticeList } from "@/components/lms/Practice";
 import { flatChapters, studyChapter, studyIndex } from "@/lib/lms/study";
+import ExamLocked from "@/components/lms/ExamLocked";
+import { lockedExam } from "@/lib/lms/exam-access";
+import { examForStudy } from "@/lib/lms/exam-products";
+
+export const dynamic = "force-dynamic"; // what the visitor can open depends on what they bought
 
 type P = { params: Promise<{ course: string; chapter: string }> };
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -19,7 +24,7 @@ async function load(params: P["params"]) {
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { course, ch } = await load(params);
   if (!course || !ch) return { title: "Chapter not found | GrowQR", robots: { index: false, follow: true } };
-  const title = `${ch.title} (${course.title}): Free Notes, Formulas and Practice | GrowQR`;
+  const title = `${ch.title} (${course.title}): Notes, Formulas and Practice | GrowQR`;
   return { title: title.length > 72 ? `${ch.title}: ${course.title} | GrowQR` : title, description: Array.from(ch.intro).slice(0, 155).join(""), alternates: { canonical: `/study/${course.key}/${ch.slug}` } };
 }
 
@@ -30,6 +35,8 @@ function Box({ title, children, id }: { title: string; children: React.ReactNode
 export default async function StudyChapterPage({ params }: P) {
   const { course, ch } = await load(params);
   if (!course || !ch) notFound();
+  const lock = await lockedExam(examForStudy(course.key));
+  if (lock) return <ExamLocked access={lock} title={ch.title} back={{ href: `/study/${course.key}`, label: course.title }} />;
   const list = flatChapters(course);
   const pos = list.findIndex((c) => c.slug === ch.slug);
   const prev = list[pos - 1];

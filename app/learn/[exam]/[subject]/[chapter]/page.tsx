@@ -4,6 +4,11 @@ import { notFound } from "next/navigation";
 import { MarketShell } from "@/components/market/shell";
 import QuizBlock from "@/components/lms/QuizBlock";
 import { chapter, exam, render, subjectIndex } from "@/lib/lms/content";
+import ExamLocked from "@/components/lms/ExamLocked";
+import { lockedExam } from "@/lib/lms/exam-access";
+import { examForLearn } from "@/lib/lms/exam-products";
+
+export const dynamic = "force-dynamic"; // what the visitor can open depends on what they bought
 
 type P = { params: Promise<{ exam: string; subject: string; chapter: string }> };
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -20,13 +25,15 @@ async function load(params: P["params"]) {
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { ex, ch, idx } = await load(params);
   if (!ex || !ch || !idx) return { title: "Chapter not found | GrowQR", robots: { index: false, follow: true } };
-  const title = `${ch.title} (${ex.title} ${idx.subject_label}): Free Notes and Mock Tests | GrowQR`;
-  return { title: title.length > 70 ? `${ch.title}: ${ex.title} Free Notes | GrowQR` : title, description: ch.seo?.meta_description ?? ch.subtitle, alternates: { canonical: `/learn/${ex.slug}/${idx.subject}/${ch.slug}` } };
+  const title = `${ch.title} (${ex.title} ${idx.subject_label}): Notes and Mock Tests | GrowQR`;
+  return { title: title.length > 70 ? `${ch.title}: ${ex.title} Notes | GrowQR` : title, description: ch.seo?.meta_description ?? ch.subtitle, alternates: { canonical: `/learn/${ex.slug}/${idx.subject}/${ch.slug}` } };
 }
 
 export default async function ChapterPage({ params }: P) {
   const { ex, ch, idx } = await load(params);
   if (!ex || !ch || !idx) notFound();
+  const lock = await lockedExam(examForLearn(ex.slug));
+  if (lock) return <ExamLocked access={lock} title={ch.title} back={{ href: `/learn/${ex.slug}`, label: ex.title }} />;
   const base = `/learn/${ex.slug}/${idx.subject}`;
   const pos = idx.chapters.findIndex((c) => c.slug === ch.slug);
   const prev = idx.chapters[pos - 1];

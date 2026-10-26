@@ -14,7 +14,7 @@ describe("course fee table", () => {
   it("matches the fees the owner gave", () => {
     expect(COURSE_FEE_RUPEES["Blockchain & Web3"]).toBe(799);
     expect(COURSE_FEE_RUPEES["Digital Safety & Life Skills"]).toBe(299);
-    expect(EXAM_PRODUCTS.map((e) => [e.sku, e.rupees])).toEqual([["exam-jee", 699], ["exam-neet", 699], ["ielts-prep", 799], ["writing-studio", 499]]);
+    expect(EXAM_PRODUCTS.map((e) => [e.sku, e.rupees])).toEqual([["writing-studio", 499]]);
   });
   it("sells the Maths Olympiad one class at a time: 1 to 5 Rs 499, 6 to 8 Rs 599, 9 to 12 Rs 799, all on sale", () => {
     const imo = STUDIO_COURSES.filter((s) => s.slug.startsWith("imo-class-"));
@@ -61,8 +61,8 @@ describe.skipIf(!DB)("course fees on a real database", () => {
     for (const r of mine) expect(Boolean(r.active), r.sku).toBe(nativeSlugs().includes(r.sku.slice(7)) || STUDIO_COURSES.some((x) => `course-${x.slug}` === r.sku && x.onSale));
     const vedic = mine.find((r) => r.sku === "course-vedic-mathematics")!;
     expect([vedic.amount_minor, Boolean(vedic.active)]).toEqual([79900, true]); // sold on its own at Rs 799 as well as opened by plans
-    const exams = await B.db.all<{ sku: string; active: number }>("SELECT sku, active FROM pay_products WHERE sku IN ('exam-jee','exam-neet','ielts-prep','writing-studio')");
-    expect(exams).toHaveLength(4);
+    const exams = await B.db.all<{ sku: string; active: number }>("SELECT sku, active FROM pay_products WHERE sku = 'writing-studio'");
+    expect(exams).toHaveLength(1);
     expect(exams.every((e) => !e.active)).toBe(true);
   });
 
@@ -140,6 +140,12 @@ describe.skipIf(!DB)("course fees on a real database", () => {
       ["abroad-global-success", "consulting", 2799900, true],
       ["abroad-incubator", "consulting", 1499900, true],
     ]);
+  });
+
+  it("sells each exam-preparation product at the owner's price, GMAT held back until its lessons exist", async () => {
+    const rows = await B.db.all<{ sku: string; amount_minor: number; active: number }>("SELECT p.sku, pr.amount_minor, p.active FROM pay_products p JOIN pay_prices pr ON pr.product_id = p.id AND pr.currency = 'INR' WHERE p.sku LIKE 'course-exam-%'");
+    const by = Object.fromEntries(rows.map((r) => [r.sku, [r.amount_minor / 100, Boolean(r.active)]]));
+    expect(by).toEqual({ "course-exam-jee": [999, true], "course-exam-neet": [999, true], "course-exam-upsc": [1599, true], "course-exam-ssc-cgl": [899, true], "course-exam-cat-quant": [599, true], "course-exam-sat-math": [1299, true], "course-exam-gre": [1599, true], "course-exam-gmat": [1599, false], "course-exam-ielts": [1299, true], "course-exam-ap-calculus": [1299, true] });
   });
 
   it("leaves a course with no fee free", async () => {

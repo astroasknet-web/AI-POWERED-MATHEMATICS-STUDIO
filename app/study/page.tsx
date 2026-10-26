@@ -4,8 +4,8 @@ import { MarketShell } from "@/components/market/shell";
 import { allStudy, chapterCount } from "@/lib/lms/study";
 
 export const metadata: Metadata = {
-  title: "Free Study Courses: CAT, SAT, GRE, SSC CGL, CTET | GrowQR",
-  description: "Chapter-by-chapter free courses for CAT Quant, SAT Math, GRE Quant, SSC CGL and CTET, with formulas, shortcuts, solved examples, practice problems and flashcards.",
+  title: "Study Courses: CAT, SAT, GRE, SSC CGL, CTET | GrowQR",
+  description: "Chapter-by-chapter courses for CAT Quant, SAT Math, GRE Quant, SSC CGL and CTET, with formulas, shortcuts, solved examples, practice problems and flashcards.",
   alternates: { canonical: "/study" },
 };
 
@@ -13,8 +13,8 @@ export default function StudyIndex() {
   const courses = allStudy();
   return (
     <MarketShell user={null} active="courses">
-      <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] font-semibold text-ink">Free study courses</h1>
-      <p className="mt-2 max-w-[46em] text-ink-3">Chapter-by-chapter courses with formulas, shortcuts, solved examples, practice problems and flashcards. Free, and no sign-up needed.</p>
+      <h1 className="font-sans text-[clamp(1.8rem,4vw,2.6rem)] font-semibold text-ink">Study courses</h1>
+      <p className="mt-2 max-w-[46em] text-ink-3">Chapter-by-chapter courses with formulas, shortcuts, solved examples, practice problems and flashcards. CAT, SAT, GRE and SSC CGL are paid exam-prep products; CTET is free.</p>
       <ul className="mt-6 grid gap-4 sm:grid-cols-2">
         {courses.map((c) => (
           <li key={c.key}>

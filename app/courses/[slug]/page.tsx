@@ -197,7 +197,7 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
               {course.fee_minor ? <p className="text-[14px] text-ink-2">Course fee: <b className="text-ink">{formatMoney(course.fee_minor, "INR").replace(/.00$/, "")}</b>. You can buy it as soon as the lessons are ready.</p> : null}
               <p className="text-[14px] text-ink-3">The lessons for this course are being added to GrowQR. In the meantime you can start one of the courses that is ready, or study for an exam for free.</p>
               <Link className={`${btn} bg-orange-deep hover:bg-ink text-white`} href="/courses?available=1">See courses you can start now</Link>
-              <Link className={`${btn} border border-black/[0.15] hover:bg-cream-2`} href="/exam-prep">Free exam prep</Link>
+              <Link className={`${btn} border border-black/[0.15] hover:bg-cream-2`} href="/exam-prep">Exam prep</Link>
             </>
           )}
           <ul className="text-[14px] text-ink-2 space-y-1"><li>{course.hours}{course.weeks ? `, about ${course.weeks}` : ""}</li><li>{course.badge || "Certificate"}</li></ul>
