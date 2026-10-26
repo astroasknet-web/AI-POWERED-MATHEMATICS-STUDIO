@@ -164,7 +164,6 @@ export const MENUS: NavMenu[] = [
       {
         title: "Help and company",
         links: [
-          { label: "Support", desc: "Raise a ticket and track the reply", href: "/support", icon: "help" },
           { label: "Contact", desc: "Talk to the team", href: "/contact", icon: "contact" },
           { label: "Pricing", desc: "Free, Pro, Silver and Gold", href: "/pricing", icon: "money" },
           { label: "About", desc: "Who we are", href: "/about", icon: "about" },
@@ -184,6 +183,9 @@ export const MENUS: NavMenu[] = [
   },
 ];
 
+/** Support sits beside the search bar in the header (and at the top of the phone menu), not inside a menu. */
+export const SUPPORT_LINK: NavLink = { label: "Support", desc: "Raise a ticket and track the reply", href: "/support", icon: "help" };
+
 export const AGENT_LIST = (Object.keys(AGENT) as (keyof typeof AGENT)[]).map((k) => ({ key: k, ...AGENT[k] }));
 
 /** Every link in the menus, flat. */
@@ -199,6 +201,7 @@ export const INDEX: Hit[] = (() => {
     seen.add(l.href);
     out.push({ label: l.label, sub: l.desc ?? "", href: l.href, external: l.external, group: l.menu, icon: l.icon });
   }
+  out.push({ label: SUPPORT_LINK.label, sub: SUPPORT_LINK.desc ?? "", href: SUPPORT_LINK.href, group: "Help", icon: SUPPORT_LINK.icon });
   for (const c of ABROAD_COUNTRIES) out.push({ label: `Study in ${c.label}`, sub: "Universities, costs and visas", href: `/study-abroad/${c.slug}`, group: "Study Abroad", icon: "globe" });
   for (const f of FIELD_SHORTCUTS) out.push({ label: `${f.label} courses`, sub: "Browse the field", href: `/courses?cat=${f.cat}`, group: "Learn", icon: "book" });
   return out;
