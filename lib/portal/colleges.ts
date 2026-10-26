@@ -2,6 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { all, one, tx, val } from "./db";
 import { COLLEGE_STATES } from "@/components/portal/college-states";
+import { searchBundled } from "./college-list";
 import { norm, similar, PROMOTE_AT, type Match } from "../admin/institutions";
 
 /**
@@ -22,7 +23,18 @@ export async function suggest(raw: string): Promise<Array<{ name: string; place:
     [`${esc}%`, `% ${esc}%`],
   );
   const title = (s: string) => s.toLowerCase().replace(/\b\p{L}/gu, (m) => m.toUpperCase());
-  return rows.map((r) => ({ name: r.name, place: [r.district ? title(r.district) : null, r.state].filter(Boolean).join(", ") }));
+  return topUp(rows.map((r) => ({ name: r.name, place: [r.district ? title(r.district) : null, r.state].filter(Boolean).join(", ") })), raw);
+}
+
+/** Fill the dropdown from the bundled college list when the directory has fewer than 8 matches (or the database is not reachable). */
+export function topUp(found: Array<{ name: string; place: string }>, raw: string): Array<{ name: string; place: string }> {
+  if (found.length >= 8) return found;
+  const seen = new Set(found.map((f) => norm(f.name)));
+  for (const name of searchBundled(raw, 16)) {
+    if (found.length >= 8) break;
+    if (!seen.has(norm(name))) { seen.add(norm(name)); found.push({ name, place: "" }); }
+  }
+  return found;
 }
 
 export type SubmitResult = { status: "invalid" | "limit"; message: string } | { status: "similar"; matches: Match[] } | { status: "exists" | "pending" | "approved"; name: string };
