@@ -12,7 +12,11 @@ import { isSkill, type Difficulty, type Format, type Kind, type Mode, type QType
 
 /** Everything the studio stores and the one place that marks answers, scores an assessment and applies its effects. */
 const dbTime = (d: Date | number = new Date()): string => new Date(d).toISOString().replace("T", " ").replace("Z", "");
-const asDate = (s: string | null | undefined): number => (s ? Date.parse(String(s).replace(" ", "T") + "Z") : 0);
+const asDate = (s: string | null | undefined): number => {
+  if (!s) return 0;
+  const t = String(s);
+  return Date.parse(/[zZ]$|[+-]\d\d:?\d\d$/.test(t) ? t.replace(" ", "T") : t.replace(" ", "T") + "Z");
+};
 const iso = (s: string | null | undefined): string => (s ? new Date(asDate(s)).toISOString() : "");
 
 // ---- configuration -------------------------------------------------------------------------------------------------------------

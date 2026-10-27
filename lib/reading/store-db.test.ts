@@ -64,6 +64,7 @@ describe.skipIf(!DB)("reading studio on a real database", () => {
     V = await import("./views");
     await (await import("../pay/catalogue")).seedCatalogue();
     await S.ensureSeed(undefined, true);
+    await B.db.run("DELETE FROM rd_config"); // the starting values, whatever an administrator set on this database
     rzp = new B.T.FakeRazorpay();
     alice = await mkUser(B.db, "student", "rdalice");
     bob = await mkUser(B.db, "student", "rdbob");

@@ -15,7 +15,7 @@ export interface Keyed { format: Format; options: unknown; answer: unknown }
 export interface Mark { answered: boolean; credit: number; correct: boolean }
 
 /** Compare free text the way a person would: case, spacing, punctuation and a leading article do not matter. */
-export const normaliseShort = (s: string): string => s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9 ]+/g, " ").replace(/^(the|a|an) /, "").replace(/\s+/g, " ").trim();
+export const normaliseShort = (s: string): string => s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim().replace(/^(the|a|an) /, "");
 
 /** Mark one response. A match question earns the share of its pairs that are right (so a near miss is visible), and counts as correct only when all are. */
 export function markResponse(q: Keyed, response: Response): Mark {
