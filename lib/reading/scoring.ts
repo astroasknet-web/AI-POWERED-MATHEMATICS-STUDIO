@@ -3,7 +3,7 @@ import { DIMENSION_LABEL, GROUP_DIMENSION, SKILLS, type Dimension, type Difficul
 
 /**
  * Deterministic scoring. Nothing here calls an AI, reads the clock or touches the database: the same answers and timings always give the same
- * scores, and every number can be traced to the formulas in docs/reading-studio.md. Pure functions only, so each rule is unit-tested.
+ * scores, and every number can be traced to the formulas in lib/reading/README.md. Pure functions only, so each rule is unit-tested.
  */
 
 // ---- marking ---------------------------------------------------------------------------------------------------------------
