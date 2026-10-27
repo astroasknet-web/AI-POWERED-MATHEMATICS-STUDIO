@@ -45,7 +45,11 @@ export async function submitGre(fd: FormData): Promise<void> {
   const res = gre.grade(n, answers);
   if (databaseConfigured()) {
     const me = await currentUser();
-    if (me && me.role === "student") await attempts.save(me.id, { exam: gre.EXAM, testNo: n, raw: res.raw, total: res.total, score: res.scaled, answers: Object.fromEntries(Object.entries(answers).map(([k, v]) => [k, String(v)])), seconds: elapsed });
+    if (me && me.role === "student") {
+      await attempts.save(me.id, { exam: gre.EXAM, testNo: n, raw: res.raw, total: res.total, score: res.scaled, answers: Object.fromEntries(Object.entries(answers).map(([k, v]) => [k, String(v)])), seconds: elapsed });
+      const { tryIngestGre } = await import("@/lib/mathstudio/ingest");
+      await tryIngestGre(me.id, n, answers, elapsed);
+    }
   }
   redirect(`/practice-tests/${gre.EXAM}/${n}?a=${gre.encodeAnswers(answers)}&t=${elapsed}#result`);
 }

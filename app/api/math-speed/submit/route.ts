@@ -20,5 +20,7 @@ export async function POST(req: Request) {
   });
   const result = await submitSession(ctx.me.id, id, responses);
   if (!result) return out({ ok: false, error: "That round was not found." }, 404);
+  const { tryIngestMathSpeedSession } = await import("@/lib/mathstudio/ingest");
+  await tryIngestMathSpeedSession(ctx.me.id, id);
   return out({ ok: true, id: result.id });
 }

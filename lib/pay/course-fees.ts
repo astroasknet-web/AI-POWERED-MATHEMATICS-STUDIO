@@ -89,6 +89,13 @@ export const STUDIO_COURSES: Array<{ slug: string; title: string; description: s
     onSale: true,
   },
   {
+    slug: "mathematics-studio",
+    title: "Mathematics Studio",
+    description: "One performance engine across every maths test you take on GrowQR (GRE Quant mocks, the Mathematics Speed studio and more): topic-by-topic mastery, evidence-based weakness detection, interactive charts, a personalised practice plan and your full history. A free summary stays open to everyone.",
+    rupees: 599,
+    onSale: true,
+  },
+  {
     slug: "english-writing-studio",
     title: "English Writing Studio",
     description: "Exam writing practice for IELTS, SAT, GRE and GMAT: timed prompts, an instant score on every criterion and unlimited essay checks. A free taste of 2 checks a month stays open to everyone.",

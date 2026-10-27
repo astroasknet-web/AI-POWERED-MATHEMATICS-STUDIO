@@ -9,13 +9,12 @@ import { SEED_TOPICS, SEED_TOPIC_IDS } from "./taxonomy";
 
 const cfg = DEFAULT_CONFIG;
 const NOW = Date.parse("2026-02-01T00:00:00Z");
-let id = 1;
 const mk = (topic: string, correct: boolean, o: Partial<Item> = {}): Item => ({
   attemptId: o.attemptId ?? 1, at: o.at ?? "2026-02-01T00:00:00Z", topic, cognitive: o.cognitive ?? "procedure", difficulty: o.difficulty ?? 3,
   format: "mcq", credit: o.credit ?? (correct ? (o.maxMarks ?? 1) : 0), maxMarks: o.maxMarks ?? 1, correct, skipped: o.skipped ?? false,
   timeMs: o.timeMs ?? null, expectedSecs: o.expectedSecs ?? null, ...o,
 });
-const many = (topic: string, n: number, right: number, o: Partial<Item> = {}): Item[] => Array.from({ length: n }, (_, i) => mk(topic, i < right, { ref: String(id++), ...o }));
+const many = (topic: string, n: number, right: number, o: Partial<Item> = {}): Item[] => Array.from({ length: n }, (_, i) => mk(topic, i < right, { attemptId: o.attemptId ?? 1, ...o }));
 
 describe("integration contract", () => {
   it("validates a well-formed attempt and rejects unknown topics, bad version and credit over max", () => {
