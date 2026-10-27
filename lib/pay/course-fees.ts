@@ -75,6 +75,13 @@ export const STUDIO_COURSES: Array<{ slug: string; title: string; description: s
     onSale: true,
   },
   {
+    slug: "ai-reading-studio",
+    title: "AI-Powered Reading Studio",
+    description: "Skill-by-skill reading analysis, charts, a personalised 7-day plan, ten learning levels with mastery checks, delayed recall and timed reading. The starting assessment, overall score and Level A lesson are free.",
+    rupees: 599,
+    onSale: true,
+  },
+  {
     slug: "english-writing-studio",
     title: "English Writing Studio",
     description: "Exam writing practice for IELTS, SAT, GRE and GMAT: timed prompts, an instant score on every criterion and unlimited essay checks. A free taste of 2 checks a month stays open to everyone.",
