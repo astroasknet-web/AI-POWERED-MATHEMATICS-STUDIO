@@ -76,9 +76,16 @@ export const STUDIO_COURSES: Array<{ slug: string; title: string; description: s
   },
   {
     slug: "ai-reading-studio",
-    title: "AI-Powered Reading Studio",
+    title: "English Reading Studio",
     description: "Skill-by-skill reading analysis, charts, a personalised 7-day plan, ten learning levels with mastery checks, delayed recall and timed reading. The starting assessment, overall score and Level A lesson are free.",
     rupees: 599,
+    onSale: true,
+  },
+  {
+    slug: "indian-competitive-reading",
+    title: "Indian Competitive Exams Reading Tests",
+    description: "30 essay-based reading comprehension tests for SSC, CDS, CAT, UPSC and CTET, with exam-style questions, explanations that quote the essay and full English Reading Studio analytics. Three tests are free.",
+    rupees: 499,
     onSale: true,
   },
   {

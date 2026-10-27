@@ -7,7 +7,7 @@ import { studentPage } from "@/lib/reading/page";
 import { buildProgress } from "@/lib/reading/views";
 import { KIND_LABEL, type Kind } from "@/lib/reading/taxonomy";
 
-export const metadata: Metadata = { title: "My reading progress | AI Reading Studio | GrowQR", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "My reading progress | English Reading Studio | GrowQR", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function ProgressPage() {
@@ -15,7 +15,7 @@ export default async function ProgressPage() {
   const p = await buildProgress(me.id);
   return (
     <PortalPage user={me} active="reading-studio" title="My reading progress" subtitle="Like is compared with like: a harder passage is not counted as a decline." wide="full">
-      <Crumbs items={[{ href: "/reading-studio/dashboard", label: "My Reading Studio" }, { label: "Progress" }]} />
+      <Crumbs items={[{ href: "/reading-studio/dashboard", label: "My English Reading Studio" }, { label: "Progress" }]} />
       {!p.total ? <Card><p className="text-[15px] text-ink-2">No assessments yet. <Link className="underline" href="/reading-studio/dashboard">Take your starting assessment</Link> and your progress will build here.</p></Card> : null}
 
       {p.premium && p.trend ? (
@@ -41,6 +41,14 @@ export default async function ProgressPage() {
             <div><h3 className="text-[15px] font-semibold text-ink">Repeated errors</h3><p className="mt-2 text-[14.5px] text-ink-2">{p.skillProgress.recurringNow} skill{p.skillProgress.recurringNow === 1 ? "" : "s"} with the same kind of miss in more than one passage.</p></div>
           </div>
           {p.readiness ? <p className="mt-4 rounded-lg bg-cream-2 p-3.5 text-[14.5px] text-ink-2"><strong className="text-ink">Ready for the next level? </strong>{p.readiness}</p> : null}
+        </Card>
+      ) : null}
+
+      {p.international.attempts ? (
+        <Card id="international" title="International exams: IELTS Reading">
+          <p className="text-[14.5px] text-ink-2">{p.international.attempts} attempt{p.international.attempts === 1 ? "" : "s"}{p.international.best !== null ? `; best band ${p.international.best}` : ""}. Shown as the band each test gave. These are not broken down by reading skill, because IELTS question types differ from the Studio's skills.</p>
+          <ul className="mt-3 space-y-1.5 text-[14px] text-ink-2">{p.international.recent.map((a) => <li key={`${a.test}-${a.at}`}>{when(a.at.replace(" ", "T") + "Z")} · Test {a.test}: {a.raw} of {a.total} correct{a.band !== null ? `, band ${a.band}` : ""}</li>)}</ul>
+          <Link href="/practice-tests/ielts-reading" className={`${btnLight} mt-3`}>Open IELTS Reading tests</Link>
         </Card>
       ) : null}
 

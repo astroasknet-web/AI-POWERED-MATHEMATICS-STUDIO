@@ -7,7 +7,7 @@ import { hasPremium } from "@/lib/reading/access";
 import { levelStatesFor } from "@/lib/reading/store";
 import { lessonReadAction } from "../../actions";
 
-export const metadata: Metadata = { title: "Level | AI Reading Studio | GrowQR", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Level | English Reading Studio | GrowQR", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function LevelPage({ params, searchParams }: { params: Promise<{ key: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
@@ -22,7 +22,7 @@ export default async function LevelPage({ params, searchParams }: { params: Prom
   const canSee = lv.unlocked && (premium || first); // Level A's lesson is the free sample
   return (
     <PortalPage user={me} active="reading-studio" title={`Level ${lv.key}: ${lv.name}`} subtitle={lv.objective} wide>
-      <Crumbs items={[{ href: "/reading-studio/dashboard", label: "My Reading Studio" }, { label: `Level ${lv.key}` }]} />
+      <Crumbs items={[{ href: "/reading-studio/dashboard", label: "My English Reading Studio" }, { label: `Level ${lv.key}` }]} />
       <Flash text={sp.e} />
       {!lv.unlocked ? <Card><p className="text-[15px] text-ink-2">This level opens when the level before it is mastered: a mastery check at the pass mark, with practice completed. Levels open by what you show, not by time.</p></Card> : null}
       {canSee ? (

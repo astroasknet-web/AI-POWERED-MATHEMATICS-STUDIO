@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/portal/guard";
-import { hasPremium } from "@/lib/reading/access";
+import { hasAnalytics } from "@/lib/reading/access";
 import { getAssessment, reviewItems } from "@/lib/reading/store";
 import { buildResults } from "@/lib/reading/views";
 
@@ -17,12 +17,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   const me = await currentUser();
   if (!me || me.role !== "student") return NextResponse.redirect(new URL("/login", process.env.PORTAL_APP_URL ?? "http://localhost:3000"));
   const { id } = await ctx.params;
-  if (!(await hasPremium(me.id))) return new NextResponse("Reports are part of the Reading Studio package.", { status: 403 });
+  if (!(await hasAnalytics(me.id))) return new NextResponse("Reports are part of the Reading Studio package.", { status: 403 });
   const a = await getAssessment(me.id, id);
   const v = a && a.status === "submitted" ? await buildResults(me.id, id) : null;
   if (!a || !v) return new NextResponse("Not found", { status: 404 });
   const lines: string[] = [];
-  lines.push(["AI-Powered Reading Studio report"].map(q).join(","));
+  lines.push(["English Reading Studio report"].map(q).join(","));
   lines.push(["Assessment", a.kind, "Date", a.submittedAt, "Version", v.version].map(q).join(","));
   lines.push(["Overall score (provisional)", v.overall.score ?? "n/a", "Classification", v.overall.classification ?? ""].map(q).join(","));
   lines.push(["Reading speed (estimate, wpm)", v.tiles.wpm ?? "n/a", "Comprehension %", v.tiles.comprehensionPct ?? "n/a", "Accuracy %", v.tiles.qaPct ?? "n/a"].map(q).join(","));

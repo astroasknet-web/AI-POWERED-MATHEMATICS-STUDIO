@@ -9,7 +9,7 @@ import { getAssessment } from "@/lib/reading/store";
 import { buildResults } from "@/lib/reading/views";
 import { KIND_LABEL, type Kind } from "@/lib/reading/taxonomy";
 
-export const metadata: Metadata = { title: "Your reading results | AI Reading Studio | GrowQR", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Your reading results | English Reading Studio | GrowQR", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 const dimText = (s: number | null): string => (s === null ? "Not assessed" : `${Math.round(s)} / 100`);
@@ -25,7 +25,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
   const c = v.comparison;
   return (
     <PortalPage user={me} active="reading-studio" title="Your reading results" subtitle={`${KIND_LABEL[v.kind as Kind]} · ${when(v.submittedAt)}`} wide="full">
-      <Crumbs items={[{ href: "/reading-studio/dashboard", label: "My Reading Studio" }, { label: "Results" }]} />
+      <Crumbs items={[{ href: "/reading-studio/dashboard", label: "My English Reading Studio" }, { label: "Results" }]} />
 
       {v.partialNote ? <p role="note" className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-[14.5px] text-amber-900">{v.partialNote}</p> : null}
       {v.repeatNote ? <p role="note" className="mb-5 rounded-xl border border-black/10 bg-cream-2 p-3.5 text-[14.5px] text-ink-2">{v.repeatNote}</p> : null}

@@ -13,7 +13,7 @@ import { SITE_URL } from "@/lib/seo";
 export const dynamic = "force-dynamic";
 
 const TITLE = "Essay and Comprehension Reading Tests for SSC, CDS, CAT, UPSC and CTET | GrowQR";
-const DESC = "30 essay-based reading tests with 300 exam-style questions, instant explanations and an AI Reading Studio analysis of exactly where you lose marks. Three tests are free.";
+const DESC = "30 essay-based reading tests with 300 exam-style questions, instant explanations and an English Reading Studio analysis of exactly where you lose marks. Three tests are free.";
 export const metadata: Metadata = {
   title: TITLE,
   description: DESC,
@@ -26,7 +26,7 @@ const btn = "inline-flex min-h-[54px] items-center justify-center rounded-full p
 
 const FAQ: Array<[string, string]> = [
   ["Which examinations are these tests for?", "They are reading practice for SSC, CDS, CAT, UPSC and CTET and similar examinations. The essays are on the themes those papers lean on (defence, economy, education, technology, environment, polity and ethics) and the questions follow their styles: main idea, inference, statement-based, negation and factual. We do not claim any question appeared in a past paper."],
-  ["How is this different from a normal mock test?", "Every test is run through the AI Reading Studio. You get a score you can trace line by line, an estimate of your reading speed, accuracy by skill and by difficulty, and, with the plan, an explanation for every question and a 7-day plan built from your own answers."],
+  ["How is this different from a normal mock test?", "Every test is run through the English Reading Studio. You get a score you can trace line by line, an estimate of your reading speed, accuracy by skill and by difficulty, and, with the plan, an explanation for every question and a 7-day plan built from your own answers."],
   ["What is free?", "Three full tests chosen to show different styles (an economy essay, an education essay and an essay on information and wisdom), with an overall score, a reading-speed estimate and your strongest and weakest skills. No payment details are asked for."],
   ["What does the plan add?", "All 30 tests, skill-by-skill analysis with the questions behind each score, full explanations, interactive charts, a personalised 7-day plan, the ten-level Reading Studio pathway, delayed-recall and timed reading, and your full progress history. One payment, no countdown timers or fake offers."],
   ["Are the scores accurate?", "Scoring is done by fixed rules on our server and is never decided by AI. The overall score is provisional: it uses starting weights that are not yet validated against real student data, and reading speed is an estimate from the time the essay was on your screen."],
@@ -47,7 +47,7 @@ export default async function ReadingTestsPage() {
   const ok = databaseConfigured();
   if (ok) await ensureSeed();
   const [lib, totals, fee, sample] = ok
-    ? await Promise.all([essayCards(student?.id ?? null), essayTotals(), feeNow().catch(() => null), sampleQuestion(20, 0)])
+    ? await Promise.all([essayCards(student?.id ?? null), essayTotals(), feeNow("indian").catch(() => null), sampleQuestion(20, 0)])
     : [{ cards: [], premium: false }, { tests: 30, questions: 300, words: 22800 }, null, null];
   const premium = lib.premium;
   const price = fee ? `₹${(fee.amountMinor / 100).toLocaleString("en-IN")}` : null;
@@ -82,9 +82,9 @@ export default async function ReadingTestsPage() {
         <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "44px 44px" }} />
         <div className="relative grid items-center gap-10 lg:grid-cols-[1.15fr_1fr]">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-white text-[12.5px] font-semibold tracking-wide backdrop-blur"><span aria-hidden className="h-2 w-2 rounded-full bg-emerald-400" />Linked to the AI Reading Studio</p>
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-white text-[12.5px] font-semibold tracking-wide backdrop-blur"><span aria-hidden className="h-2 w-2 rounded-full bg-emerald-400" />Part of the <Link href="/reading-studio" className="underline underline-offset-2">English Reading Studio</Link> · Indian Competitive Exams track</p>
             <h1 id="hero-h" className="mt-5 text-white text-[clamp(2.3rem,6vw,4.3rem)] font-bold leading-[1.02] tracking-tight">Read the essay.<br /><span className="rt-shine">Find the marks you are losing.</span></h1>
-            <p className="mt-5 max-w-xl text-[18px] leading-relaxed text-white/80">30 essay-based reading tests for SSC, CDS, CAT, UPSC and CTET. Ten exam-style questions each, every answer explained, and an AI Reading Studio analysis that shows which skills and question types cost you marks.</p>
+            <p className="mt-5 max-w-xl text-[18px] leading-relaxed text-white/80">30 essay-based reading tests for SSC, CDS, CAT, UPSC and CTET. Ten exam-style questions each, every answer explained, and an English Reading Studio analysis that shows which skills and question types cost you marks.</p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link href={cta.href} className={`${btn} bg-orange text-white shadow-glow hover:bg-orange-dark focus-visible:outline-white`}>{cta.label}</Link>
               <a href="#library" className={`${btn} border border-white/30 text-white hover:bg-white/10 focus-visible:outline-white`}>Browse all {totals.tests} tests</a>
@@ -125,7 +125,7 @@ export default async function ReadingTestsPage() {
 
       {/* STUDIO PIPELINE */}
       <section className="mt-16 overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#16122B] via-[#1B1740] to-[#0B0D14] px-5 py-12 text-white sm:px-10" aria-labelledby="link-h">
-        <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-orange">Powered by the AI Reading Studio</p>
+        <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-orange">Powered by the English Reading Studio</p>
         <h2 id="link-h" className="mt-1 max-w-3xl text-white text-[clamp(1.7rem,3.6vw,2.5rem)] font-bold leading-tight">Every test feeds your reading profile</h2>
         <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-white/75">Your answers do not disappear into a mark sheet. They become question-level data in the Reading Studio, so each new test sharpens the picture of your strengths and the plan to fix your weak skills.</p>
         <ol className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -138,7 +138,7 @@ export default async function ReadingTestsPage() {
             </li>
           ))}
         </ol>
-        <Link href="/reading-studio" className="mt-8 inline-flex min-h-[48px] items-center rounded-full border border-white/30 px-6 text-[15px] font-semibold hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">See the AI Reading Studio →</Link>
+        <Link href="/reading-studio" className="mt-8 inline-flex min-h-[48px] items-center rounded-full border border-white/30 px-6 text-[15px] font-semibold hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">See the English Reading Studio →</Link>
       </section>
 
       {/* LIBRARY */}
@@ -163,20 +163,20 @@ export default async function ReadingTestsPage() {
             <p className="text-[13px] font-semibold uppercase tracking-wide text-ink-3">Free</p>
             <h2 id="plan-h" className="mt-1 text-[28px] font-bold text-ink">Start with three full tests</h2>
             <ul className="mt-4 space-y-2.5 text-[15px] text-ink-2">
-              {["Three complete essay tests", "Overall score with the working shown", "Reading-speed estimate", "Strongest and weakest skills", "Level A lesson of the Reading Studio"].map((f) => <li key={f} className="flex gap-2.5"><span aria-hidden className="text-emerald-600">✓</span>{f}</li>)}
+              {["Three complete essay tests", "Overall score with the working shown", "Reading-speed estimate", "Strongest and weakest skills", "Level A lesson of the skills pathway"].map((f) => <li key={f} className="flex gap-2.5"><span aria-hidden className="text-emerald-600">✓</span>{f}</li>)}
             </ul>
             <Link href={cta.href} className={`${btn} mt-6 border border-black/20 text-ink hover:border-orange focus-visible:outline-orange-deep`}>{cta.label}</Link>
           </div>
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange to-[#D44F1A] p-7 text-white shadow-glow">
             <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/20 blur-3xl" />
             <p className="relative text-[13px] font-semibold uppercase tracking-wide text-white/85">The plan{price ? ` · ${price}, paid once` : ""}</p>
-            <h2 className="relative mt-1 text-[28px] font-bold leading-tight text-white">All 30 tests and the full AI Reading Studio</h2>
+            <h2 className="relative mt-1 text-[28px] font-bold leading-tight text-white">All 30 tests, with full English Reading Studio analytics</h2>
             <ul className="relative mt-4 space-y-2.5 text-[15px]">
-              {["All 30 essay tests, 300 questions", "Skill-by-skill analysis and every explanation", "Interactive charts and your progress history", "Personalised 7-day improvement plan", "Ten levels, mastery checks, delayed recall and timed reading", "Downloadable report for every test"].map((f) => <li key={f} className="flex gap-2.5"><span aria-hidden>✦</span>{f}</li>)}
+              {["All 30 essay tests, 300 questions", "Skill-by-skill analysis and every explanation", "Interactive charts and your progress history", "Personalised 7-day improvement plan", "Downloadable report for every test"].map((f) => <li key={f} className="flex gap-2.5"><span aria-hidden>✦</span>{f}</li>)}
             </ul>
-            {premium ? <Link href="/reading-studio/dashboard" className={`${btn} relative mt-6 bg-white text-orange-deep hover:bg-cream focus-visible:outline-white`}>You have the plan: open the Studio</Link>
-              : <Link href="/reading-studio/upgrade?from=reading-tests" className={`${btn} relative mt-6 bg-white text-orange-deep hover:bg-cream focus-visible:outline-white`}>Get the plan{price ? ` for ${price}` : ""}</Link>}
-            <p className="relative mt-3 text-[13px] text-white/80">Payment goes through our existing secure checkout. Access starts only after the payment is verified. No countdowns, no fake discounts.</p>
+            {premium ? <Link href="/reading-studio/dashboard" className={`${btn} relative mt-6 bg-white text-orange-deep hover:bg-cream focus-visible:outline-white`}>You have this package: open your dashboard</Link>
+              : <Link href="/reading-studio/upgrade?from=reading-tests&track=indian" className={`${btn} relative mt-6 bg-white text-orange-deep hover:bg-cream focus-visible:outline-white`}>Get the Indian Competitive Exams package{price ? ` for ${price}` : ""}</Link>}
+            <p className="relative mt-3 text-[13px] text-white/80">The skills pathway (ten levels, practice, timed reading) and IELTS Reading are separate packages in the same studio. Payment goes through our existing secure checkout. Access starts only after the payment is verified. No countdowns, no fake discounts.</p>
           </div>
         </div>
       </section>

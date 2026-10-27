@@ -6,8 +6,10 @@ import { compareToPrevious, readiness, skillProgress, trendOf, type Comparison, 
 import { pitchFacts, pitches, sevenDayPlan, strengthsOf, weaknessesOf, type ErrorExample, type Pitch, type PlanDay, type Weakness } from "./recommend";
 import { BAND_LABEL, type DimensionResult } from "./scoring";
 import { SKILLS, type SkillId } from "./taxonomy";
-import { hasPremium } from "./access";
-import { getAssessment, getConfig, getStudyMinutes, itemsOf, levelStatesFor, loadHistory, reviewItems, summaries, type AiFeedback, type ReviewItem, type StoredResult } from "./store";
+import { feeNow, hasAnalytics, hasPremium, trackAccess, TRACKS, type Track } from "./access";
+import { forUser as ieltsAttempts } from "../tests/attempts";
+import { ieltsLimit } from "../tests/access";
+import { getAssessment, getConfig, getStudyMinutes, getTracks, essayProgress, itemsOf, levelStatesFor, loadHistory, reviewItems, summaries, type AiFeedback, type ReviewItem, type StoredResult } from "./store";
 
 /**
  * The results page as a view model. Access is decided here, on the server: for a student without the package the premium fields are null (they
@@ -54,7 +56,7 @@ const NOTE = "Provisional score. It comes from published formulas and starting w
 export async function buildResults(userId: number, publicId: string, db: Db = pool): Promise<ResultsView | null> {
   const a = await getAssessment(userId, publicId, db);
   if (!a || a.status !== "submitted" || !a.result) return null;
-  const premium = await hasPremium(userId);
+  const premium = await hasAnalytics(userId);
   const cfg = await getConfig(db);
   const r: StoredResult = a.result;
   const score = r.score;
@@ -107,7 +109,27 @@ export async function buildResults(userId: number, publicId: string, db: Db = po
 
 // ---- dashboard -------------------------------------------------------------------------------------------------------------------
 
+export interface TrackCard {
+  id: Track;
+  name: string;
+  short: string;
+  blurb: string;
+  href: string;
+  /** Held by purchase or plan. */
+  owned: boolean;
+  priceRupees: number | null;
+  buyHref: string;
+  /** One line of the student's own progress in this track, built from real numbers. */
+  progress: string;
+  next: { href: string; label: string } | null;
+}
+
 export interface DashboardView {
+  /** The tracks the student chose to see (empty until chosen), and the ones their activity or purchases suggest. */
+  chosen: Track[];
+  suggested: Track[];
+  tracks: TrackCard[];
+  analytics: boolean;
   premium: boolean;
   assessments: number;
   latest: { id: string; overall: number | null; at: string; kind: string; completion: string } | null;
@@ -119,12 +141,31 @@ export interface DashboardView {
 }
 
 export async function buildDashboard(userId: number, db: Db = pool): Promise<DashboardView> {
-  const [premium, cfg, sums, states, history] = await Promise.all([hasPremium(userId), getConfig(db), summaries(userId, db), levelStatesFor(userId, db), loadHistory(userId, db)]);
+  const [premium, cfg, sums, states, history, chosen, acc, essays, ielts, ieltsOpen] = await Promise.all([hasPremium(userId), getConfig(db), summaries(userId, db), levelStatesFor(userId, db), loadHistory(userId, db), getTracks(userId, db), trackAccess(userId), essayProgress(userId, db), ieltsAttempts(userId, "ielts-reading", 500).catch(() => []), ieltsLimit(userId).catch(() => 0)]);
   const diags = diagnoseAll(history, cfg);
   const latest = [...sums].reverse()[0];
   const used = sums.filter((s) => s.kind === "diagnostic" || s.kind === "fresh").length;
   const ready = readiness(states);
+  const fees = await Promise.all(TRACKS.map((t) => feeNow(t.id).catch(() => null)));
+  const bestBand = ielts.reduce<number | null>((m, a) => (a.band === null ? m : Math.max(m ?? 0, a.band)), null);
+  const doneTests = new Set(ielts.map((a) => a.test_no)).size;
+  const skillsUsed = sums.some((s) => s.kind !== "essay");
+  const suggested = TRACKS.filter((t) => (t.id === "skills" && (skillsUsed || acc.skills)) || (t.id === "indian" && (essays.attempted > 0 || acc.indian)) || (t.id === "international" && (ielts.length > 0 || acc.international))).map((t) => t.id);
+  const progressLine: Record<Track, string> = {
+    skills: states.length ? `${states.filter((s) => s.mastered).length} of ${states.length} levels mastered${ready.current ? `; working on Level ${ready.current.key}` : ""}.` : "Not started.",
+    indian: essays.attempted ? `${essays.attempted} of ${essays.total} essay tests attempted${essays.best !== null ? `; best score ${Math.round(essays.best)}/100` : ""}.` : `${essays.total} essay tests; ${cfg.freeEssays.length} are free to try.`,
+    international: ielts.length ? `${doneTests} IELTS Reading test${doneTests === 1 ? "" : "s"} attempted${bestBand !== null ? `; best band ${bestBand}` : ""}.` : `IELTS Reading practice tests; ${ieltsOpen} open to you.`,
+  };
+  const nextFor: Record<Track, { href: string; label: string } | null> = {
+    skills: ready.current ? { href: `/reading-studio/levels/${ready.current.key}`, label: `Continue Level ${ready.current.key}` } : { href: "/reading-studio/levels/A", label: "Open the Level A lesson" },
+    indian: essays.next ? { href: `/reading-tests/${essays.next}`, label: `Take test ${String(essays.next).padStart(2, "0")}` } : { href: "/reading-tests", label: "Open the test library" },
+    international: { href: "/practice-tests/ielts-reading", label: ielts.length ? "Take another IELTS Reading test" : "Open IELTS Reading tests" },
+  };
   return {
+    chosen,
+    suggested,
+    analytics: acc.analytics || premium,
+    tracks: TRACKS.map((t, i) => ({ id: t.id, name: t.name, short: t.short, blurb: t.blurb, href: t.href, owned: t.id === "international" ? acc.international : acc[t.id], priceRupees: fees[i] ? Math.round(fees[i]!.amountMinor / 100) : null, buyHref: `/reading-studio/upgrade?from=dashboard&track=${t.id}`, progress: progressLine[t.id], next: nextFor[t.id] })),
     premium, assessments: sums.length,
     latest: latest ? { id: latest.publicId ?? String(latest.id), overall: latest.overall, at: latest.at, kind: latest.kind, completion: latest.completion } : null,
     levels: states.map((s) => ({ key: s.key, name: s.name, objective: s.objective, unlocked: s.unlocked, mastered: s.mastered, message: s.message, practiceDone: s.practiceDone, bestMasteryPct: s.bestMasteryPct })),
@@ -148,14 +189,18 @@ export interface ProgressView {
   skillProgress: SkillProgress | null;
   readiness: string | null;
   lockedCounts: { assessments: number } | null;
+  /** IELTS Reading practice results, shown as band scores. They are not broken down by skill (IELTS question types differ from the Studio's skills). */
+  international: { attempts: number; best: number | null; recent: Array<{ at: string; test: number; raw: number; total: number; band: number | null }> };
 }
 
 export async function buildProgress(userId: number, db: Db = pool): Promise<ProgressView> {
-  const [premium, cfg, sums, history, states] = await Promise.all([hasPremium(userId), getConfig(db), summaries(userId, db), loadHistory(userId, db), levelStatesFor(userId, db)]);
+  const [premium, cfg, sums, history, states] = await Promise.all([hasAnalytics(userId), getConfig(db), summaries(userId, db), loadHistory(userId, db), levelStatesFor(userId, db)]);
+  const ielts = await ieltsAttempts(userId, "ielts-reading", 500).catch(() => []);
+  const international = { attempts: ielts.length, best: ielts.reduce<number | null>((m, a) => (a.band === null ? m : Math.max(m ?? 0, a.band)), null), recent: ielts.slice(0, 6).map((a) => ({ at: a.created_at, test: a.test_no, raw: a.raw, total: a.total, band: a.band })) };
   const done = [...sums].reverse();
   const timeline = (premium ? done : done.slice(0, 1)).map((s) => ({ id: s.publicId ?? String(s.id), at: s.at, kind: s.kind, overall: s.overall, wpm: s.wpm, comprehensionPct: s.comprehensionPct, completion: s.completion, difficulty: s.avgDifficulty, correct: s.correct, total: s.total, note: compareToPrevious(s, sums).message }));
-  if (!premium) return { premium, timeline, total: sums.length, trend: null, trendChart: null, progressChart: null, skills: null, skillProgress: null, readiness: null, lockedCounts: { assessments: sums.length } };
+  if (!premium) return { premium, timeline, total: sums.length, trend: null, trendChart: null, progressChart: null, skills: null, skillProgress: null, readiness: null, lockedCounts: { assessments: sums.length }, international };
   const diags = diagnoseAll(history, cfg);
   const charts = buildCharts({ diags, result: null, items: [], history, summaries: sums });
-  return { premium, timeline, total: sums.length, trend: trendOf(sums), trendChart: charts.trend, progressChart: charts.progress, skills: diags, skillProgress: skillProgress(diags, cfg), readiness: readiness(states).message, lockedCounts: null };
+  return { premium, timeline, total: sums.length, trend: trendOf(sums), trendChart: charts.trend, progressChart: charts.progress, skills: diags, skillProgress: skillProgress(diags, cfg), readiness: readiness(states).message, lockedCounts: null, international };
 }

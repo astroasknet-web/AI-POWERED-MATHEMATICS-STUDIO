@@ -17,7 +17,7 @@ export default async function ReadingConsole() {
   const [st, audit, cq] = await Promise.all([adminStats(), recentAudit(25), contentQuality()]);
   const sub = (v: number | null, unit = "") => (st.suppressed || v === null ? "withheld" : `${v}${unit}`);
   return (
-    <ConsolePage me={me} tab="reading" title="AI Reading Studio" subtitle="Content, scoring settings, levels and aggregate reports. Reports describe groups only.">
+    <ConsolePage me={me} tab="reading" title="English Reading Studio" subtitle="Content, scoring settings, levels and aggregate reports. Reports describe groups only.">
       <nav aria-label="Reading Studio sections" className="mb-5 flex flex-wrap gap-2 text-[14px]">
         <Link href="/console/reading/content" className={btnLine + " inline-flex items-center"}>Passages and questions</Link>
         <Link href="/console/reading/settings" className={btnLine + " inline-flex items-center"}>Scoring settings and levels</Link>

@@ -19,6 +19,7 @@ const TESTS = [
 export default function PracticeTestsPage() {
   return (
     <MarketShell user={null} active="courses">
+      <p className="mb-3 rounded-xl border border-black/[0.08] bg-orange-lighter px-4 py-3 text-[14px] text-ink-2">IELTS Reading is a track of the <Link href="/reading-studio" className="font-semibold underline">English Reading Studio</Link>, together with a reading-skills pathway and essay tests for SSC, CDS, CAT, UPSC and CTET. Your results sit in one dashboard.</p>
       <h1 className="text-[28px] sm:text-[34px] font-bold text-ink tracking-tight">Practice tests</h1>
       <p className="text-[16px] text-ink-3 mt-1 max-w-2xl">Sit a full timed test, get a score and a band straight away, and see why every wrong answer was wrong. Log in as a student to keep your results.</p>
       <ul className="grid md:grid-cols-2 gap-4 mt-6">

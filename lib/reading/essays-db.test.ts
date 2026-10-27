@@ -7,9 +7,16 @@ describe.skipIf(!DB)("essay reading tests on a real database", () => {
   let S: typeof import("./store");
   let V: typeof import("./views");
   let L: typeof import("./essays/library");
-  let free = 0, paid = 0;
+  let free = 0, paid = 0, indian = 0;
   let rzp: InstanceType<typeof import("../pay/test-support").FakeRazorpay>;
   const slug = "ai-reading-studio";
+  const buyAs = async (userId: number, label: string, sku: string) => {
+    const P = await import("../pay/orders"); const C = await import("../pay/checkout");
+    const { order, accessToken } = await P.createOrder(P.createOrderSchema.parse({ items: [{ sku, qty: 1 }], country: "IN", billing: { name: `Essay ${label}`, email: emailOf(label) } }), { userId });
+    const started = await C.startCheckout(order.id, { userId, token: accessToken }, { origin: "https://growqr.test", provider: null });
+    rzp.pay((started.checkout as { orderId: string }).orderId);
+    await C.confirmPayment(order.id, { userId }, {});
+  };
 
   const play = async (userId: number, id: string, right: boolean) => {
     const a = (await S.getAssessment(userId, id))!;
@@ -32,6 +39,7 @@ describe.skipIf(!DB)("essay reading tests on a real database", () => {
     rzp = new B.T.FakeRazorpay();
     free = await mkUser(B.db, "student", "essayfree");
     paid = await mkUser(B.db, "student", "essaypaid");
+    indian = await mkUser(B.db, "student", "essayindian");
   });
   beforeEach(() => { B.T.setTestEnv(); rzp.install(); });
   afterAll(async () => { rzp.uninstall(); await B.db.closePool(); });
@@ -48,7 +56,7 @@ describe.skipIf(!DB)("essay reading tests on a real database", () => {
   it("keeps the essays out of the level pathway and the other Studio pools", async () => {
     const lv = await B.db.one<{ n: number }>("SELECT COUNT(*) AS n FROM rd_passages WHERE collection = 'exam' AND (level_key IS NOT NULL OR is_diagnostic = 1)");
     expect(Number(lv!.n)).toBe(0);
-    await (async () => { const P = await import("../pay/orders"); const C = await import("../pay/checkout"); const { order, accessToken } = await P.createOrder(P.createOrderSchema.parse({ items: [{ sku: `course-${slug}`, qty: 1 }], country: "IN", billing: { name: "Essay Paid", email: emailOf("essaypaid") } }), { userId: paid }); const started = await C.startCheckout(order.id, { userId: paid, token: accessToken }, { origin: "https://growqr.test", provider: null }); rzp.pay((started.checkout as { orderId: string }).orderId); await C.confirmPayment(order.id, { userId: paid }, {}); })();
+    await buyAs(paid, "essaypaid", `course-${slug}`);
     for (const kind of ["fresh", "timed"] as const) {
       const r = await S.startAssessment(paid, kind);
       if (!r.ok) throw new Error(r.error);
@@ -99,20 +107,28 @@ describe.skipIf(!DB)("essay reading tests on a real database", () => {
     expect(diag.length).toBe(10); // the answers feed the student's skill history
   });
 
-  it("a package holder takes any test and gets the full analysis; a second test is a separate attempt", async () => {
-    const r = await S.startAssessment(paid, "essay", { skill: "essay-7" });
+  it("the skills package alone does not open the Indian competitive exam tests", async () => {
+    expect(await S.startAssessment(paid, "essay", { skill: "essay-7" })).toMatchObject({ ok: false, code: "locked" });
+    expect((await L.essayCards(paid)).cards.find((c) => c.n === 7)!.locked).toBe(true);
+  });
+
+  it("an Indian competitive exams package opens all 30 tests and the full analysis, but not the skills pathway; a second test is a separate attempt", async () => {
+    await buyAs(indian, "essayindian", "course-indian-competitive-reading");
+    expect(await S.startAssessment(indian, "practice", { levelKey: "A" })).toMatchObject({ ok: false, code: "locked" });
+    expect(await S.startAssessment(indian, "fresh")).toMatchObject({ ok: false, code: "locked" });
+    const r = await S.startAssessment(indian, "essay", { skill: "essay-7" });
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    await play(paid, r.id, true);
-    const v = (await V.buildResults(paid, r.id))!;
+    await play(indian, r.id, true);
+    const v = (await V.buildResults(indian, r.id))!;
     expect(v.premium).toBe(true);
     expect(v.tiles.correct).toBe(10);
     expect(v.overall.score).toBeGreaterThan(80);
     expect(v.review!.length).toBe(10);
     expect(v.review!.every((x) => x.explanation.length > 30)).toBe(true);
-    const r2 = await S.startAssessment(paid, "essay", { skill: "essay-8" });
+    const r2 = await S.startAssessment(indian, "essay", { skill: "essay-8" });
     expect(r2.ok && r2.id !== r.id).toBe(true);
-    const cards = (await L.essayCards(paid)).cards;
+    const cards = (await L.essayCards(indian)).cards;
     expect(cards.find((c) => c.n === 7)!.best).toBeGreaterThan(80);
     expect(cards.find((c) => c.n === 7)!.locked).toBe(false);
     expect(cards.find((c) => c.n === 9)!.locked).toBe(false);

@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ n: string
   const d = await essayDetail(Number(n), null);
   if (!d) return { title: "Reading test | GrowQR" };
   const title = `${d.card.title}: essay reading test | GrowQR`;
-  const description = `A ${d.card.words}-word essay and ${d.card.questions} exam-style questions on ${d.card.themeName.toLowerCase()}, good practice for ${d.card.exams.join(", ")}. Scored and analysed by the AI Reading Studio.`;
+  const description = `A ${d.card.words}-word essay and ${d.card.questions} exam-style questions on ${d.card.themeName.toLowerCase()}, good practice for ${d.card.exams.join(", ")}. Scored and analysed by the English Reading Studio.`;
   return { title, description, alternates: { canonical: `${SITE_URL}/reading-tests/${d.card.n}` }, openGraph: { title, description, url: `${SITE_URL}/reading-tests/${d.card.n}`, siteName: "GrowQR", type: "article" } };
 }
 

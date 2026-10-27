@@ -5,7 +5,7 @@ import { studentPage } from "@/lib/reading/page";
 import { hasPremium } from "@/lib/reading/access";
 import { SKILLS, isSkill } from "@/lib/reading/taxonomy";
 
-export const metadata: Metadata = { title: "Practice | AI Reading Studio | GrowQR", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Practice | English Reading Studio | GrowQR", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 /** Where chart links and plan days land: says what the practice is, then a button starts it (starting is a form post, never a link). */
@@ -18,7 +18,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   const back = `/reading-studio/practice${skill ? `?skill=${skill}` : kind === "timed" ? "?kind=timed" : ""}`;
   return (
     <PortalPage user={me} active="reading-studio" title={skill ? `Practise: ${SKILLS[skill].label}` : "Timed reading"} wide>
-      <Crumbs items={[{ href: "/reading-studio/dashboard", label: "My Reading Studio" }, { label: "Practice" }]} />
+      <Crumbs items={[{ href: "/reading-studio/dashboard", label: "My English Reading Studio" }, { label: "Practice" }]} />
       <Flash text={sp.e} />
       {skill ? (
         <Card title="What this practice is">

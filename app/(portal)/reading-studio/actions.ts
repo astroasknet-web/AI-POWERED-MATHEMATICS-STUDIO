@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/portal/guard";
 import { homeFor } from "@/lib/portal/auth";
 import { safeNext } from "@/lib/portal/security";
-import { markLessonRead, setStudyMinutes, startAssessment } from "@/lib/reading/store";
+import { markLessonRead, setStudyMinutes, setTracks, startAssessment } from "@/lib/reading/store";
 import type { Kind } from "@/lib/reading/taxonomy";
 
 /** Form handlers for the studio. Each one checks the signed-in student itself; nothing is trusted from the form beyond what it names. */
@@ -35,6 +35,13 @@ export async function lessonReadAction(fd: FormData): Promise<void> {
   const me = await student(back);
   await markLessonRead(me.id, key);
   redirect(back);
+}
+
+/** Choose which tracks to see on the dashboard. Choosing never grants access: what a student may open is decided by what they hold. */
+export async function chooseTracksAction(fd: FormData): Promise<void> {
+  const me = await student(FALLBACK);
+  await setTracks(me.id, fd.getAll("track").map(String));
+  redirect(safeNext(String(fd.get("back") ?? ""), FALLBACK));
 }
 
 export async function studyMinutesAction(fd: FormData): Promise<void> {

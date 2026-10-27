@@ -3,21 +3,21 @@ import Link from "next/link";
 import { PortalPage } from "@/components/portal/shell";
 import { Card, Crumbs, Locked, StartButton, btnLight, btnPrimary } from "@/components/reading/ui";
 import { studentPage } from "@/lib/reading/page";
-import { hasPremium } from "@/lib/reading/access";
+import { hasAnalytics } from "@/lib/reading/access";
 import { recentAssessments } from "@/lib/reading/store";
 import { buildResults } from "@/lib/reading/views";
 
-export const metadata: Metadata = { title: "My 7-day plan | AI Reading Studio | GrowQR", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "My 7-day plan | English Reading Studio | GrowQR", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function PlanPage() {
   const { me } = await studentPage("/reading-studio/plan");
-  const premium = await hasPremium(me.id);
+  const premium = await hasAnalytics(me.id);
   const latest = (await recentAssessments(me.id, 1))[0];
   const v = premium && latest ? await buildResults(me.id, latest.publicId) : null;
   return (
     <PortalPage user={me} active="reading-studio" title="My 7-day plan" subtitle="Built from your answers and the study time you gave us." wide>
-      <Crumbs items={[{ href: "/reading-studio/dashboard", label: "My Reading Studio" }, { label: "7-day plan" }]} />
+      <Crumbs items={[{ href: "/reading-studio/dashboard", label: "My English Reading Studio" }, { label: "7-day plan" }]} />
       {!premium ? <Locked headline="A plan built from your answers" body="The 7-day plan is part of the package. It uses your result to choose what to practise each day and ends with a fresh assessment so you can measure the change." source="plan" /> : !latest || !v?.plan ? (
         <Card><p className="text-[15px] text-ink-2">Take an assessment first; the plan is built from it.</p><div className="mt-3"><StartButton kind="fresh" back="/reading-studio/plan">Start a fresh assessment</StartButton></div></Card>
       ) : (

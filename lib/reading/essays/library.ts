@@ -1,6 +1,6 @@
 import "server-only";
 import { first, pool, rows, type Db } from "../../pay/db";
-import { hasPremium } from "../access";
+import { hasTrack } from "../access";
 import { ensureSeed, getConfig } from "../store";
 import { SKILLS, type SkillId } from "../taxonomy";
 import { ESSAY_META, THEMES, type Exam } from "./meta";
@@ -14,7 +14,7 @@ export interface EssayCard {
 
 export async function essayCards(userId: number | null, db: Db = pool): Promise<{ cards: EssayCard[]; premium: boolean }> {
   await ensureSeed();
-  const [cfg, premium] = await Promise.all([getConfig(db), userId === null ? Promise.resolve(false) : hasPremium(userId)]);
+  const [cfg, premium] = await Promise.all([getConfig(db), userId === null ? Promise.resolve(false) : hasTrack(userId, "indian")]);
   const ps = await rows(db, "SELECT id, slug, title, word_count, ext_no FROM rd_passages WHERE collection = 'exam' AND status = 'approved' ORDER BY ext_no");
   const mix = new Map<number, Map<string, number>>();
   for (const r of await rows(db, "SELECT q.passage_id, q.skill, COUNT(*) AS n FROM rd_questions q JOIN rd_passages p ON p.id = q.passage_id WHERE p.collection = 'exam' AND q.status = 'approved' GROUP BY q.passage_id, q.skill")) {

@@ -1,4 +1,4 @@
-# AI-Powered Reading Studio: design, operation and deployment
+# English Reading Studio: design, operation and deployment
 
 Student routes: `/reading-studio` (public page), `/reading-studio/dashboard`, `/reading-studio/assessment/[id]`, `/reading-studio/results/[id]`, `/reading-studio/progress`, `/reading-studio/levels/[key]`, `/reading-studio/plan`, `/reading-studio/practice`.
 Administrator routes: `/console/reading` (overview, audit), `/console/reading/content`, `/console/reading/content/[id]`, `/console/reading/settings`, `/console/reading/export`.
@@ -165,3 +165,18 @@ A separate public page and 30 test pages (`/reading-tests`, `/reading-tests/[n]`
 * **Tags.** The files carry no skill tags, so `classifyQuestion` (`lib/reading/essays/meta.ts`) assigns a skill, question type, difficulty and guide time from the wording. It is rule-based (about two thirds fall back to "important facts and details") and tested; an administrator can retag in the console. The theme, the examinations each essay "suits" and the difficulty are editorial choices in `ESSAY_META` and are **not** claims about past papers.
 * **Free and paid.** Three tests (6, 11, 20) are free for any signed-in student (`freeEssays` in the console settings); the other 27 need the same package as the rest of the Studio. Access is checked on the server in `startAssessment`.
 * **Known limits.** In 79% of questions the correct option is also the longest (see the audit); 14 questions rely on general knowledge; explanations for 192 questions quote the supporting sentence of the essay and were not written by a subject expert; facts in the essays were not verified.
+
+## 15. One studio, three tracks (English Reading Studio)
+
+The Reading Studio, the essay tests and the IELTS Reading tests are one product, **English Reading Studio**, with three tracks (`lib/reading/access.ts`):
+
+| Track | Content | Package (own product) |
+|---|---|---|
+| Reading Skills Pathway | levels A to J, practice, mastery, recall, timed, 7-day plan | `ai-reading-studio` |
+| Indian Competitive Exams | 30 essay tests (SSC, CDS, CAT, UPSC, CTET) | `indian-competitive-reading` (price 499 is a placeholder) |
+| International Exams | IELTS Reading practice tests (existing) | `ielts-practice-tests` (existing; Silver opens 10, Gold all) |
+
+* The student **chooses tracks** on `/reading-studio/dashboard` (`rd_enrolments.tracks`, migration `20261226000001_reading_tracks.sql`); the dashboard then shows only those, plus a "Your packages" table. Choosing grants nothing: every start is checked on the server against what the student holds (`hasTrack`).
+* **Analytics** (skill-by-skill analysis, charts, explanations, plan, history, report CSV) open for a holder of **any** paid track (`hasAnalytics`) and cover every skills-pathway and essay result.
+* **IELTS Reading** keeps its own player and `test_attempts` table. Its results appear in the progress page as band scores; they are **not** skill-tagged or part of the Studio's diagnosis, because IELTS question types (matching headings, True/False/Not Given) do not map to the Studio's skills. SAT and GRE reading do not exist in the portal yet (GRE is Quant only), so the International track is IELTS Reading today.
+* `/reading-studio` is the single public page; `/reading-tests` is the Indian track's library and `/practice-tests/ielts-reading` is the International track's.

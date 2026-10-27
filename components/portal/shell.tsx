@@ -23,8 +23,8 @@ export function groupsFor(role: string): NavGroup[] {
           { key: "courses", href: "/my-courses", label: "My courses", icon: "courses" },
           { key: "math-speed", href: "/math-speed/journey", label: "Maths Speed Studio", icon: "courses" },
           { key: "writing", href: "/writing-clinic", label: "English Writing Studio", icon: "courses" },
-          { key: "reading-studio", href: "/reading-studio/dashboard", label: "AI Reading Studio", icon: "courses" },
-          { key: "reading-tests", href: "/reading-tests", label: "Essay Reading Tests", icon: "courses" },
+          { key: "reading-studio", href: "/reading-studio/dashboard", label: "English Reading Studio", icon: "courses" },
+
           { key: "classes", href: "/my-classes", label: "My classes", icon: "classes" },
         ] },
         { title: "Global", items: [

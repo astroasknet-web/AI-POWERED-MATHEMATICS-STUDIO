@@ -7,7 +7,7 @@ import essayData from "./essays/essays.json";
 import { classifyQuestion, essaySlug, ESSAY_META } from "./essays/meta";
 import { wordsIn } from "./content-model";
 import { causesOf, carefulNote, type Cause, type HistoryItem } from "./diagnosis";
-import { hasPremium } from "./access";
+import { hasPremium, hasTrack, isTrack, type Track } from "./access";
 import { levelStates, type LevelAttempt, type LevelRule, type LevelState, type Summary } from "./progress";
 import { markResponse, scoreAssessment, checkedMs, type Item, type Response, type ScoreResult, type Timing } from "./scoring";
 import { isSkill, type Difficulty, type Format, type Kind, type Mode, type QType, type SkillId } from "./taxonomy";
@@ -121,6 +121,36 @@ export async function loadLevels(db: Db = pool, includeInactive = false): Promis
 }
 
 // ---- enrolment and level progress ---------------------------------------------------------------------------------------------
+
+/** The tracks a student has chosen to see, in a fixed order. Empty until they choose (or until they use one). */
+export async function getTracks(userId: number, db: Db = pool): Promise<Track[]> {
+  const r = await first(db, "SELECT tracks FROM rd_enrolments WHERE user_id = $1", [userId]);
+  const have = String(r?.tracks ?? "").split(",").filter(isTrack);
+  return (["skills", "indian", "international"] as Track[]).filter((t) => have.includes(t));
+}
+export async function setTracks(userId: number, tracks: string[], db: Db = pool): Promise<Track[]> {
+  const clean = (["skills", "indian", "international"] as Track[]).filter((t) => tracks.includes(t));
+  await exec(db, "INSERT INTO rd_enrolments (user_id, tracks) VALUES ($1,$2) ON CONFLICT (user_id) DO UPDATE SET tracks = EXCLUDED.tracks", [userId, clean.join(",")]);
+  await audit(db, userId, "tracks.chosen", "student", userId, { tracks: clean });
+  return clean;
+}
+
+/** How far the student is through the essay reading tests: attempted, best score, and the next one they can take. */
+export async function essayProgress(userId: number, db: Db = pool): Promise<{ total: number; attempted: number; best: number | null; next: number | null }> {
+  const total = Number((await first(db, "SELECT COUNT(*) AS n FROM rd_passages WHERE collection = 'exam' AND status = 'approved'"))?.n ?? 0);
+  const done = new Map<number, number | null>();
+  for (const r of await rows(db, "SELECT focus_skill, overall_score, completion FROM rd_assessments WHERE user_id = $1 AND kind = 'essay' AND status = 'submitted'", [userId])) {
+    const n = Number(String(r.focus_skill ?? "").replace("essay-", ""));
+    if (Number.isInteger(n)) done.set(n, r.completion === "complete" && r.overall_score !== null ? Math.max(done.get(n) ?? 0, Number(r.overall_score)) : done.get(n) ?? null);
+  }
+  const cfg = await getConfig(db);
+  const owned = await hasTrack(userId, "indian");
+  const open = (n: number) => owned || cfg.freeEssays.includes(n);
+  let next: number | null = null;
+  for (let n = 1; n <= total && next === null; n++) if (!done.has(n) && open(n)) next = n;
+  const scores = [...done.values()].filter((x): x is number => x !== null);
+  return { total, attempted: done.size, best: scores.length ? Math.max(...scores) : null, next };
+}
 
 export async function getStudyMinutes(userId: number, db: Db = pool): Promise<number | null> {
   const r = await first(db, "SELECT study_minutes FROM rd_enrolments WHERE user_id = $1", [userId]);
@@ -267,8 +297,8 @@ export async function startAssessment(userId: number, kind: Kind, opts: StartOpt
   const open = await openAssessment(userId, db);
   if (open && open.kind === kind && open.levelKey === (opts.levelKey ?? null) && (open.focusSkill ?? null) === (opts.skill ?? null)) return { ok: true, id: open.publicId, resumed: true };
 
-  const locked = (what: string): StartResult => ({ ok: false, code: "locked", error: `${what} is part of the Reading Studio package.` });
-  if (kind !== "diagnostic" && kind !== "essay" && !premium) return locked(kind === "practice" && opts.skill ? "Targeted practice" : kind === "mastery" ? "Mastery checks" : kind === "recall" ? "Delayed recall" : kind === "timed" ? "Timed reading" : kind === "fresh" ? "Fresh assessments" : "Level practice");
+  const locked = (what: string): StartResult => ({ ok: false, code: "locked", error: `${what} is part of the Reading Skills Pathway package.` });
+  if (kind !== "diagnostic" && kind !== "essay" && !premium) return locked(kind === "practice" && opts.skill ? "Targeted skill practice" : kind === "mastery" ? "Mastery checks" : kind === "recall" ? "Delayed recall" : kind === "timed" ? "Timed reading" : kind === "fresh" ? "Fresh assessments" : "Level practice");
 
   const seenQ = await seenQuestions(userId, db);
   const seenP = await seenPassages(userId, db);
@@ -287,7 +317,7 @@ export async function startAssessment(userId: number, kind: Kind, opts: StartOpt
     const num = Number(String(opts.skill ?? "").replace(/^essay-/, ""));
     const row = Number.isInteger(num) ? await first(db, "SELECT * FROM rd_passages WHERE collection = 'exam' AND ext_no = $1 AND status = 'approved'", [num]) : null;
     if (!row) return { ok: false, code: "none", error: "That test does not exist." };
-    if (!premium && !cfg.freeEssays.includes(num)) return { ok: false, code: "locked", error: "This essay test is part of the Reading Studio package. Three tests are free." };
+    if (!cfg.freeEssays.includes(num) && !(await hasTrack(userId, "indian"))) return { ok: false, code: "locked", error: "This essay test is part of the Indian Competitive Exams package. Three tests are free." };
     const qs = (await rows(db, "SELECT * FROM rd_questions WHERE passage_id = $1 AND status = 'approved' ORDER BY position, id", [row.id])).map(questionOf);
     if (!qs.length) return { ok: false, code: "none", error: "That test has no questions yet." };
     units = [{ passageId: Number(row.id), questionIds: qs.map((q) => q.id) }];
