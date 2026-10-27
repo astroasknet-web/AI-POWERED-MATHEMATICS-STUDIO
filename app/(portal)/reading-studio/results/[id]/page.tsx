@@ -55,7 +55,18 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
       {/* How the score was calculated (free: transparency is part of the product) */}
       <Card id="how" title="How this score was calculated">
         <p className="mb-3 max-w-prose text-[14.5px] leading-relaxed text-ink-2">The overall score is a weighted average of the areas below. An area that was not assessed is left out and the other weights are rescaled, so you are never marked down for something you were not asked. Speed counts only together with accuracy.</p>
-        <div className="overflow-x-auto">
+        <ul className="space-y-3 sm:hidden" aria-label="Score breakdown">
+          {v.dimensions.map((d) => (
+            <li key={d.dimension} className="rounded-xl border border-black/10 p-3.5">
+              <p className="text-[15px] font-semibold text-ink">{d.label}</p>
+              <p className="mt-0.5 text-[13px] text-ink-3">{d.note}</p>
+              <p className="mt-2 text-[14px] text-ink-2">{dimText(d.score)} · weight {d.weight}%{d.score === null ? " · left out" : ` · counts for ${d.effectiveWeight}% · adds ${d.contribution}`}</p>
+              {d.score !== null ? <div className="mt-1.5"><Bar pct={d.score} label={d.label} tone="teal" /></div> : null}
+            </li>
+          ))}
+          <li className="rounded-xl border-2 border-black/20 p-3.5 text-[15px] font-semibold text-ink">Overall (provisional): {v.overall.score ?? "n/a"}</li>
+        </ul>
+        <div className="hidden overflow-x-auto sm:block">
           <table className="w-full min-w-[34rem] text-[14px]">
             <thead><tr className="text-left text-ink-4"><th scope="col" className="py-2 pr-3 font-medium">Area</th><th scope="col" className="py-2 pr-3 font-medium">Score</th><th scope="col" className="py-2 pr-3 font-medium">Weight</th><th scope="col" className="py-2 pr-3 font-medium">Counts for</th><th scope="col" className="py-2 font-medium">Points added</th></tr></thead>
             <tbody>

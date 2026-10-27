@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { box, btnLine, ConsolePage, Stats } from "@/components/admin/console-page";
-import { adminStats, recentAudit } from "@/lib/reading/admin";
+import { adminStats, contentQuality, recentAudit } from "@/lib/reading/admin";
 import { ensureSeed } from "@/lib/reading/store";
 import { adminGate } from "../gate";
 
@@ -14,7 +14,7 @@ const KIND: Record<string, string> = { diagnostic: "Starting assessments", pract
 export default async function ReadingConsole() {
   const me = await adminGate("/console/reading");
   await ensureSeed();
-  const [st, audit] = await Promise.all([adminStats(), recentAudit(25)]);
+  const [st, audit, cq] = await Promise.all([adminStats(), recentAudit(25), contentQuality()]);
   const sub = (v: number | null, unit = "") => (st.suppressed || v === null ? "withheld" : `${v}${unit}`);
   return (
     <ConsolePage me={me} tab="reading" title="AI Reading Studio" subtitle="Content, scoring settings, levels and aggregate reports. Reports describe groups only.">
@@ -46,6 +46,11 @@ export default async function ReadingConsole() {
       <section className={box} aria-labelledby="rev-h">
         <h2 id="rev-h" className="mb-2 text-[18px] font-semibold text-ink">Content review</h2>
         <p className="text-[14.5px] text-ink-2">{st.reviewBacklog.passages} passage{st.reviewBacklog.passages === 1 ? "" : "s"} and {st.reviewBacklog.questions} question{st.reviewBacklog.questions === 1 ? "" : "s"} have not been signed off by a person. The starting bank was authored for this studio; an educator should review keys and explanations before wide release. AI-drafted content cannot be approved without that review.</p>
+      </section>
+      <section className={box} aria-labelledby="cq-h">
+        <h2 id="cq-h" className="mb-2 text-[18px] font-semibold text-ink">Question quality check</h2>
+        <p className="text-[14.5px] text-ink-2">{cq.keyIsLongest} of {cq.mcq} approved multiple-choice questions ({cq.keyIsLongestPct}%) have the correct option as the longest; {cq.keyOverDouble} have a key at least 1.8 times the average option length. Correct option by position: {cq.byPosition.slice(0, 4).map((n, i) => String.fromCharCode(65 + i) + " " + n).join(", ")}.</p>
+        <p className={`mt-1 text-[14px] ${cq.keyIsLongestPct > 45 ? "font-medium text-amber-800" : "text-ink-3"}`}>{cq.note}</p>
       </section>
       <section className={box} aria-labelledby="aud-h">
         <h2 id="aud-h" className="mb-3 text-[18px] font-semibold text-ink">Audit log (latest 25)</h2>

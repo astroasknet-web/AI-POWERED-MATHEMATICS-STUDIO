@@ -83,6 +83,9 @@ export default function AssessmentRunner({ state, csrf, title }: { state: Runner
     return () => { document.removeEventListener("visibilitychange", vis); stopClock(); };
   }, [phase, q, stopClock]);
 
+  // on a phone the questions come first and the passage is one tap away; on a wide screen the two sit side by side
+  useEffect(() => { if (phase === "answer") setShowPassage(window.matchMedia("(min-width: 1024px)").matches); }, [phase, u]);
+
   // start of reading is noted on the server clock
   useEffect(() => { if (phase === "read" && !state.hidePassage) void post("phase", { unit: u, phase: "read_start" }); }, [phase, u, post, state.hidePassage]);
 

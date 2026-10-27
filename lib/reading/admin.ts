@@ -229,3 +229,25 @@ export async function aggregateCsv(db: Db = pool): Promise<string> {
   if (out.length === 1) out.push(`# no row has at least ${cfg.minCohort} students behind it yet, so none is shown`);
   return out.join("\r\n");
 }
+
+export interface ContentQuality { mcq: number; keyIsLongest: number; keyIsLongestPct: number; keyOverDouble: number; byPosition: number[]; note: string }
+
+/**
+ * Answer-pattern checks on the approved single-answer questions. If students could do well by always choosing the longest option, the score would
+ * partly measure that habit rather than reading, so the share is measured and shown to the people who edit content.
+ */
+export async function contentQuality(db: Db = pool): Promise<ContentQuality> {
+  let mcq = 0, longest = 0, over = 0;
+  const byPosition = [0, 0, 0, 0, 0];
+  for (const r of await rows(db, "SELECT options_json, answer_json FROM rd_questions WHERE status = 'approved' AND format IN ('mcq','conclusion')")) {
+    const o = JSON.parse(r.options_json) as string[], k = JSON.parse(r.answer_json) as number;
+    if (!Array.isArray(o) || typeof k !== "number" || !o[k]) continue;
+    mcq++;
+    byPosition[k] = (byPosition[k] ?? 0) + 1;
+    const L = o.map((x) => x.length);
+    if (L[k] === Math.max(...L)) longest++;
+    if (L[k] > 1.8 * (L.reduce((a, b) => a + b, 0) / L.length)) over++;
+  }
+  const pct = mcq ? Math.round((1000 * longest) / mcq) / 10 : 0;
+  return { mcq, keyIsLongest: longest, keyIsLongestPct: pct, keyOverDouble: over, byPosition, note: pct > 45 ? "In many questions the correct option is also the longest. A test-wise student can score above chance without reading. Rebalance option lengths during editorial review before relying on scores." : "Option lengths do not give the answer away." };
+}
