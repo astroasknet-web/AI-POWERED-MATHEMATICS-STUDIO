@@ -46,7 +46,7 @@ export default async function ProgressPage() {
 
       {p.international.attempts ? (
         <Card id="international" title="International exams: IELTS Reading">
-          <p className="text-[14.5px] text-ink-2">{p.international.attempts} attempt{p.international.attempts === 1 ? "" : "s"}{p.international.best !== null ? `; best band ${p.international.best}` : ""}. Shown as the band each test gave. These are not broken down by reading skill, because IELTS question types differ from the Studio's skills.</p>
+          <p className="text-[14.5px] text-ink-2">{p.international.attempts} attempt{p.international.attempts === 1 ? "" : "s"}{p.international.best !== null ? `; best band ${p.international.best}` : ""}. Shown as the band each test gave. These are not broken down by reading skill, because IELTS question types differ from the Studio&apos;s skills.</p>
           <ul className="mt-3 space-y-1.5 text-[14px] text-ink-2">{p.international.recent.map((a) => <li key={`${a.test}-${a.at}`}>{when(a.at.replace(" ", "T") + "Z")} · Test {a.test}: {a.raw} of {a.total} correct{a.band !== null ? `, band ${a.band}` : ""}</li>)}</ul>
           <Link href="/practice-tests/ielts-reading" className={`${btnLight} mt-3`}>Open IELTS Reading tests</Link>
         </Card>
