@@ -209,10 +209,10 @@ export async function openAssessment(userId: number, db: Db = pool): Promise<Ass
 
 export async function summaries(userId: number, db: Db = pool): Promise<Summary[]> {
   const out: Summary[] = [];
-  for (const r of await rows(db, "SELECT id, kind, level_key, submitted_at, overall_score, wpm, comprehension_pct, qa_pct, avg_difficulty, completion, scoring_version, correct_n, total_n, plan_json FROM rd_assessments WHERE user_id = $1 AND status = 'submitted' ORDER BY submitted_at ASC, id ASC", [userId])) {
+  for (const r of await rows(db, "SELECT id, public_id, kind, level_key, submitted_at, overall_score, wpm, comprehension_pct, qa_pct, avg_difficulty, completion, scoring_version, correct_n, total_n, plan_json FROM rd_assessments WHERE user_id = $1 AND status = 'submitted' ORDER BY submitted_at ASC, id ASC", [userId])) {
     let passageIds: number[] = [];
     try { passageIds = (JSON.parse(r.plan_json) as Plan).units.map((u) => u.passageId); } catch { /* none */ }
-    out.push({ id: Number(r.id), at: iso(r.submitted_at), kind: r.kind, levelKey: r.level_key ?? null, overall: r.overall_score === null ? null : Number(r.overall_score), wpm: r.wpm === null ? null : Number(r.wpm), comprehensionPct: r.comprehension_pct === null ? null : Number(r.comprehension_pct), qaPct: r.qa_pct === null ? null : Number(r.qa_pct), avgDifficulty: r.avg_difficulty === null ? null : Number(r.avg_difficulty), completion: r.completion ?? "partial", passageIds, scoringVersion: r.scoring_version ?? "", correct: Number(r.correct_n), total: Number(r.total_n) });
+    out.push({ id: Number(r.id), publicId: r.public_id, at: iso(r.submitted_at), kind: r.kind, levelKey: r.level_key ?? null, overall: r.overall_score === null ? null : Number(r.overall_score), wpm: r.wpm === null ? null : Number(r.wpm), comprehensionPct: r.comprehension_pct === null ? null : Number(r.comprehension_pct), qaPct: r.qa_pct === null ? null : Number(r.qa_pct), avgDifficulty: r.avg_difficulty === null ? null : Number(r.avg_difficulty), completion: r.completion ?? "partial", passageIds, scoringVersion: r.scoring_version ?? "", correct: Number(r.correct_n), total: Number(r.total_n) });
   }
   return out;
 }

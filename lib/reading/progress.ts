@@ -8,6 +8,8 @@ import type { Kind } from "./taxonomy";
  */
 export interface Summary {
   id: number;
+  /** The id used in page addresses (the numeric id is internal). */
+  publicId?: string;
   at: string;
   kind: Kind;
   levelKey: string | null;

@@ -126,7 +126,7 @@ export async function buildDashboard(userId: number, db: Db = pool): Promise<Das
   const ready = readiness(states);
   return {
     premium, assessments: sums.length,
-    latest: latest ? { id: String(latest.id), overall: latest.overall, at: latest.at, kind: latest.kind, completion: latest.completion } : null,
+    latest: latest ? { id: latest.publicId ?? String(latest.id), overall: latest.overall, at: latest.at, kind: latest.kind, completion: latest.completion } : null,
     levels: states.map((s) => ({ key: s.key, name: s.name, objective: s.objective, unlocked: s.unlocked, mastered: s.mastered, message: s.message, practiceDone: s.practiceDone, bestMasteryPct: s.bestMasteryPct })),
     current: ready.current ? { key: ready.current.key, name: states.find((s) => s.key === ready.current?.key)?.name ?? "", message: ready.message } : null,
     freeLeft: Math.max(0, cfg.freeDiagnostics - used),
@@ -153,7 +153,7 @@ export interface ProgressView {
 export async function buildProgress(userId: number, db: Db = pool): Promise<ProgressView> {
   const [premium, cfg, sums, history, states] = await Promise.all([hasPremium(userId), getConfig(db), summaries(userId, db), loadHistory(userId, db), levelStatesFor(userId, db)]);
   const done = [...sums].reverse();
-  const timeline = (premium ? done : done.slice(0, 1)).map((s) => ({ id: String(s.id), at: s.at, kind: s.kind, overall: s.overall, wpm: s.wpm, comprehensionPct: s.comprehensionPct, completion: s.completion, difficulty: s.avgDifficulty, correct: s.correct, total: s.total, note: compareToPrevious(s, sums).message }));
+  const timeline = (premium ? done : done.slice(0, 1)).map((s) => ({ id: s.publicId ?? String(s.id), at: s.at, kind: s.kind, overall: s.overall, wpm: s.wpm, comprehensionPct: s.comprehensionPct, completion: s.completion, difficulty: s.avgDifficulty, correct: s.correct, total: s.total, note: compareToPrevious(s, sums).message }));
   if (!premium) return { premium, timeline, total: sums.length, trend: null, trendChart: null, progressChart: null, skills: null, skillProgress: null, readiness: null, lockedCounts: { assessments: sums.length } };
   const diags = diagnoseAll(history, cfg);
   const charts = buildCharts({ diags, result: null, items: [], history, summaries: sums });
