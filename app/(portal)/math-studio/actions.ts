@@ -12,5 +12,5 @@ export async function studyMinutesAction(fd: FormData): Promise<void> {
   if (!me) redirect("/login?next=/math-studio");
   if (me.role !== "student") redirect(homeFor(me.role));
   await setStudyMinutes(me.id, Number(fd.get("minutes")) || 30);
-  redirect(safeNext(String(fd.get("back") ?? ""), "/math-studio"));
+  redirect(safeNext(String(fd.get("back") ?? ""), "/math-studio/dashboard"));
 }

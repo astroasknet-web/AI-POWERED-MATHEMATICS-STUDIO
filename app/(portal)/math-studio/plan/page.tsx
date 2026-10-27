@@ -16,7 +16,7 @@ export default async function PlanPage() {
   const bands: PriorityBand[] = [1, 2, 3, 4];
   return (
     <PortalPage user={me} active="math-studio" title="Your practice plan" subtitle="Built from your results and sized to your study time. Each step links to real practice on GrowQR." wide="full">
-      <Crumbs items={[{ href: "/math-studio", label: "Mathematics Studio" }, { label: "Plan" }]} />
+      <Crumbs items={[{ href: "/math-studio/dashboard", label: "Mathematics Studio" }, { label: "Plan" }]} />
       {!v ? <Locked headline="A personalised practice plan" body="A prioritised plan with targets, difficulty and revisit dates, built from your own weaknesses and linked to real practice, is part of the Mathematics Studio." source="plan" /> : !v.plan.steps.length ? (
         <Card><p className="text-[15px] text-ink-2">{v.plan.note}</p><div className="mt-3 flex flex-wrap gap-3"><Link href="/practice-tests/gre-quant" className={btnLight}>GRE Quant mocks</Link><Link href="/math-speed" className={btnLight}>Mathematics Speed studio</Link></div></Card>
       ) : (
@@ -45,7 +45,7 @@ export default async function PlanPage() {
           ))}
         </>
       )}
-      <div className="mt-2"><Link href="/math-studio" className={btnLight}>Back to my Studio</Link></div>
+      <div className="mt-2"><Link href="/math-studio/dashboard" className={btnLight}>Back to my Studio</Link></div>
     </PortalPage>
   );
 }

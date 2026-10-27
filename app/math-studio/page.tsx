@@ -42,7 +42,7 @@ export default async function MathStudioLanding() {
   const student = me && me.role === "student";
   const fee = databaseConfigured() ? await feeNow().catch(() => null) : null;
   const price = fee ? `₹${(fee.amountMinor / 100).toLocaleString("en-IN")}` : null;
-  const cta = student ? { href: "/math-studio", label: "Open my Mathematics Studio" } : { href: `/login?next=${encodeURIComponent("/math-studio")}`, label: "Open my Studio (free summary)" };
+  const cta = student ? { href: "/math-studio/dashboard", label: "Open my Mathematics Studio" } : { href: `/login?next=${encodeURIComponent("/math-studio")}`, label: "Open my Studio (free summary)" };
   const jsonld = { "@context": "https://schema.org", "@type": "Course", name: "Mathematics Studio", description: DESC, url: `${SITE_URL}/math-studio`, provider: { "@type": "Organization", name: "GrowQR", url: SITE_URL }, inLanguage: "en", ...(fee ? { offers: { "@type": "Offer", category: "Paid", price: String(fee.amountMinor / 100), priceCurrency: "INR", url: `${SITE_URL}/math-studio` } } : {}) };
   const faqLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) };
   return (

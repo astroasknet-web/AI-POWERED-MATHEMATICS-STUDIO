@@ -8,13 +8,13 @@ import { buildStudio } from "@/lib/mathstudio/views";
 import { getStudyMinutes } from "@/lib/mathstudio/store";
 import { FREE_FEATURES, PREMIUM_FEATURES, feeNow } from "@/lib/mathstudio/access";
 import { PRIORITY_LABEL } from "@/lib/mathstudio/recommend";
-import { studyMinutesAction } from "./actions";
+import { studyMinutesAction } from "../actions";
 
 export const metadata: Metadata = { title: "My Mathematics Studio | GrowQR", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function MathStudio() {
-  const { me } = await studentPage("/math-studio");
+  const { me } = await studentPage("/math-studio/dashboard");
   const [v, fee, minutes] = await Promise.all([buildStudio(me.id), feeNow().catch(() => null), getStudyMinutes(me.id)]);
   const t = v.tiles;
   return (
@@ -46,7 +46,7 @@ export default async function MathStudio() {
           {/* study time */}
           <Card title="Study time" className="!mb-5">
             <form action={studyMinutesAction} className="flex flex-wrap items-end gap-3">
-              <input type="hidden" name="back" value="/math-studio" />
+              <input type="hidden" name="back" value="/math-studio/dashboard" />
               <div><label htmlFor="mins" className="block text-[13.5px] text-ink-3">Minutes a day you can study</label><select id="mins" name="minutes" defaultValue={minutes ?? 30} className="mt-1 min-h-[44px] rounded-lg border border-black/20 bg-white px-3 text-[15px]">{[15, 20, 30, 45, 60, 90].map((m) => <option key={m} value={m}>{m} minutes</option>)}</select></div>
               <button type="submit" className={btnLight}>Save</button>
             </form>

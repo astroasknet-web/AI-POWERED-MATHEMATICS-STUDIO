@@ -13,7 +13,7 @@ export default async function History() {
   const v = await buildHistory(me.id);
   return (
     <PortalPage user={me} active="math-studio" title="History" subtitle="Every test you have taken, and how your topics have moved." wide="full">
-      <Crumbs items={[{ href: "/math-studio", label: "Mathematics Studio" }, { label: "History" }]} />
+      <Crumbs items={[{ href: "/math-studio/dashboard", label: "Mathematics Studio" }, { label: "History" }]} />
       {v.premium && (v.movement.improved.length || v.movement.slipped.length) ? (
         <Card title="What has moved">
           <p className="text-[14.5px] text-ink-2">{v.trendMsg}</p>
@@ -41,7 +41,7 @@ export default async function History() {
         ) : <p className="text-[14.5px] text-ink-3">No tests yet.</p>}
         {!v.premium ? <div className="mt-4"><Locked headline="Your full history and question-level analysis" body="Keeping every attempt, comparing them, and opening the question-by-question analysis of any test is part of the Mathematics Studio." source="history" /></div> : null}
       </Card>
-      <div className="mt-2"><Link href="/math-studio" className={btnLight}>Back to my Studio</Link></div>
+      <div className="mt-2"><Link href="/math-studio/dashboard" className={btnLight}>Back to my Studio</Link></div>
     </PortalPage>
   );
 }

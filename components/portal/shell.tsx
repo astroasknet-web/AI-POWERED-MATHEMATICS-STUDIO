@@ -24,7 +24,7 @@ export function groupsFor(role: string): NavGroup[] {
           { key: "math-speed", href: "/math-speed/journey", label: "Maths Speed Studio", icon: "courses" },
           { key: "writing", href: "/writing-clinic", label: "English Writing Studio", icon: "courses" },
           { key: "reading-studio", href: "/reading-studio/dashboard", label: "English Reading Studio", icon: "courses" },
-          { key: "math-studio", href: "/math-studio", label: "Mathematics Studio", icon: "courses" },
+          { key: "math-studio", href: "/math-studio/dashboard", label: "Mathematics Studio", icon: "courses" },
 
           { key: "classes", href: "/my-classes", label: "My classes", icon: "classes" },
         ] },

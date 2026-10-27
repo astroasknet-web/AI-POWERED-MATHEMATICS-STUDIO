@@ -16,7 +16,7 @@ export default async function Weaknesses() {
   const v = await buildWeaknesses(me.id);
   return (
     <PortalPage user={me} active="math-studio" title="Weakness analysis" subtitle="Specific, evidence-based findings — not just a low score — ranked by what matters most." wide="full">
-      <Crumbs items={[{ href: "/math-studio", label: "Mathematics Studio" }, { label: "Weaknesses" }]} />
+      <Crumbs items={[{ href: "/math-studio/dashboard", label: "Mathematics Studio" }, { label: "Weaknesses" }]} />
       {!v ? <Locked headline="Evidence-based weakness detection" body="The full diagnosis — what is weak, the evidence from your own tests, the likely cause and what to do — is part of the Mathematics Studio." source="weaknesses" /> : (
         <>
           {v.dataNote ? <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-[14.5px] text-amber-900">{v.dataNote}</p> : null}
@@ -35,7 +35,7 @@ export default async function Weaknesses() {
           )) : <Card><p className="text-[15px] text-ink-2">No weakness is confirmed with the evidence so far. That is good news; keep taking tests and anything that emerges will be shown here with its evidence.</p></Card>}
         </>
       )}
-      <div className="mt-2"><Link href="/math-studio" className={btnLight}>Back to my Studio</Link>{v ? <Link href="/math-studio/plan" className={`${btnLight} ml-2`}>My practice plan</Link> : null}</div>
+      <div className="mt-2"><Link href="/math-studio/dashboard" className={btnLight}>Back to my Studio</Link>{v ? <Link href="/math-studio/plan" className={`${btnLight} ml-2`}>My practice plan</Link> : null}</div>
     </PortalPage>
   );
 }

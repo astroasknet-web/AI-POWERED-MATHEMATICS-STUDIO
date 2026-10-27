@@ -12,8 +12,8 @@ export async function GET(req: Request) {
   const base = process.env.PORTAL_APP_URL || url.origin;
   const me = await currentUser();
   if (!me) return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(`/math-studio/upgrade?from=${from}`)}`, base));
-  if (me.role !== "student") return NextResponse.redirect(new URL("/math-studio", base));
-  if (await hasPremium(me.id)) return NextResponse.redirect(new URL("/math-studio", base));
+  if (me.role !== "student") return NextResponse.redirect(new URL("/math-studio/dashboard", base));
+  if (await hasPremium(me.id)) return NextResponse.redirect(new URL("/math-studio/dashboard", base));
   await logEvent(me.id, "cta_click", from);
   return NextResponse.redirect(new URL(buyLink(), base));
 }

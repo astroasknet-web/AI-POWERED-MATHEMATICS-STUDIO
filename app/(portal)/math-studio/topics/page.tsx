@@ -17,7 +17,7 @@ export default async function Topics() {
   const v = await buildTopics(me.id);
   return (
     <PortalPage user={me} active="math-studio" title="Topic mastery" subtitle="Every topic you have been tested on, with the evidence behind each estimate." wide="full">
-      <Crumbs items={[{ href: "/math-studio", label: "Mathematics Studio" }, { label: "Topics" }]} />
+      <Crumbs items={[{ href: "/math-studio/dashboard", label: "Mathematics Studio" }, { label: "Topics" }]} />
       {!v ? <Locked headline="Topic-by-topic mastery" body="The full breakdown of every topic, with a confidence band and the questions behind each estimate, is part of the Mathematics Studio." source="topics" /> : (
         AREAS.filter((a) => v.mastery.some((m) => m.area === a.id && m.evidence !== "insufficient")).map((a) => (
           <Card key={a.id} title={a.name} id={a.id}>
@@ -37,7 +37,7 @@ export default async function Topics() {
         ))
       )}
       {v && !v.mastery.some((m) => m.evidence !== "insufficient") ? <Card><p className="text-[14.5px] text-ink-3">No topic has enough questions yet. Take a few more tests and they will appear here.</p></Card> : null}
-      <div className="mt-2"><Link href="/math-studio" className={btnLight}>Back to my Studio</Link></div>
+      <div className="mt-2"><Link href="/math-studio/dashboard" className={btnLight}>Back to my Studio</Link></div>
     </PortalPage>
   );
 }

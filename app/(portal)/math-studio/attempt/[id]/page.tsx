@@ -19,7 +19,7 @@ export default async function AttemptPage({ params }: { params: Promise<{ id: st
   const a = v.attempt, o = v.overall, th = "py-2 pr-3 text-left font-medium text-ink-4";
   return (
     <PortalPage user={me} active="math-studio" title={a.label} subtitle={`${sourceLabel[a.source] ?? a.source} · ${when(a.finishedAt)}`} wide="full">
-      <Crumbs items={[{ href: "/math-studio", label: "Mathematics Studio" }, { href: "/math-studio/history", label: "History" }, { label: "Attempt" }]} />
+      <Crumbs items={[{ href: "/math-studio/dashboard", label: "Mathematics Studio" }, { href: "/math-studio/history", label: "History" }, { label: "Attempt" }]} />
       <section className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Performance" value={o.score === null ? "n/a" : `${o.score}/100`} tone="teal" />
         <Stat label="Accuracy" value={o.accuracy.pct === null ? "n/a" : `${Math.round(o.accuracy.pct)}%`} sub={`${o.accuracy.correct}/${o.accuracy.attempted}`} />
