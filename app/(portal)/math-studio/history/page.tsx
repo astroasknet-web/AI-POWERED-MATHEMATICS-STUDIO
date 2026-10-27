@@ -30,7 +30,7 @@ export default async function History() {
             {v.rows.map((a) => (
               <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/10 p-4">
                 <div>
-                  <p className="text-[12.5px] font-semibold uppercase tracking-wide text-ink-3">{when(a.at)} · {sourceLabel[a.source] ?? a.source}</p>
+                  <p className="text-[12.5px] font-semibold uppercase tracking-wide text-ink-3">{when(a.at)} · {sourceLabel(a.source)}</p>
                   <p className="mt-0.5 text-[15.5px] font-semibold text-ink">{a.label}</p>
                   <p className="mt-0.5 text-[13.5px] text-ink-3">{a.items} questions{a.overall !== null ? ` · performance ${a.overall}/100` : ""}{a.accuracy !== null ? ` · ${Math.round(a.accuracy)}% accuracy` : ""}</p>
                 </div>

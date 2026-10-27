@@ -46,7 +46,7 @@ export function loadExam(slug: string): ExamDoc | null {
   }
 }
 
-export interface RenderedQ { q: string; options?: string[]; correct?: number; answer?: string; explanation: string; marks: number; neg: number }
+export interface RenderedQ { q: string; options?: string[]; correct?: number; answer?: string; explanation: string; marks: number; neg: number; topic?: string; section?: string }
 export interface RenderedSection { type: string; title: string; questions: RenderedQ[] }
 
 /** The questions of one paper (or the whole mock), grouped by section and rendered to HTML. */
@@ -58,7 +58,7 @@ export function testSections(doc: ExamDoc, key: string): { test: ExamTest; secti
   const by = new Map<string, RenderedQ[]>();
   for (const q of qs) {
     if (!by.has(q.section)) { by.set(q.section, []); order.push(q.section); }
-    by.get(q.section)!.push({ q: render(q.q), options: q.options?.map((o) => render(o)), correct: q.correct, answer: q.answer === undefined ? undefined : String(q.answer), explanation: render(q.explanation), marks: test.perQ, neg: test.neg });
+    by.get(q.section)!.push({ q: render(q.q), options: q.options?.map((o) => render(o)), correct: q.correct, answer: q.answer === undefined ? undefined : String(q.answer), explanation: render(q.explanation), marks: test.perQ, neg: test.neg, topic: q.topic, section: q.section });
   }
   return { test, sections: order.map((s) => ({ type: "mcq", title: s, questions: by.get(s)! })) };
 }

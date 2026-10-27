@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MarketShell } from "@/components/market/shell";
+import { MarketShell, currentViewer } from "@/components/market/shell";
 import MockTest, { type MockSec } from "@/components/lms/MockTest";
 import { render } from "@/lib/lms/content";
 import ImoPaywall from "@/components/lms/ImoPaywall";
 import { imoAccess } from "@/lib/lms/imo-access";
 import { IMO_SECTIONS, assembleImoMock, subject, classNumber, isClass, sectionLabel } from "@/lib/lms/school";
+import { mapExamTopic } from "@/lib/mathstudio/adapters/exam";
+import { getSession } from "@/lib/portal/session";
 
 export const dynamic = "force-dynamic"; // a fresh set of questions on every visit
 
@@ -45,12 +47,17 @@ export default async function ImoMock({ params }: P) {
       explanation: render(q.explanation),
       marks: mock.marks[s.key] ?? mock.marks.default ?? 1,
       neg: 0,
+      studioTopic: mapExamTopic(s.key, undefined, true),
+      difficulty: s.key === "achievers" ? 4 : 3,
     })),
   })).filter((s) => s.questions.length);
+  const me = await currentViewer();
+  const studio = me && me.role === "student" ? { source: `imo-${c}`, sourceRef: "mock", label: `Class ${classNumber(c)} IMO mock test`, csrf: (await getSession())?.csrf ?? "" } : null;
   return (
-    <MarketShell user={null} active="courses">
+    <MarketShell user={me} active="courses">
       <nav aria-label="Breadcrumb" className="mb-4 text-[13px] text-ink-3"><Link href="/olympiad/imo" className="underline">Maths Olympiad</Link> / <Link href={`/olympiad/imo/${c}`} className="underline">Class {classNumber(c)}</Link> / Mock test</nav>
-      <MockTest id={`imo-${c}-mock`} title={`Class ${classNumber(c)} IMO mock test`} level="Full syllabus" minutes={mock.minutes} sections={sections} marking="1 mark for each question, 3 marks in the Achievers Section. No negative marking." />
+      <MockTest id={`imo-${c}-mock`} title={`Class ${classNumber(c)} IMO mock test`} level="Full syllabus" minutes={mock.minutes} sections={sections} marking="1 mark for each question, 3 marks in the Achievers Section. No negative marking." studio={studio} />
+      {me && me.role === "student" ? <p className="mt-4 text-[13px] text-ink-3">This mock feeds your <Link href="/math-studio/dashboard" className="underline">Mathematics Studio</Link> when you finish.</p> : null}
     </MarketShell>
   );
 }

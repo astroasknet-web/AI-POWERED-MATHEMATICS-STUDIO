@@ -45,6 +45,30 @@ export async function tryIngestMathSpeedSession(userId: number, publicId: string
 }
 const labelKind = (k: string): string => ({ practice: "practice", drill: "timed drill", level: "level assessment", progress: "progress assessment", mastery: "mastery assessment", foundation: "foundation check", revision: "revision", review: "daily review", diagnostic: "placement check", benchmark: "benchmark" }[k] ?? k);
 
+// ---- mixed-subject mock exams (JEE, IMO, and other LMS mocks) -------------------------------------------------------------------
+
+import { item as contractItem, type MathItem } from "./contract";
+import { topicById } from "./taxonomy";
+
+export interface MockItemIn { topic: string; difficulty?: number; correct: boolean; skipped: boolean; maxMarks?: number }
+export interface MockSubmission { source: string; sourceRef: string; label: string; finishedAt?: string | Date; totalMs?: number; items: MockItemIn[] }
+
+/**
+ * Ingest a finished mock whose questions were already mapped to taxonomy topics by the page (JEE Maths section, an IMO mock). Non-maths questions are
+ * dropped before this is called. The answer key of these self-study mocks is shown to the student at the end, so grading on the client is acceptable
+ * here, exactly as the platform already treats these mocks; the contract still validates every item and rejects anything malformed.
+ */
+export async function ingestMock(userId: number, sub: MockSubmission, db?: Db): Promise<IngestResult> {
+  const maths = sub.items.filter((i) => topicById(i.topic));
+  if (!maths.length) return { ok: false, errors: ["no mathematics questions in this mock"] };
+  const items: MathItem[] = maths.map((i, n) => contractItem({ ref: `${sub.sourceRef}:${n}`, topic: i.topic, cognitive: topicById(i.topic)!.cognitive, difficulty: i.difficulty ?? 3, format: "mcq", correct: i.correct, skipped: i.skipped, maxMarks: Math.max(1, i.maxMarks || 1) }));
+  const finishedAt = iso(sub.finishedAt);
+  return ingest({ v: 1, source: sub.source.slice(0, 40), sourceRef: sub.sourceRef.slice(0, 64), userId, label: sub.label.slice(0, 120), startedAt: new Date(Date.parse(finishedAt) - Math.max(0, sub.totalMs ?? 0)).toISOString(), finishedAt, totalMs: Math.max(0, sub.totalMs ?? 0), items }, Date.now(), db);
+}
+export async function tryIngestMock(userId: number, sub: MockSubmission): Promise<void> {
+  try { await ingestMock(userId, sub); } catch { /* never break a mock submission */ }
+}
+
 // ---- backfill ------------------------------------------------------------------------------------------------------------------
 
 export interface Backfill { gre: number; mathspeed: number; errors: number }

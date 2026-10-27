@@ -99,6 +99,23 @@ describe.skipIf(!DB)("mathematics studio on a real database", () => {
     expect(await S.cachedMastery(bob)).toEqual([]);
   });
 
+  it("ingests a mixed-subject mock (JEE maths) via the mock path, maths only, idempotently", async () => {
+    const sub = { source: "jee-mains", sourceRef: "mathematics", label: "JEE Main: Mathematics", finishedAt: new Date(), totalMs: 3600_000, items: [
+      { topic: "trigonometry", difficulty: 4, correct: true, skipped: false, maxMarks: 4 },
+      { topic: "circles", difficulty: 3, correct: false, skipped: false, maxMarks: 4 },
+      { topic: "integration", difficulty: 4, correct: true, skipped: false, maxMarks: 4 },
+    ] };
+    const r = await I.ingestMock(alice, sub);
+    expect(r).toMatchObject({ ok: true, created: true });
+    const jee = (await S.attempts(alice)).find((a) => a.source === "jee-mains")!;
+    expect(jee.itemCount).toBe(3);
+    const items = await S.attemptItems(alice, jee.id);
+    expect(items.map((i) => i.topic).sort()).toEqual(["circles", "integration", "trigonometry"]);
+    const again = await I.ingestMock(alice, sub);
+    expect(again.created).toBe(false);
+    expect((await S.attempts(alice)).filter((a) => a.source === "jee-mains").length).toBe(1);
+  });
+
   it("backfills historical attempts from both sources, idempotently", async () => {
     await B.db.run("INSERT INTO test_attempts (user_id, exam, test_no, raw, total, score, answers_json, seconds) VALUES ($1,'gre-quant',3,20,27,160,$2,2000)", [bob, JSON.stringify(greAllCorrect(3))]);
     await seedMsSession(bob, `ms-${tag}-bob`, [{ skill: "pct-change", d: 5, correct: true, ms: 4000, allowed: 7000 }, { skill: "average", d: 4, correct: false, ms: 6000, allowed: 7000 }]);

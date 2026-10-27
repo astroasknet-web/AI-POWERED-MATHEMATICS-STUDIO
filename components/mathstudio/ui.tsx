@@ -64,4 +64,5 @@ export function Crumbs({ items }: { items: Array<{ href?: string; label: string 
 }
 
 export const when = (iso: string): string => (iso ? new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "");
-export const sourceLabel: Record<string, string> = { "gre-quant": "GRE Quant", "math-speed": "Mathematics Speed" };
+const SRC: Record<string, string> = { "gre-quant": "GRE Quant", "math-speed": "Mathematics Speed", "jee-mains": "JEE Main", "neet-ug": "NEET UG", "upsc-prelims": "UPSC Prelims", "ssc-cgl": "SSC CGL" };
+export const sourceLabel = (src: string): string => SRC[src] ?? (/^imo-/.test(src) ? `IMO ${src.replace("imo-class-", "Class ").replace("imo-", "")}` : src);

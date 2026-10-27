@@ -11,9 +11,11 @@ Code: `lib/mathstudio/` (engine, store, adapters, admin), `components/mathstudio
 | Source | What it records | How it maps | Per-question time? |
 |---|---|---|---|
 | **GRE Quant mocks** (`lib/tests/gre.ts`, `test_attempts` where `exam='gre-quant'`) | raw/total/scaled, total test seconds, `answers_json` = {questionId: pickedIndex}. Per-question topic (26), difficulty (easy/medium/hard) and correctness are re-derived server-side by re-reading the bank. | `adapters/gre.ts` (26 topics → taxonomy, easy/medium/hard → difficulty 2/3/4) | **No** — the player records only the whole-test time, so these items carry `timeMs: null` and speed is honestly "not measured" for them. |
-| **Mathematics Speed studio** (`lib/mathspeed`, `ms_attempts` via `ms_sessions`) | per-answer skill, difficulty `d` (1–10), correctness, `ms` (time), `allowed_ms`. | `adapters/mathspeed.ts` (156 skills → taxonomy by keyword, `d` → ceil(d/2)) | **Yes** — so this source drives the speed and timing diagnostics. |
+| **Mathematics Speed studio** (`lib/mathspeed`, `ms_attempts` via `ms_sessions`) | per-answer skill, difficulty `d` (1–10), correctness, `ms` (time), `allowed_ms`. | `adapters/mathspeed.ts` (156 skills → taxonomy by keyword, `d` → ceil(d/2)) | **Yes** — drives the speed and timing diagnostics. |
+| **JEE Main (and other LMS mocks: NEET, UPSC, SSC)** (`content/lms/exams/*.json`, player `components/lms/MockTest`) | mixed-subject mock, each question with a `section` (subject) and a maths `topic`, `correct`, `marks`, `neg`. **Not persisted** before the Studio. | `adapters/exam.ts` — takes the **Mathematics** section only, maps its topics; NEET has no maths, UPSC/SSC contribute their quantitative questions. | **No** (whole-test timer only). |
+| **IMO olympiad mocks** (`app/olympiad/imo`, `assembleImoMock`) | a full-syllabus mock across four sections (logical/mathematical reasoning, everyday maths, achievers), each question `correct`. **Not persisted** before the Studio. | `adapters/exam.ts` (all maths; section → taxonomy, section-level granularity). | **No**. |
 
-Other modules considered and **not** integrated: IELTS Reading/Listening (not maths); the IMO/olympiad courses and exam-prep (no uniform marked-attempt store to read cleanly today). GRE is the only exam-style maths test in `lib/tests`; SAT/CAT/GMAT maths tests do not exist on the platform yet. The contract is built so each connects later through a small adapter.
+**SAT**: the platform's SAT Math is *lesson* content (`content/lms/study/sat-math`), not an auto-gradable test — there are no per-question keys to grade — so there is **no SAT attempt data to ingest**, and the Studio does not fabricate any. It will show SAT the moment a gradable SAT Math test exists (one adapter call). Also not integrated: IELTS (not maths); CAT/GMAT maths tests do not exist on the platform yet. The contract means each connects later through a small adapter.
 
 Reused, not rebuilt: the stack (Next.js 15, React 19, TS, Tailwind, zod, vitest, MySQL via `mysql2` with the `$1`/`ON CONFLICT`/`RETURNING` translator), auth (`currentUser`, role `student`/`admin`, `adminGate`), payments (one product through the existing catalogue and entitlements), the console shell, and the accessible-SVG chart approach.
 
@@ -72,7 +74,7 @@ The Studio does not generate questions; it sends the student to **real** practic
 
 ## 8. Integration & reliability
 
-- **Live hooks** (non-throwing, so analytics can never corrupt or block a test submission): GRE in `app/practice-tests/actions.ts` after `attempts.save`; Mathematics Speed in `app/api/math-speed/submit/route.ts` after a session is submitted.
+- **Live hooks** (non-throwing, so analytics can never corrupt or block a test submission): GRE in `app/practice-tests/actions.ts` after `attempts.save`; Mathematics Speed in `app/api/math-speed/submit/route.ts` after a session is submitted; the mixed-subject mocks (JEE, IMO, other LMS mocks) post their finished maths questions from `components/lms/MockTest` to `app/api/math-studio/mock`. These mocks were not persisted before — the Studio is now their record. Their answer key is already shown to the student at the end, so grading on the client is acceptable here (the same trust model the platform already uses for these self-study mocks); the contract still validates every item.
 - **Backfill** (`scripts/mathstudio-backfill.ts`, or the admin "Reprocess all from source") ingests every historical attempt, idempotently, so the Studio is complete on day one. **Note:** a full reprocess is O(all attempts) and should be run off-peak; the per-student recompute is the fast path used after one student's data changes.
 - **Reconciliation:** the admin integration view shows processed vs available per source, so a gap is visible.
 
@@ -100,7 +102,9 @@ Rollback: revert the merge; the `mx_*` tables are additive and can stay. To remo
 
 ## 13. Not built or not verified
 
-- Only GRE Quant and Mathematics Speed are wired today; the olympiad/exam-prep adapters are not written (the contract is ready for them). SAT/CAT/GMAT maths tests do not exist on the platform yet.
+- Wired today: GRE Quant, Mathematics Speed, JEE Main (maths section) and IMO mocks. **SAT Math is lesson content with no gradable test, so no SAT analytics exist** — the Studio will show it when a gradable SAT test is added. CAT/GMAT maths tests do not exist on the platform yet.
+- IMO is mapped at **section** granularity (logical/mathematical reasoning, everyday maths, achievers), which is coarser than GRE's per-topic tagging; JEE uses the question's own topic. These are editorial mappings in `adapters/exam.ts`, not reviewed question by question.
+- The JEE/IMO/other mocks are graded on the client (their key is already shown at the end); the server validates but does not independently re-grade them.
 - GRE has no per-question time, so per-question speed/timing diagnostics apply to Mathematics Speed only; the UI states this.
 - Overall-score weights and mastery parameters are provisional, not validated against real outcomes.
 - Question statements and worked solutions stay in each test module (to keep answer keys in one place); the attempt view analyses performance, it does not re-show the question text.

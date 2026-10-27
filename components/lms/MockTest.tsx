@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export interface MockQ { q: string; options?: string[]; correct?: number; answer?: string; explanation: string; marks?: number; neg?: number }
+export interface MockQ { q: string; options?: string[]; correct?: number; answer?: string; explanation: string; marks?: number; neg?: number; studioTopic?: string | null; difficulty?: number }
 export interface MockSec { type: string; title: string; questions: MockQ[] }
-interface Props { id: string; title: string; level: string; minutes: number; sections: MockSec[]; note?: string; marking?: string }
+/** When present, finishing the mock sends its maths questions to the Mathematics Studio (the page has already tagged each with a taxonomy topic). */
+export interface StudioLink { source: string; sourceRef: string; label: string; csrf: string }
+interface Props { id: string; title: string; level: string; minutes: number; sections: MockSec[]; note?: string; marking?: string; studio?: StudioLink | null }
 
 const KEY = (id: string) => `lms:test:${id}`;
 const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -17,7 +19,8 @@ function isRight(q: MockQ, a: string | undefined): boolean {
 }
 
 /** A timed mock test. Answers stay in this browser; the best score is kept in localStorage. HTML comes pre-rendered from the server. */
-export default function MockTest({ id, title, level, minutes, sections, note, marking }: Props) {
+export default function MockTest({ id, title, level, minutes, sections, note, marking, studio }: Props) {
+  const sent = useRef(false);
   const flat = useMemo(() => sections.flatMap((s, si) => s.questions.map((q, qi) => ({ key: `${si}-${qi}`, sec: s, q }))), [sections]);
   const [phase, setPhase] = useState<"intro" | "run" | "done">("intro");
   const [left, setLeft] = useState(minutes * 60);
@@ -52,7 +55,16 @@ export default function MockTest({ id, title, level, minutes, sections, note, ma
       const prev = Number(localStorage.getItem(KEY(id)) ?? "-1");
       if (score > prev) { localStorage.setItem(KEY(id), String(score)); setBest(score); }
     } catch { /* storage blocked */ }
-  }, [phase, id, score]);
+    // feed the maths questions to the Mathematics Studio (once); a failure never affects the student's result
+    if (studio && !sent.current) {
+      sent.current = true;
+      const items = flat.filter((f) => f.q.studioTopic).map((f) => { const a = ans[f.key]; const skipped = a === undefined || a === ""; return { topic: f.q.studioTopic, difficulty: f.q.difficulty ?? 3, correct: !skipped && isRight(f.q, a), skipped, maxMarks: f.q.marks ?? 1 }; });
+      if (items.length) {
+        const spent = minutes * 60 - left;
+        void fetch("/api/math-studio/mock", { method: "POST", headers: { "content-type": "application/json" }, credentials: "same-origin", body: JSON.stringify({ _csrf: studio.csrf, source: studio.source, sourceRef: studio.sourceRef, label: studio.label, totalMs: Math.max(0, spent) * 1000, items }) }).catch(() => {});
+      }
+    }
+  }, [phase, id, score, studio, flat, ans, left, minutes]);
 
   if (phase === "intro")
     return (

@@ -19,9 +19,10 @@ export async function integrationStatus(db: Db = pool): Promise<SourceStatus[]> 
   const greAvail = Number((await first(db, "SELECT COUNT(*) AS n FROM test_attempts WHERE exam = 'gre-quant'"))?.n ?? 0);
   const msAvail = Number((await first(db, "SELECT COUNT(*) AS n FROM ms_sessions WHERE status = 'submitted'"))?.n ?? 0);
   const avail: Record<string, number> = { "gre-quant": greAvail, "math-speed": msAvail };
-  const labels: Record<string, string> = { "gre-quant": "GRE Quant mocks", "math-speed": "Mathematics Speed studio" };
+  const labels: Record<string, string> = { "gre-quant": "GRE Quant mocks", "math-speed": "Mathematics Speed studio", "jee-mains": "JEE Main (maths)", "neet-ug": "NEET UG (maths)", "upsc-prelims": "UPSC Prelims (quant)", "ssc-cgl": "SSC CGL (quant)" };
+  const label = (src: string): string => labels[src] ?? (/^imo-/.test(src) ? `IMO ${src.replace("imo-class-", "Class ").replace("imo-", "")} mock` : src);
   const seen = new Set<string>();
-  for (const r of bySource) { seen.add(r.source); out.push({ source: r.source, label: labels[r.source] ?? r.source, processed: Number(r.n), available: avail[r.source] ?? null, items: Number(r.items), students: Number(r.students), lastAt: r.last ? String(r.last) : null }); }
+  for (const r of bySource) { seen.add(r.source); out.push({ source: r.source, label: label(r.source), processed: Number(r.n), available: avail[r.source] ?? null, items: Number(r.items), students: Number(r.students), lastAt: r.last ? String(r.last) : null }); }
   for (const [src, label] of Object.entries(labels)) if (!seen.has(src)) out.push({ source: src, label, processed: 0, available: avail[src], items: 0, students: 0, lastAt: null });
   return out;
 }
