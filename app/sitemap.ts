@@ -48,6 +48,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/vedic-math` },
     { url: `${baseUrl}/math-speed` },
     { url: `${baseUrl}/reading-studio` },
+    { url: `${baseUrl}/reading-tests` },
+    ...Array.from({ length: 30 }, (_, i) => ({ url: `${baseUrl}/reading-tests/${i + 1}` })),
     { url: `${baseUrl}/support` },
     ...vedicCurriculum().modules.filter((m) => m.available).map((m) => ({ url: `${baseUrl}/vedic-math/${m.slug}` })),
     { url: `${baseUrl}/school` },

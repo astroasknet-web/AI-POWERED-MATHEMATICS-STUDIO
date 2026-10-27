@@ -65,5 +65,5 @@ export const DIMENSION_SHORT: Record<Dimension, string> = { comprehension: "Comp
 
 export const GROUP_DIMENSION: Record<Group, Dimension> = { comprehension: "comprehension", inference: "inference", vocabulary: "vocabulary", retention: "retention" };
 
-export type Kind = "diagnostic" | "practice" | "mastery" | "recall" | "timed" | "fresh";
-export const KIND_LABEL: Record<Kind, string> = { diagnostic: "Starting assessment", practice: "Level practice", mastery: "Mastery check", recall: "Delayed recall", timed: "Timed reading", fresh: "Fresh assessment" };
+export type Kind = "diagnostic" | "practice" | "mastery" | "recall" | "timed" | "fresh" | "essay";
+export const KIND_LABEL: Record<Kind, string> = { diagnostic: "Starting assessment", practice: "Level practice", mastery: "Mastery check", recall: "Delayed recall", timed: "Timed reading", fresh: "Fresh assessment", essay: "Essay reading test" };

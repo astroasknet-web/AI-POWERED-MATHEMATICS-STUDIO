@@ -298,6 +298,7 @@ export default function Footer() {
               { href: "/courses", label: "All courses" },
               { href: "/math-speed", label: "Math Speed Enhancement Studio" },
               { href: "/reading-studio", label: "AI-Powered Reading Studio" },
+              { href: "/reading-tests", label: "Essay Reading Tests (SSC, CDS, CAT, UPSC, CTET)" },
               { href: "/vedic-math", label: "Vedic Mathematics" },
               { href: "/olympiad/imo", label: "Maths Olympiad (IMO)" },
               { href: "/exam-prep", label: "Exam prep (JEE, NEET, UPSC)" },

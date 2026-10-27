@@ -41,6 +41,8 @@ export const configSchema = z.object({
   rushedErrors: z.number().int().min(2).max(20),
   /** Hours a student must wait after an assessment before a delayed-recall session on its passage is offered (a snapshot of recall needs a gap). */
   recallDelayHours: z.number().min(0).max(240),
+  /** Essay reading tests (by test number) that any signed-in student may take without the package. */
+  freeEssays: z.array(z.number().int().min(1).max(500)).max(60),
   /** Free tier: starting assessments a student may take without the premium package. */
   freeDiagnostics: z.number().int().min(0).max(10),
   /** Study minutes per day used to size the 7-day plan when the student gave none. */
@@ -70,6 +72,7 @@ export const DEFAULT_CONFIG: Config = {
   rushedShare: 0.35,
   rushedErrors: 3,
   recallDelayHours: 20,
+  freeEssays: [6, 11, 20],
   freeDiagnostics: 2,
   defaultStudyMinutes: 20,
   minCohort: 5,

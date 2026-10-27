@@ -155,3 +155,13 @@ Add content by import (console), approve it, and have it reviewed. Retire a ques
 - Screen-reader testing with real assistive technology; accessibility is by construction (labels, roles, keyboard, tables behind every chart) and automated checks only.
 - The AI note was tested with mocked responses only; no live AI call was made.
 - Load and performance testing.
+
+## 14. Essay Reading Tests for competitive examinations (`/reading-tests`)
+
+A separate public page and 30 test pages (`/reading-tests`, `/reading-tests/[n]`) for SSC, CDS, CAT, UPSC and CTET style practice. They are **not** the IELTS or SAT practice already on the portal and they are not learning levels: exam names appear only on these pages, never as categories inside the Reading Studio.
+
+* **Source.** The 30 essays (600 to 1,100 words) with 300 questions come from the files supplied by the owner. They are saved unchanged, with a normaliser, an audit and corrections, in https://github.com/astroasknet-web/Essay-for-Compet-SSC-CAT-UPSC-CTET (`AUDIT.md`). The app reads the normalised copy in `lib/reading/essays/essays.json`.
+* **Linked to the Studio.** Each essay is a passage in `rd_passages` with `collection = 'exam'` and each question a row in `rd_questions` (migration `20261225000001_reading_exam_tests.sql`). A new assessment kind `essay` runs it through the same runner, server-side marking, scoring, diagnosis, charts, history and report as every other assessment, so the answers feed the student's skill profile. Essays are excluded from the level pathway, fresh/timed/recall picking; targeted skill practice may draw on their questions.
+* **Tags.** The files carry no skill tags, so `classifyQuestion` (`lib/reading/essays/meta.ts`) assigns a skill, question type, difficulty and guide time from the wording. It is rule-based (about two thirds fall back to "important facts and details") and tested; an administrator can retag in the console. The theme, the examinations each essay "suits" and the difficulty are editorial choices in `ESSAY_META` and are **not** claims about past papers.
+* **Free and paid.** Three tests (6, 11, 20) are free for any signed-in student (`freeEssays` in the console settings); the other 27 need the same package as the rest of the Studio. Access is checked on the server in `startAssessment`.
+* **Known limits.** In 79% of questions the correct option is also the longest (see the audit); 14 questions rely on general knowledge; explanations for 192 questions quote the supporting sentence of the essay and were not written by a subject expert; facts in the essays were not verified.

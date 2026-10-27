@@ -3,6 +3,8 @@ import { randomBytes } from "node:crypto";
 import { exec, first, pool, rows, tx, type Db } from "../pay/db";
 import { resolveConfig, SCORING_VERSION, type Config } from "./config";
 import { SEED_LEVELS, SEED_PASSAGES } from "./content/levels";
+import essayData from "./essays/essays.json";
+import { classifyQuestion, essaySlug, ESSAY_META } from "./essays/meta";
 import { wordsIn } from "./content-model";
 import { causesOf, carefulNote, type Cause, type HistoryItem } from "./diagnosis";
 import { hasPremium } from "./access";
@@ -54,8 +56,37 @@ export async function ensureSeed(db: Db = pool, force = false): Promise<{ levels
       questions += k > 0 ? 1 : 0;
     }
   }
+  const e = await ensureEssays(db);
+  passages += e.passages; questions += e.questions;
   seeded = true;
   return { levels, passages, questions };
+}
+
+interface EssayFile { n: number; title: string; body: string; words: number; questions: Array<{ n: number; question: string; options: string[] | null; answer: string | null; explanation: string }> }
+
+/**
+ * Adds the 30 essay reading tests (one passage and ten questions each) to the same bank the Reading Studio uses, flagged collection = 'exam' so they stay
+ * out of the level pathway. Like the rest of the seed it only inserts what is missing and never overwrites an administrator's edit.
+ */
+export async function ensureEssays(db: Db = pool): Promise<{ passages: number; questions: number }> {
+  let passages = 0, questions = 0;
+  for (const e of essayData as unknown as EssayFile[]) {
+    const meta = ESSAY_META.find((m) => m.n === e.n);
+    if (!meta) continue;
+    const slug = essaySlug(e.n, e.title);
+    const k = await exec(db, "INSERT IGNORE INTO rd_passages (slug, title, body, topic, difficulty, vocab_level, word_count, level_key, is_diagnostic, status, source, review_state, collection, ext_no, theme, exams) VALUES ($1,$2,$3,$4,$5,$6,$7,NULL,0,'approved','authored','unreviewed','exam',$8,$9,$10)", [slug, e.title, e.body, meta.theme, meta.difficulty, Math.min(5, meta.difficulty), e.words, e.n, meta.theme, meta.exams.join(",")]);
+    passages += k > 0 ? 1 : 0;
+    const row = await first(db, "SELECT id FROM rd_passages WHERE slug = $1", [slug]);
+    if (!row) continue;
+    let pos = 0;
+    for (const q of e.questions) {
+      if (!q.options || !q.answer) continue;
+      const c = classifyQuestion(q.question, q.options);
+      const n = await exec(db, "INSERT IGNORE INTO rd_questions (passage_id, ref, mode, format, stem, options_json, answer_json, explanation, skill, qtype, difficulty, expected_secs, position, status, source, review_state) VALUES ($1,$2,'practice','mcq',$3,$4,$5,$6,$7,$8,$9,$10,$11,'approved','authored','unreviewed')", [row.id, `ES${String(e.n).padStart(2, "0")}-${q.n}`, q.question, JSON.stringify(q.options), JSON.stringify("ABCD".indexOf(q.answer)), q.explanation, c.skill, c.qtype, c.difficulty, c.expectedSecs, pos++]);
+      questions += n > 0 ? 1 : 0;
+    }
+  }
+  return { passages, questions };
 }
 
 // ---- content ---------------------------------------------------------------------------------------------------------------------
@@ -209,8 +240,8 @@ async function seenPassages(userId: number, db: Db): Promise<Map<number, number>
 
 interface Pool { p: Passage; qs: Question[] }
 
-async function approvedPool(db: Db, where: string, params: unknown[]): Promise<Pool[]> {
-  const ps = (await rows(db, `SELECT * FROM rd_passages WHERE status = 'approved' ${where} ORDER BY id ASC`, params)).map(passageOf);
+async function approvedPool(db: Db, where: string, params: unknown[], collections: Array<"studio" | "exam"> = ["studio"]): Promise<Pool[]> {
+  const ps = (await rows(db, `SELECT * FROM rd_passages WHERE status = 'approved' AND collection IN (${collections.map((c) => `'${c}'`).join(",")}) ${where} ORDER BY id ASC`, params)).map(passageOf);
   const out: Pool[] = [];
   for (const p of ps) {
     const qs = (await rows(db, "SELECT * FROM rd_questions WHERE passage_id = $1 AND status = 'approved' ORDER BY position ASC, id ASC", [p.id])).map(questionOf);
@@ -237,12 +268,12 @@ export async function startAssessment(userId: number, kind: Kind, opts: StartOpt
   if (open && open.kind === kind && open.levelKey === (opts.levelKey ?? null) && (open.focusSkill ?? null) === (opts.skill ?? null)) return { ok: true, id: open.publicId, resumed: true };
 
   const locked = (what: string): StartResult => ({ ok: false, code: "locked", error: `${what} is part of the Reading Studio package.` });
-  if (kind !== "diagnostic" && !premium) return locked(kind === "practice" && opts.skill ? "Targeted practice" : kind === "mastery" ? "Mastery checks" : kind === "recall" ? "Delayed recall" : kind === "timed" ? "Timed reading" : kind === "fresh" ? "Fresh assessments" : "Level practice");
+  if (kind !== "diagnostic" && kind !== "essay" && !premium) return locked(kind === "practice" && opts.skill ? "Targeted practice" : kind === "mastery" ? "Mastery checks" : kind === "recall" ? "Delayed recall" : kind === "timed" ? "Timed reading" : kind === "fresh" ? "Fresh assessments" : "Level practice");
 
   const seenQ = await seenQuestions(userId, db);
   const seenP = await seenPassages(userId, db);
   let units: Plan["units"] = [];
-  let feedback = false, hide = false, timedSecs: number | null = null, levelKey: string | null = null, focus: SkillId | null = null;
+  let feedback = false, hide = false, timedSecs: number | null = null, levelKey: string | null = null, focus: SkillId | null = null, tag: string | null = null;
 
   if (kind === "diagnostic") {
     if (!premium) {
@@ -251,10 +282,20 @@ export async function startAssessment(userId: number, kind: Kind, opts: StartOpt
     }
     const pool_ = await approvedPool(db, "AND is_diagnostic = 1", []);
     units = pool_.map(({ p, qs }) => ({ passageId: p.id, questionIds: qs.filter((q) => q.mode === "diagnostic").map((q) => q.id) })).filter((u) => u.questionIds.length);
+  } else if (kind === "essay") {
+    // an essay reading test: one passage, its ten questions, answers kept back until the test is handed in. focus_skill holds "essay-N" so a second test never resumes the first.
+    const num = Number(String(opts.skill ?? "").replace(/^essay-/, ""));
+    const row = Number.isInteger(num) ? await first(db, "SELECT * FROM rd_passages WHERE collection = 'exam' AND ext_no = $1 AND status = 'approved'", [num]) : null;
+    if (!row) return { ok: false, code: "none", error: "That test does not exist." };
+    if (!premium && !cfg.freeEssays.includes(num)) return { ok: false, code: "locked", error: "This essay test is part of the Reading Studio package. Three tests are free." };
+    const qs = (await rows(db, "SELECT * FROM rd_questions WHERE passage_id = $1 AND status = 'approved' ORDER BY position, id", [row.id])).map(questionOf);
+    if (!qs.length) return { ok: false, code: "none", error: "That test has no questions yet." };
+    units = [{ passageId: Number(row.id), questionIds: qs.map((q) => q.id) }];
+    tag = `essay-${num}`;
   } else if (kind === "practice" && opts.skill) {
     if (!isSkill(opts.skill)) return { ok: false, code: "none", error: "That skill is not recognised." };
     focus = opts.skill;
-    const pool_ = await approvedPool(db, "", []);
+    const pool_ = await approvedPool(db, "", [], ["studio", "exam"]);
     const cands = pool_.flatMap(({ p, qs }) => qs.filter((q) => q.skill === focus && q.mode !== "recall").map((q) => ({ p, q })));
     const sorted = shuffleSeeded(cands, `${userId}:${focus}:${seenQ.size}`).sort((a, b) => (seenQ.get(a.q.id) ?? 0) - (seenQ.get(b.q.id) ?? 0));
     const pick = sorted.slice(0, PER_PASSAGE_CAP);
@@ -285,7 +326,8 @@ export async function startAssessment(userId: number, kind: Kind, opts: StartOpt
     const done = new Set<number>();
     for (const r of await rows(db, "SELECT plan_json, submitted_at FROM rd_assessments WHERE user_id = $1 AND kind = 'recall' AND status = 'submitted'", [userId])) { try { for (const u of (JSON.parse(r.plan_json) as Plan).units) done.add(u.passageId); } catch { /* ignore */ } }
     let chosen: number | null = null;
-    for (const r of last) { try { const ps = (JSON.parse(r.plan_json) as Plan).units.map((u) => u.passageId); const p = ps.find((x) => !done.has(x)); if (p) { chosen = p; break; } } catch { /* ignore */ } }
+    const withRecall = new Set((await rows(db, "SELECT DISTINCT passage_id FROM rd_questions WHERE mode = 'recall' AND status = 'approved'")).map((r) => Number(r.passage_id)));
+    for (const r of last) { try { const ps = (JSON.parse(r.plan_json) as Plan).units.map((u) => u.passageId); const p = ps.find((x) => !done.has(x) && withRecall.has(x)); if (p) { chosen = p; break; } } catch { /* ignore */ } }
     if (chosen === null) {
       const any = await first(db, "SELECT 1 AS x FROM rd_assessments WHERE user_id = $1 AND status = 'submitted' AND kind <> 'recall' LIMIT 1", [userId]);
       return { ok: false, code: "delay", error: any ? `Delayed recall opens ${cfg.recallDelayHours} hours after you read a passage, so it tests what you kept rather than what you just saw. Come back later.` : "Take an assessment first; recall questions come later about a passage you have read." };
@@ -318,7 +360,7 @@ export async function startAssessment(userId: number, kind: Kind, opts: StartOpt
   const key = JSON.stringify(units.map((u) => u.passageId).sort());
   const prior = (kind === "diagnostic" || kind === "fresh") ? (await rows(db, "SELECT id, plan_json FROM rd_assessments WHERE user_id = $1 AND status = 'submitted' AND kind IN ('diagnostic','fresh') ORDER BY id DESC", [userId])).find((r) => { try { return JSON.stringify((JSON.parse(r.plan_json) as Plan).units.map((u) => u.passageId).sort()) === key; } catch { return false; } }) : null;
   const contentVersion = `c${(await first(db, "SELECT COALESCE(MAX(version),1) AS v, COUNT(*) AS n FROM rd_passages WHERE status = 'approved'"))?.n ?? 0}`;
-  await exec(db, "INSERT INTO rd_assessments (public_id, user_id, kind, level_key, focus_skill, plan_json, status, created_at, scoring_version, content_version, repeat_of) VALUES ($1,$2,$3,$4,$5,$6,'open',$7,$8,$9,$10)", [publicId, userId, kind, levelKey, focus, JSON.stringify(plan), dbTime(now), SCORING_VERSION, contentVersion, prior ? Number(prior.id) : null]);
+  await exec(db, "INSERT INTO rd_assessments (public_id, user_id, kind, level_key, focus_skill, plan_json, status, created_at, scoring_version, content_version, repeat_of) VALUES ($1,$2,$3,$4,$5,$6,'open',$7,$8,$9,$10)", [publicId, userId, kind, levelKey, tag ?? focus, JSON.stringify(plan), dbTime(now), SCORING_VERSION, contentVersion, prior ? Number(prior.id) : null]);
   return { ok: true, id: publicId, resumed: false };
 }
 

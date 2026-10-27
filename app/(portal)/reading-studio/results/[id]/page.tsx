@@ -226,6 +226,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
           <div className="flex flex-wrap gap-3">
             <Link href={`/reading-studio/results/${v.id}/report`} className={btnLight}>Download report (CSV)</Link>
             <Link href="/reading-studio/progress" className={btnLight}>My progress</Link>
+            {v.kind === "essay" ? <Link href="/reading-tests#library" className={btnLight}>More reading tests</Link> : null}
             <Link href={v.next.href} className={btnPrimary}>{v.next.label}</Link>
           </div>
         </>
@@ -244,7 +245,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
             <Link href="/reading-studio/upgrade?from=results" className={`${btnPrimary} mt-5`}>See what is included and the price</Link>
             <p className="mt-4 text-[13px] text-ink-3">Nothing is hidden that would change your overall score above. The package adds the detail behind it.</p>
           </Card>
-          <div className="flex flex-wrap gap-3"><Link href="/reading-studio/dashboard" className={btnLight}>Back to my dashboard</Link></div>
+          <div className="flex flex-wrap gap-3"><Link href="/reading-studio/dashboard" className={btnLight}>Back to my dashboard</Link>{v.kind === "essay" ? <Link href="/reading-tests#library" className={btnLight}>More reading tests</Link> : null}</div>
         </>
       ) : null}
     </PortalPage>
