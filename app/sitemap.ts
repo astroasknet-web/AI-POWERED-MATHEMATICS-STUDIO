@@ -48,6 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/vedic-math` },
     { url: `${baseUrl}/math-speed` },
     { url: `${baseUrl}/reading-studio` },
+    { url: `${baseUrl}/math-studio` },
     { url: `${baseUrl}/reading-tests` },
     ...Array.from({ length: 30 }, (_, i) => ({ url: `${baseUrl}/reading-tests/${i + 1}` })),
     { url: `${baseUrl}/support` },
